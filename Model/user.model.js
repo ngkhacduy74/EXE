@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       require: true,
     },
+    is_active: {
+      type: String,
+      require: true,
+    },
   },
   { versionKey: false }
 );
