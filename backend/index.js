@@ -3,7 +3,7 @@ require("dotenv").config();
 const cors = require("cors"); // Allow frontend requests
 
 const app = express();
-const configs = require("../backend/Config/index");
+const configs = require("./Config/index");
 
 // Middleware
 app.use(cors()); // Enable CORS for frontend requests
@@ -17,11 +17,7 @@ app.get("/api/test", (req, res) => {
   res.json({ message: "Backend connected successfully!" });
 });
 
-// Start the server
-const port = process.env.port || 5000;
-console.log("akjsdkasd", port);
-
-// Default to 5000 if not set in .env
+const port = process.env.PORT || 8080;
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
