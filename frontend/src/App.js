@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import "./App.css";
+
 import {
   BrowserRouter as Router,
   Route,
@@ -6,6 +9,8 @@ import {
   Navigate,
 } from "react-router-dom";
 import AdminPage from "./Admin/AdminPage";
+import Login from "./Pages/Login";
+import Register from "./Pages/Register";
 
 const App = () => {
   const [message, setMessage] = useState("");
@@ -20,11 +25,11 @@ const App = () => {
   return (
     <Router>
       <div>
-        <h1>React & Node.js Connection Test</h1>
-        <p>{message || "Waiting for backend response..."}</p>
         <Routes>
-          <Route path="/" element={<Navigate to="/admin" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </div>
     </Router>
