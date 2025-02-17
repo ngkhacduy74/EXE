@@ -19,5 +19,5 @@ module.exports = (app) => {
   router.delete("/products/:id", ProductController.deleteProduct);
 
   // Attach product routes to the app
-  app.use("/api", router);  // ✅ Fix: Attach router to the app
+  app.use("/api", router);
 };

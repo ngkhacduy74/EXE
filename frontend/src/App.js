@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 import AdminPage from "./Admin/AdminPage";
 
 const App = () => {
@@ -18,7 +23,7 @@ const App = () => {
         <h1>React & Node.js Connection Test</h1>
         <p>{message || "Waiting for backend response..."}</p>
         <Routes>
-          <Route path="/" element={<h2>Welcome! Use /admin to go to the Admin Page.</h2>} />
+          <Route path="/" element={<Navigate to="/admin" replace />} />
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </div>
