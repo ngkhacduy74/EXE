@@ -22,7 +22,11 @@ const handleLogin = async (e) => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       
-      navigate("/admin");
+      if (user.role === "admin") { 
+        navigate("/admin");
+    } else {
+        navigate("/");
+    }
     } catch (error) {
       console.error("Login error:", error);
       alert(error.response?.data?.message || "Login failed, please try again");
