@@ -1,6 +1,6 @@
 const Joi = require("joi");
 const userSchema = Joi.object({
-  id: Joi.string().required(),
+  id: Joi.string().optional(),
   fullname: Joi.string()
     .pattern(/^[A-Za-zÀ-Ỹà-ỹ\s]+$/)
     .max(30)
