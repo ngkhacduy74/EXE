@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const userValidate = Joi.object({
+const userSchema = Joi.object({
   id: Joi.string().required(),
   fullname: Joi.string()
     .pattern(/^[A-Za-zÀ-Ỹà-ỹ\s]+$/)
@@ -16,4 +16,4 @@ const userValidate = Joi.object({
   ava_img_url: Joi.string().optional(),
 });
 
-module.exports = userValidate;
+module.exports = userSchema;

@@ -15,13 +15,16 @@ async function Login(params) {
   }
   const token = jwt.sign(
     {
-      user,
+      fullname: user.fullname,
+      email: user.email,
+      role: user.role,
     },
     process.env.JWT_SECRET_KEY,
     {
       expiresIn: "30m",
     }
   );
+
   return { success: true, message: "Đăng nhập thành công", token };
 }
 
