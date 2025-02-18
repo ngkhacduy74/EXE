@@ -8,10 +8,11 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+ // Trong file Login.js, sửa hàm handleLogin:
+const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-
+  
     try {
       const response = await axios.post("http://localhost:8080/auth/login", {
         email,
@@ -20,7 +21,8 @@ function Login() {
       const { token, user } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-      navigate("/");
+      
+      navigate("/admin");
     } catch (error) {
       console.error("Login error:", error);
       alert(error.response?.data?.message || "Login failed, please try again");

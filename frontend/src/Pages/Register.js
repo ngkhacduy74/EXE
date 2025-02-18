@@ -51,8 +51,26 @@ function Register() {
         }
 
 
-     
+        try {
+            const usersResponse = await axios.get('http://localhost:8080/auth/register');
+            const exsitingAccount = usersResponse.data.find(user => user.email === addUser.email);
+            if (exsitingAccount) {
+                alert('Email already exists');
+                return;
+            }
+
+            const newUser = {
+                ...addUser,
+                id: usersResponse.data.length + 1
+            }
+            await axios.post('http://localhost:8080/auth/register', newUser)
+            alert('Registration successful');
+            navigate('/login');
+        } catch (error) {
+            console.log(error);
+        }
     }
+    
 
 
     return (
