@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { type } = require("../Validator/user.validator");
 const userSchema = new mongoose.Schema(
   {
     id: {
@@ -13,11 +14,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       require: true,
     },
-    address: {
+    email: {
       type: String,
-      require: true,
+      required: true,
     },
-    username: {
+    address: {
       type: String,
       require: true,
     },

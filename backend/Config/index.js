@@ -9,3 +9,12 @@ module.exports.connect = async () => {
     console.log("Kết nối thất bại datasbe");
   }
 };
+module.exports.configCloudinary = () => {
+  cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY_CLOUD,
+    api_secret: process.env.API_SECRET,
+  });
+};
+
+module.exports.cloudinary = cloudinary;
