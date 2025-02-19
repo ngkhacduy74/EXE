@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { type } = require("../Validator/user.validator");
+const { required } = require("joi");
 const userSchema = new mongoose.Schema(
   {
     id: {
@@ -37,6 +38,10 @@ const userSchema = new mongoose.Schema(
     ava_img_url: {
       type: String,
       require: true,
+    },
+    is_active: {
+      type: String,
+      required: false,
     },
   },
   { versionKey: false }

@@ -45,6 +45,7 @@ async function Register(params) {
     gender: params.gender,
     role: "User",
     ava_img_url: params.ava_img_url,
+    is_active: true,
   });
   try {
     await newUser.save();
@@ -53,6 +54,11 @@ async function Register(params) {
   }
 
   return { success: true, message: "Đăng kí thành công", newUser };
+}
+async function getAllUser() {
+  //thiếu phân trang
+  const getUser = await User.find();
+  return getUser;
 }
 module.exports = {
   Login,

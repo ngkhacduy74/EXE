@@ -7,5 +7,19 @@ const validateUser = (req, res, next) => {
   }
   next();
 };
-
-module.exports = validateUser;
+const verifyAdmin = (req, res, next) => {
+  try {
+    if (!req.user || req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Bạn không có quyền truy cập!" });
+    }
+    next();
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi kiểm tra quyền truy cập!" });
+  }
+};
+module.exports = {
+  validateUser,
+  verifyAdmin,
+};
