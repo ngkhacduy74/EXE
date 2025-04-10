@@ -37,7 +37,12 @@ function Register() {
       return;
     }
 
-    if (!addUser.fullname || !addUser.email || !addUser.password || !repeatPassword) {
+    if (
+      !addUser.fullname ||
+      !addUser.email ||
+      !addUser.password ||
+      !repeatPassword
+    ) {
       alert("Please fill in all fields");
       return;
     }
@@ -49,8 +54,10 @@ function Register() {
 
     try {
       // Check if the email already exists
-      const usersResponse = await axios.get("http://localhost:8080/auth/users");
-      const existingAccount = usersResponse.data.find(user => user.email === addUser.email);
+      const usersResponse = await axios.get("http://localhost:4000/auth/users");
+      const existingAccount = usersResponse.data.find(
+        (user) => user.email === addUser.email
+      );
 
       if (existingAccount) {
         alert("Email already exists");
@@ -58,7 +65,7 @@ function Register() {
       }
 
       // Register new user
-      await axios.post("http://localhost:8080/auth/register", addUser);
+      await axios.post("http://localhost:4000/auth/register", addUser);
       alert("Registration successful");
       navigate("/login");
     } catch (error) {
@@ -131,7 +138,9 @@ function Register() {
                       </div>
 
                       <div className="mb-4">
-                        <label className="form-label fw-bold">Repeat Password</label>
+                        <label className="form-label fw-bold">
+                          Repeat Password
+                        </label>
                         <input
                           type="password"
                           className="form-control"
@@ -155,7 +164,10 @@ function Register() {
                       </div>
 
                       <div className="d-flex justify-content-center">
-                        <button type="submit" className="btn btn-primary btn-lg">
+                        <button
+                          type="submit"
+                          className="btn btn-primary btn-lg"
+                        >
                           Register
                         </button>
                       </div>

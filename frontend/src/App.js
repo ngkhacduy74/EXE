@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
 import {
@@ -11,7 +11,7 @@ import {
 import AdminPage from "./Admin/AdminPage";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
-
+import OTP from "./Pages/OTP";
 const App = () => {
   const [message, setMessage] = useState("");
 
@@ -30,6 +30,7 @@ const App = () => {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/otp" element={<OTP />} />
         </Routes>
       </div>
     </Router>

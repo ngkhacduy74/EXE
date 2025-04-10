@@ -8,25 +8,24 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
- // Trong file Login.js, sửa hàm handleLogin:
-const handleLogin = async (e) => {
+  // Trong file Login.js, sửa hàm handleLogin:
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     try {
-      const response = await axios.post("http://localhost:8080/auth/login", {
+      const response = await axios.post("http://localhost:4000/auth/login", {
         email,
         password,
       });
-      const { token, user } = response.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      
-      if (user.role === "admin") { 
-        navigate("/admin");
-    } else {
-        navigate("/");
-    }
+      // const { token, user } = response.data;
+      // localStorage.setItem("token", token);
+      // localStorage.setItem("user", JSON.stringify(user));
+      if (response) {
+        navigate("/otp", { state: { email } });
+      }
+
+      // }
     } catch (error) {
       console.error("Login error:", error);
       alert(error.response?.data?.message || "Login failed, please try again");
