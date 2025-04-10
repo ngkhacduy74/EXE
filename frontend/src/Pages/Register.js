@@ -1,187 +1,218 @@
-import axios from "axios";
 import React, { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Input } from "antd";
 
 function Register() {
+  const [fullname, setFullname] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  const [gender, setGender] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [ava_img_url, setAvaImgUrl] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const navigate = useNavigate();
 
-  const [addUser, setAddUser] = useState({
-    fullname: "",
-    bio: "",
-    email: "",
-    password: "",
-    address: "",
-    phone: "",
-    roleId: "user",
-    avatar: "",
-  });
+  const handleUploadImage = async (file) => {
+    const formData = new FormData();
+    formData.append("img", file);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (name === "repeatPassword") {
-      setRepeatPassword(value);
-    } else if (type === "checkbox") {
-      setTermsAccepted(checked);
-    } else {
-      setAddUser({ ...addUser, [name]: value });
+    try {
+      const res = await axios.post(
+        "http://localhost:4000/file/upload-file",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      const imageUrl = res.data.path || res.data.secure_url || res.data.url;
+      return imageUrl;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw new Error("Upload ảnh thất bại");
     }
   };
 
-  const handleRegister = async (e) => {
+  const handleChangeFile = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone)) {
+      alert("Số điện thoại phải đúng 10 chữ số!");
+      return;
+    }
+
     if (!termsAccepted) {
-      alert("You must accept the terms and conditions.");
+      alert("Bạn phải đồng ý với điều khoản sử dụng!");
       return;
     }
 
-    if (
-      !addUser.fullname ||
-      !addUser.email ||
-      !addUser.password ||
-      !repeatPassword
-    ) {
-      alert("Please fill in all fields");
-      return;
-    }
-
-    if (addUser.password !== repeatPassword) {
-      alert("Passwords do not match");
+    if (password !== repeatPassword) {
+      alert("Mật khẩu không khớp!");
       return;
     }
 
     try {
-      // Check if the email already exists
-      const usersResponse = await axios.get("http://localhost:4000/auth/users");
-      const existingAccount = usersResponse.data.find(
-        (user) => user.email === addUser.email
-      );
-
-      if (existingAccount) {
-        alert("Email already exists");
-        return;
+      let imageUrl = "";
+      if (imageFile) {
+        imageUrl = await handleUploadImage(imageFile);
       }
 
-      // Register new user
-      await axios.post("http://localhost:4000/auth/register", addUser);
-      alert("Registration successful");
+      const user = {
+        fullname,
+        email,
+        phone,
+        address,
+        password,
+        gender,
+        ava_img_url: imageUrl,
+      };
+
+      await axios.post("http://localhost:4000/auth/register", user);
+
+      alert("Đăng ký thành công!");
       navigate("/login");
     } catch (error) {
-      console.error("Registration error:", error);
-      alert("An error occurred during registration.");
+      console.error(error);
+      alert("Có lỗi xảy ra khi đăng ký.");
     }
   };
 
   return (
-    <section className="vh-100" style={{ backgroundColor: "#eee" }}>
-      <div className="container h-100">
+    <section className="vh-100" style={{ backgroundColor: "#f4f5f7" }}>
+      <div className="container h-100 py-5">
         <div className="row d-flex justify-content-center align-items-center h-100">
-          <div className="col-lg-12 col-xl-11">
-            <div className="card text-black" style={{ borderRadius: "25px" }}>
+          <div className="col-lg-10">
+            <div className="card shadow" style={{ borderRadius: "15px" }}>
               <div className="card-body p-md-5">
-                <div className="row justify-content-center">
-                  <div className="col-md-10 col-lg-6 col-xl-5">
-                    <img
-                      onClick={() => navigate("/login")}
-                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/BackButton.svg/2048px-BackButton.svg.png"
-                      width="50px"
-                      alt="Back"
-                      style={{ cursor: "pointer", float: "left" }}
-                    />
-                    <p className="text-center h1 fw-bold mb-5 mt-4">Sign up</p>
-
-                    <form onSubmit={handleRegister}>
-                      <div className="mb-4">
-                        <label className="form-label fw-bold">Your Name</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="fullname"
-                          value={addUser.fullname}
-                          onChange={handleChange}
+                <h3 className="mb-4 text-center fw-bold">Tạo tài khoản mới</h3>
+                <form onSubmit={handleSubmit}>
+                  <div className="row">
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Họ và tên</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={fullname}
+                        onChange={(e) => setFullname(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Email</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Số điện thoại</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Địa chỉ</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Mật khẩu</label>
+                      <Input.Password
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Nhập lại mật khẩu</label>
+                      <Input.Password
+                        value={repeatPassword}
+                        onChange={(e) => setRepeatPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Giới tính</label>
+                      <select
+                        className="form-select"
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        required
+                      >
+                        <option value="">Chọn...</option>
+                        <option value="Male">Nam</option>
+                        <option value="Female">Nữ</option>
+                        <option value="Other">Khác</option>
+                      </select>
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <label className="form-label">Ảnh đại diện</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="form-control"
+                        onChange={handleChangeFile}
+                      />
+                      {imagePreview && (
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="mt-2"
+                          style={{
+                            maxWidth: "100%",
+                            height: "auto",
+                            borderRadius: "10px",
+                          }}
                         />
-                      </div>
+                      )}
+                    </div>
 
-                      <div className="mb-4">
-                        <label className="form-label fw-bold">Your Email</label>
-                        <input
-                          type="email"
-                          className="form-control"
-                          name="email"
-                          value={addUser.email}
-                          onChange={handleChange}
-                        />
-                      </div>
+                    <div className="form-check mb-3 ms-3">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={termsAccepted}
+                        onChange={() => setTermsAccepted(!termsAccepted)}
+                      />
+                      <label className="form-check-label">
+                        Tôi đồng ý với <a href="#">Điều khoản dịch vụ</a>
+                      </label>
+                    </div>
 
-                      <div className="mb-4">
-                        <label className="form-label fw-bold">Your Phone</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="phone"
-                          value={addUser.phone}
-                          onChange={handleChange}
-                        />
-                      </div>
-
-                      <div className="mb-4">
-                        <label className="form-label fw-bold">Password</label>
-                        <input
-                          type="password"
-                          className="form-control"
-                          name="password"
-                          value={addUser.password}
-                          onChange={handleChange}
-                        />
-                      </div>
-
-                      <div className="mb-4">
-                        <label className="form-label fw-bold">
-                          Repeat Password
-                        </label>
-                        <input
-                          type="password"
-                          className="form-control"
-                          name="repeatPassword"
-                          value={repeatPassword}
-                          onChange={handleChange}
-                        />
-                      </div>
-
-                      <div className="form-check mb-4">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          name="termsAccepted"
-                          checked={termsAccepted}
-                          onChange={handleChange}
-                        />
-                        <label className="form-check-label">
-                          I agree to the <a href="#">Terms of Service</a>
-                        </label>
-                      </div>
-
-                      <div className="d-flex justify-content-center">
-                        <button
-                          type="submit"
-                          className="btn btn-primary btn-lg"
-                        >
-                          Register
-                        </button>
-                      </div>
-                    </form>
+                    <div className="d-grid mt-3">
+                      <button type="submit" className="btn btn-primary btn-lg">
+                        Đăng ký
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center">
-                    <img
-                      src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/draw1.webp"
-                      className="img-fluid"
-                      alt="Sample"
-                    />
-                  </div>
-                </div>
+                </form>
               </div>
             </div>
           </div>

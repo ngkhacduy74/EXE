@@ -10,9 +10,10 @@ const userSchema = Joi.object({
     .pattern(/^\d{10}$/)
     .required(),
   address: Joi.string().optional(),
+  email: Joi.string().email().required(),
   password: Joi.string().min(8).max(30).required(),
   gender: Joi.string().valid("Male", "Female", "Other").optional(),
-  role: Joi.string().valid("User", "Admin").required(),
+  // role: Joi.string().valid("User", "Admin").required(),
   ava_img_url: Joi.string().optional(),
 });
 
