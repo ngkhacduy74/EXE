@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Row, Col } from "react-bootstrap";
-import { FaUserCircle, FaBell, FaHome } from "react-icons/fa";
+
 import { useNavigate } from "react-router-dom";
 import ErrorPage from "./ErrorPage";
 
