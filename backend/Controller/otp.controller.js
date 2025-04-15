@@ -10,6 +10,7 @@ function generateOTP() {
 
 async function sendOTP(email) {
   try {
+    console.log("object :>> ");
     const otp = generateOTP();
     const newOTP = new Otps({ email, otp });
     await newOTP.save();
@@ -29,17 +30,14 @@ async function sendOTP(email) {
 async function verifyOTP(req, res) {
   const { email, otp } = req.query;
   try {
-    console.log("otpasd", otp);
     console.log("otp12314asd", req.query);
     const existingOTP = await Otps.findOneAndDelete({ email, otp });
 
     if (existingOTP) {
-      // OTP is valid
       res
         .status(200)
         .json({ success: true, message: "OTP verification successful" });
     } else {
-      // OTP is invalid
       res.status(400).json({ success: false, error: "Invalid OTP" });
     }
   } catch (error) {

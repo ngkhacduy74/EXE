@@ -18,6 +18,9 @@ function Login() {
         email,
         password,
       });
+      console.log("123y", response);
+      console.log("email123", email);
+
       // const { token, user } = response.data;
       // localStorage.setItem("token", token);
       // localStorage.setItem("user", JSON.stringify(user));

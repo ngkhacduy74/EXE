@@ -5,6 +5,15 @@ const { v1 } = require("uuid");
 const User = require("../Model/user.model");
 const { sendOTP, verifyOTP } = require("./otp.controller");
 
+async function getUserByEmail(params) {
+  console.log("áouida8dqw", params);
+  const user = await User.findOne({ email: params.email });
+  if (!user) {
+    return { success: false };
+  }
+  return { success: true, user: user };
+}
+
 async function Login(params) {
   const user = await User.findOne({ email: params.email });
   console.log("account", params.email);
@@ -16,24 +25,14 @@ async function Login(params) {
     throw new Error("Mật khẩu không chính xác");
   }
   const sendotp = await sendOTP(params.email);
-  if (sendOTP) {
-    // const token = jwt.sign(
-    //   {
-    //     fullname: user.fullname,
-    //     email: user.email,
-    //     role: user.role,
-    //   },
-    //   process.env.JWT_SECRET_KEY,
-    //   {
-    //     expiresIn: "30m",
-    //   }
-    // );
-    // return { success: true, message: "Đăng nhập thành công", token };
+  console.log("kajdkad", sendotp);
+  if (sendotp) {
+    console.log("OTP send successful");
   } else {
     throw new Error("không thể gửi OTP. Vui lòng thử lại sau.");
   }
   // cần xác minh được otp đã rồi mới đẩy token lên web
-  return { success: true };
+  return { success: true, email: params.email };
 }
 
 async function Register(params) {
@@ -71,4 +70,5 @@ async function getAllUser() {
 module.exports = {
   Login,
   Register,
+  getUserByEmail,
 };

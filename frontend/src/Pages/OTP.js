@@ -13,6 +13,7 @@ import {
 } from "antd";
 import { createStyles } from "antd-style";
 import verifyOTPApi from "../Services/api.service";
+import getUserByEmail from "../Services/auth.service";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
   linearGradientButton: css`
@@ -54,21 +55,29 @@ const App = () => {
     setLoading(true);
     try {
       const res = await verifyOTPApi(email, otp);
-      notification.success({
-        message: "OTP Successfully",
-        description: "Đăng nhập thành công!",
-      });
 
-      const { token, user } = res.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      navigate(user.role === "admin" ? "/admin" : "/");
+      if (res && res.data.success) {
+        notification.success({
+          message: "OTP Successfully",
+          description: "Đăng nhập thành công!",
+        });
+
+        const userRes = await getUserByEmail(email);
+
+        localStorage.setItem("user", JSON.stringify(userRes.data.user));
+        navigate(userRes.data.user.role === "Admin" ? "/admin" : "/");
+      } else {
+        notification.error({
+          message: "OTP Failed",
+          description: res.data.error || "Xác thực không thành công.",
+        });
+      }
     } catch (err) {
       notification.error({
-        message: "OTP Failed",
-        description: "Xác thực không thành công. Vui lòng thử lại.",
+        message: "OTP Error",
+        description: "Lỗi hệ thống. Vui lòng thử lại sau.",
       });
-      console.error("OTP error:", err);
+      console.error("❌ OTP error:", err);
     } finally {
       setLoading(false);
     }

@@ -8,6 +8,6 @@ const verifyOTPApi = (email, otp) => {
     otp: otp,
   };
   console.log("akajsd", data);
-  return axios.get(URL_BACKEND, data);
+  return axios.get(URL_BACKEND, { params: data });
 };
 export default verifyOTPApi;
