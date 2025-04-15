@@ -9,6 +9,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import AdminPage from "./Admin/AdminPage";
+import DashBoard from "./Admin/Dashboard";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import OTP from "./Pages/OTP";
@@ -31,6 +32,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/otp" element={<OTP />} />
+          <Route path="/dashboard" element={<DashBoard />} />
         </Routes>
       </div>
     </Router>
