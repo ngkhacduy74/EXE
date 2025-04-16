@@ -1,0 +1,24 @@
+const Joi = require("joi");
+
+const postSchema = Joi.object({
+  id: Joi.string().required(),
+  category: Joi.string().required(),
+  image: Joi.array().items(Joi.string()).optional(),
+  video: Joi.array().items(Joi.string()).optional(),
+  status: Joi.string().valid("New", "SecondHand").required(),
+  title: Joi.string().required(),
+  user_position: Joi.string().valid("Newbie", "Professional").required(),
+  address: Joi.string().required(),
+  description: Joi.string().min(6).max(1500).required(),
+  seller: Joi.object({
+    fullname: Joi.string()
+      .pattern(/^[A-Za-zÀ-Ỹà-ỹ\s]+$/)
+      .min(5)
+      .max(30)
+      .required(),
+    phone: Joi.string()
+      .pattern(/^\d{10}$/)
+      .required(),
+    email: Joi.string().email().required(),
+  }).required(),
+});
