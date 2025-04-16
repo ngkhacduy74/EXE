@@ -1,7 +1,6 @@
 const Post = require("../Model/post.model");
-const { v1 } = require("uuid");
-const { error } = require("../Validator/user.validator");
-const createPost = async (req, res) => {
+
+const createPost = async (data) => {
   const {
     category,
     image,
@@ -12,27 +11,42 @@ const createPost = async (req, res) => {
     address,
     description,
     seller,
-  } = req.body;
-  const newPost = new Post({
-    id: v1(),
-    category: category,
-    image: image,
-    video: video,
-    status: status,
-    title: title,
-    user_position: user_position,
-    address: address,
-    description: description,
-    seller: seller,
-  });
-  if (!newPost) {
-    throw error("Chưa đăng được Post");
-  }
-  try {
-    await newPost.save();
-  } catch (error) {
-    return { success: false, message: "Đăng bài thất bại", newPost };
-  }
+    phone,
+    email,
+  } = data;
 
-  return { success: true, message: "Đăng bài thành công", newPost };
+  try {
+    const newPost = new Post({
+      id: v1(),
+      category,
+      image,
+      video,
+      status,
+      title,
+      user_position,
+      address,
+      description,
+      seller,
+      phone,
+      email,
+    });
+
+    await newPost.save();
+
+    return {
+      success: true,
+      message: "Đăng bài thành công",
+      post: newPost,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Đăng bài thất bại",
+      error: error.message,
+    };
+  }
 };
+const deletePost = async (params)=>{
+  const result = Post.findON
+}
+module.exports = { createPost };

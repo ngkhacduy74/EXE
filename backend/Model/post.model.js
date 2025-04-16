@@ -1,24 +1,33 @@
-const Joi = require("joi");
-
-const postSchema = Joi.object({
-  id: Joi.string().required(),
-  category: Joi.string().required(),
-  image: Joi.array().items(Joi.string()).optional(),
-  video: Joi.array().items(Joi.string()).optional(),
-  status: Joi.string().valid("New", "SecondHand").required(),
-  title: Joi.string().required(),
-  user_position: Joi.string().valid("Newbie", "Professional").required(),
-  address: Joi.string().required(),
-  description: Joi.string().min(6).max(1500).required(),
-  seller: Joi.object({
-    fullname: Joi.string()
-      .pattern(/^[A-Za-zÀ-Ỹà-ỹ\s]+$/)
-      .min(5)
-      .max(30)
-      .required(),
-    phone: Joi.string()
-      .pattern(/^\d{10}$/)
-      .required(),
-    email: Joi.string().email().required(),
-  }).required(),
+const mongoose = require("mongoose");
+const peopleSchema = new mongoose.Schema({
+  id: { type: String, require: true },
+  fullname: { type: String, require: true },
+  phone: { type: String, require: true },
+  email: { type: String, require: true },
 });
+const postSchema = new mongoose.Schema(
+  {
+    id: { type: String, require: true },
+    category: { type: String, require: true },
+    image: [{ type: String, require: true }],
+    video: [{ type: String, require: true }],
+    status: { type: String, require: true, enum: ["New", "SecondHand"] },
+    title: { type: String, require: true },
+    user_position: {
+      type: String,
+      require: true,
+      enum: ["Newbie", "Professional"],
+    },
+    address: { type: String, require: true },
+    description: { type: String, require: true },
+    seller: { type: peopleSchema, require: true },
+  },
+  {
+    timestamps: false,
+    versionKey: false,
+  }
+);
+
+const Post = mongoose.model("Post", postSchema);
+
+module.exports = Post;

@@ -11,7 +11,6 @@ const OtpSchema = new mongoose.Schema(
   }
 );
 
-// Create a Mongoose model
 const Otps = mongoose.model("Otps", OtpSchema);
 
 module.exports = Otps;
