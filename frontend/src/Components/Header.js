@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Dropdown, Nav, Navbar } from 'react-bootstrap';
-
+import { FaCog, FaSignInAlt, FaSignOutAlt, FaTachometerAlt, FaUserAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import NewPost from '../pages/NewPost';
 
