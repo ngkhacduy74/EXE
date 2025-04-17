@@ -30,7 +30,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/admin" element={<AdminPage />} />
-          <Route path="/admin/manaAccount" element={<ManaAccount/>}></Route>
+          <Route path="/manaAccount" element={<ManaAccount />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/otp" element={<OTP />} />
