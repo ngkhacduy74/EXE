@@ -4,7 +4,6 @@ const { authMiddleware } = require("../Middleware/index");
 const {
   Login,
   Register,
-  getAllUser,
   getUserByEmail,
 } = require("../Controller/auth.controller");
 
@@ -32,7 +31,4 @@ router.post("/register", authMiddleware.validateUser, async (req, res) => {
   res.status(200).json(result);
 });
 
-router.get("/getUser", authMiddleware.verifyAdmin, async (req, res) => {
-  const result = await getAllUser();
-});
 module.exports = router;

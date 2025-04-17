@@ -5,10 +5,12 @@ const fileRouter = require("./file.router");
 const otpRouter = require("./otp.router");
 const productRouter = require("./product.router");
 const postRouter = require("./post.router");
+const userRouter = require("./user.router");
 module.exports = (app) => {
   app.use("/auth", authRouter);
   app.use("/file", fileRouter);
   app.use("/otp", otpRouter);
   app.use("/product", productRouter);
   app.use("/post", postRouter);
+  app.use("/user", userRouter);
 };

@@ -23,7 +23,7 @@ const postSchema = new mongoose.Schema(
     seller: { type: peopleSchema, require: true },
   },
   {
-    timestamps: false,
+    timestamps: true,
     versionKey: false,
   }
 );

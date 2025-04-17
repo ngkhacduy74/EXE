@@ -62,11 +62,7 @@ async function Register(params) {
 
   return { success: true, message: "Đăng kí thành công", newUser };
 }
-async function getAllUser() {
-  //thiếu phân trang
-  const getUser = await User.find();
-  return getUser;
-}
+
 module.exports = {
   Login,
   Register,
