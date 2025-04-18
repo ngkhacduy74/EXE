@@ -13,7 +13,7 @@ import {
 } from "antd";
 import { createStyles } from "antd-style";
 import verifyOTPApi from "../Services/api.service";
-import getUserByEmail from "../Services/auth.service";
+import getUserByEmail from "../Services/user.service";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
   linearGradientButton: css`
