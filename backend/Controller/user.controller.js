@@ -2,7 +2,7 @@ const User = require("../Model/user.model");
 
 const getAllUser = async () => {
   const pipeline = [];
-  pipeline.push({ $match: {} });
+  // pipeline.push({ $match: {} });
   pipeline.push({
     $project: {
       _id: 0,
@@ -24,6 +24,7 @@ const getAllUser = async () => {
   pipeline.push({ $skip: skip });
   pipeline.push({ $limit: limit });
   const data = await User.aggregate(pipeline);
+  console.log("jasdads", data);
   if (!data) {
     return {
       success: false,

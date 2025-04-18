@@ -1,15 +1,24 @@
 const express = require("express");
 const { getAllUser, getUserById } = require("../Controller/user.controller");
+const { getUserByEmail } = require("../Controller/auth.controller");
 const router = express.Router();
-router.get("/:id", async (req, res) => {
-  const result = await getUserById(req.params.id);
+
+router.get("/allUser", async (req, res) => {
+  const result = await getAllUser();
   if (result.success === false) {
     res.status(500).json(result);
   }
   res.status(200).json(result);
 });
-router.get("/allUser", async (req, res) => {
-  const result = await getAllUser();
+router.get("/getUserByEmail", async (req, res) => {
+  const result = await getUserByEmail(req.query);
+  if (result.success === false) {
+    res.status(500).json(result);
+  }
+  res.status(200).json(result);
+});
+router.get("/:id", async (req, res) => {
+  const result = await getUserById(req.params.id);
   if (result.success === false) {
     res.status(500).json(result);
   }
