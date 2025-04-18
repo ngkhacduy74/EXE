@@ -12,6 +12,8 @@ const getAllUser = async () => {
       phone: 1,
       address: 1,
       gender: 1,
+      role: 1,
+      is_active: 1,
       ava_img_url: 1,
     },
   });

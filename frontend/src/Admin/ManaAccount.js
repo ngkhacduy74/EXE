@@ -8,25 +8,24 @@ import ErrorPage from "../Components/ErrorPage";
 
 function ManaAccount() {
   const navigate = useNavigate();
-  const [users, setUsers] = useState([]); // Initialize as empty array
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch user data using Axios
+  // Fetch user data
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get("http://localhost:4000/user/allUser");
-        console.log("API Response:", response.data); // Debug: Log the response
+        console.log("API Response:", response.data);
 
-        // Normalize response to ensure it's an array
         let userData = [];
-        if (Array.isArray(response.data)) {
-          userData = response.data;
-        } else if (response.data && Array.isArray(response.data.allUser)) {
-          userData = response.data.allUser; // Handle nested array
-        } else if (response.data) {
-          userData = [response.data]; // Handle single object
+        if (response.data.success && Array.isArray(response.data.data)) {
+          userData = response.data.data;
+        } else if (response.data.success && response.data.data) {
+          userData = [response.data.data];
+        } else {
+          console.warn("Unexpected response structure:", response.data);
         }
 
         setUsers(userData);
@@ -40,26 +39,16 @@ function ManaAccount() {
     fetchUsers();
   }, []);
 
-  // Handle activate/deactivate user
-  const handleToggleActive = async (userId, currentStatus) => {
-    const newStatus = currentStatus === "true" ? "false" : "true";
-    try {
-      await axios.patch(`http://localhost:4000/user/allUser/${userId}`, {
-        is_active: newStatus,
-      });
-      setUsers(
-        users.map((user) =>
-          user.id === userId ? { ...user, is_active: newStatus } : user
-        )
-      );
-    } catch (err) {
-      setError("Failed to update user status. Please try again.");
-    }
-  };
-
   // Handle view details
   const handleViewDetails = (userId) => {
+    console.log("Navigating to user:", userId); // Debug
     navigate(`/user/${userId}`);
+  };
+
+  // Handle activate/deactivate (ignored for now)
+  const handleToggleActive = async (userId, currentStatus) => {
+    // Placeholder: To be fixed later
+    console.log("Toggle active for user:", userId, "Status:", currentStatus);
   };
 
   if (loading) {
