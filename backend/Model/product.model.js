@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const Other_features = new mongoose.Schema({
   id: { type: String, require: true },
@@ -17,6 +17,7 @@ const ProductSchema = new mongoose.Schema(
     description: { type: String, require: true },
     size: { type: String, require: true },
     weight: { type: Number, require: true },
+    status: { type: String, require: true, enum: ["New", "SecondHand"] },
     warranty_period: { type: Number, require: true },
     capacity: { type: Number, require: true },
     voltage: { type: String, require: true },
@@ -30,4 +31,4 @@ const ProductSchema = new mongoose.Schema(
 
 const Product = mongoose.model("Product", ProductSchema);
 
-export default Product;
+module.exports = Product;

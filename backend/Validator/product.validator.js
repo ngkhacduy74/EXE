@@ -1,4 +1,5 @@
 const Joi = require("joi");
+
 const ProductSchema = Joi.object({
   id: Joi.string().required(),
 
@@ -23,7 +24,6 @@ const ProductSchema = Joi.object({
   name: Joi.string().required(),
   brand: Joi.string().required(),
 
-  // Giá tiền phải là số nguyên, >= 1000
   price: Joi.number().integer().min(1000).required().messages({
     "number.base": "Giá tiền phải là số",
     "number.integer": "Giá tiền phải là số nguyên",
@@ -56,5 +56,21 @@ const ProductSchema = Joi.object({
     .messages({
       "string.pattern.base": "Điện áp không hợp lệ (ví dụ: 220V)",
     }),
+
+  status: Joi.string().valid("New", "SecondHand").required().messages({
+    "any.only": "Trạng thái chỉ có thể là 'New' hoặc 'SecondHand'",
+    "any.required": "Vui lòng nhập trạng thái sản phẩm",
+  }),
+
+  features: Joi.array()
+    .items(
+      Joi.object({
+        id: Joi.string().required(),
+        title: Joi.string().required(),
+        description: Joi.string().required(),
+      })
+    )
+    .optional(),
 });
+
 module.exports = ProductSchema;

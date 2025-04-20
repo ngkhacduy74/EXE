@@ -1,6 +1,7 @@
 const Otps = require("../Model/otp.model");
 const randomstring = require("randomstring");
 const sendEmail = require("../Config/sendEmail");
+const { v1 } = require("uuid");
 function generateOTP() {
   return randomstring.generate({
     length: 6,

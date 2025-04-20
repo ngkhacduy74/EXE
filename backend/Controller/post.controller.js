@@ -1,5 +1,5 @@
 const Post = require("../Model/post.model");
-
+const { v1 } = require("uuid");
 const createPost = async (data) => {
   const {
     category,
@@ -46,7 +46,5 @@ const createPost = async (data) => {
     };
   }
 };
-const deletePost = async (params)=>{
-  const result = Post.findON
-}
+const deletePost = async (params) => {};
 module.exports = { createPost };
