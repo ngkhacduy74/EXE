@@ -21,6 +21,11 @@ const postSchema = new mongoose.Schema(
     address: { type: String, require: true },
     description: { type: String, require: true },
     seller: { type: peopleSchema, require: true },
+    condition: {
+      type: String,
+      require: false,
+      enum: ["Pending", "Active", "Reject"],
+    },
   },
   {
     timestamps: true,
