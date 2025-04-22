@@ -1,7 +1,7 @@
 const Joi = require("joi");
 
 const postSchema = Joi.object({
-  id: Joi.string().required(),
+  id: Joi.string().optional(),
   category: Joi.string().required(),
   image: Joi.array().items(Joi.string()).optional(),
   video: Joi.array().items(Joi.string()).optional(),

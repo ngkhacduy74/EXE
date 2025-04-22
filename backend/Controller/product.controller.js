@@ -48,6 +48,20 @@ const createProduct = async (data) => {
     };
   }
 };
+const getProductById = async (id) => {
+  const product = await Product.findOne({ id: id });
+  if (!product) {
+    return {
+      success: false,
+      message: "Not found product",
+      description: "func getProductById",
+    };
+  }
+  return {
+    success: true,
+    product,
+  };
+};
 const updateProduct = async () => {};
 const deleteProduct = async (idProduct) => {
   const exist = await Product.findOne({ id: idProduct });
@@ -84,4 +98,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   loadProductStatus,
+  getProductById,
 };
