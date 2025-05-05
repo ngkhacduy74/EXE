@@ -6,6 +6,7 @@ const {
   updateProduct,
   deleteProduct,
   loadProductStatus,
+  loadAllProduct,
 } = require("../Controller/product.controller");
 router.post(
   "/createProduct",
@@ -13,7 +14,7 @@ router.post(
   async (req, res) => {
     const result = await createProduct(req.body);
     if (result.success === false) {
-      res.status(500).json(result);
+      return res.status(500).json(result);
     }
     res.status(200).json(result);
   }
@@ -21,7 +22,7 @@ router.post(
 router.get("/:id", async (req, res) => {
   const result = await updateProduct(req.params.id);
   if (result.success === false) {
-    res.status(500).json(result);
+    return res.status(500).json(result);
   }
   res.status(200).json(result);
 });
@@ -37,11 +38,17 @@ router.get("/status/:status", async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
-
+router.get("/", async (req, res) => {
+  const result = await loadAllProduct();
+  if (result.success === false) {
+    return res.status(500).json(result);
+  }
+  res.status(200).json(result);
+});
 router.delete("/:id", async (req, res) => {
   const result = await deleteProduct(req.params.id);
   if (result.success === false) {
-    res.status(500).json(result);
+    return res.status(500).json(result);
   }
   res.status(200).json(result);
 });

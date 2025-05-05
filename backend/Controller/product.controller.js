@@ -1,6 +1,7 @@
 const Product = require("../Model/product.model");
 const mongoose = require("mongoose");
 const { v1 } = require("uuid");
+
 const createProduct = async (data) => {
   const {
     image,
@@ -93,10 +94,26 @@ const loadProductStatus = async (status) => {
   const listProduct = Product.aggregate(pipeline);
   return listProduct;
 };
+const loadAllProduct = async () => {
+  const pipeline = [];
+  pipeline.push({ $match: {} });
+  pipeline.push({ $sort: { createdAt: -1 } });
+  const product = Product.aggregate(pipeline);
+  if (!product) {
+    return {
+      success: false,
+      data: null,
+      message: "Not found Product",
+      description: "func loadAllProduct",
+    };
+  }
+  return { success: true, data: product };
+};
 module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
   loadProductStatus,
   getProductById,
+  loadAllProduct,
 };

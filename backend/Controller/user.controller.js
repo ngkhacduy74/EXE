@@ -46,5 +46,33 @@ const getUserById = async (idUser) => {
   }
   return { success: true, user };
 };
-
-module.exports = { getAllUser, getUserById };
+const updateUser = async (params) => {
+  const { id, fullname, phone, email, address, gender, ava_img_url } =
+    params.body;
+  try {
+    const updateUser = await User.findByIdAndUpdate(
+      { id: id },
+      { fullname, phone, email, address, gender, ava_img_url },
+      { new: true }
+    );
+    if (!updateUser) {
+      return {
+        success: false,
+        message: "User not found",
+        description: "func updateUser",
+      };
+    }
+    return {
+      success: true,
+      message: "Update user successfully",
+      data: updateUser,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: "Error updating user",
+      error: err.message,
+    };
+  }
+};
+module.exports = { getAllUser, getUserById, updateUser };
