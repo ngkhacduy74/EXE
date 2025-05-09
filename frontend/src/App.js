@@ -13,6 +13,7 @@ import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import OTP from "./Pages/OTP";
 import ManaAccount from "./Admin/ManaAccount";
+import UserDetails from "./Admin/UserDetails";
 
 const App = () => {
   const [message, setMessage] = useState("");
@@ -29,11 +30,14 @@ const App = () => {
       <div>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/manaAccount" element={<ManaAccount />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/otp" element={<OTP />} />
+
+          {/* UI ADMIN */}
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/manaAccount" element={<ManaAccount />} />
+         <Route path="/user/:userId" element={<UserDetails />} />
         </Routes>
       </div>
     </Router>
