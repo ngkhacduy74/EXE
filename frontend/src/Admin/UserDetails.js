@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Container, Row, Col, Card } from "react-bootstrap";
 import axios from "axios";
 import Sidebar from "../Components/Sidebar";
-import './styles/UserDetails.css';
+import "./styles/UserDetails.css";
 
 export default function UserDetails() {
   const { userId } = useParams();
@@ -13,7 +13,9 @@ export default function UserDetails() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/user/${userId}`);
+        const response = await axios.get(
+          `http://localhost:4000/user/${userId}`
+        );
         setUser(response.data);
       } catch (err) {
         console.error(err);
@@ -26,7 +28,7 @@ export default function UserDetails() {
 
   if (error) return <p>{error}</p>;
   if (!user) return <p>Loading…</p>;
-
+  console.log("8iuasd", user.user);
   return (
     <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
       <Row>
@@ -47,16 +49,21 @@ export default function UserDetails() {
               <div className="row">
                 <div className="col-md-4">
                   <div className="profile-img">
-                    <img src="https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg" alt="Profile" />
+                    <img
+                      src="https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg"
+                      alt="Profile"
+                    />
                     <div className="file btn btn-lg btn-primary">
                       Change Photo
                       <input type="file" name="file" />
                     </div>
                   </div>
                 </div>
+
                 <div className="col-md-6">
                   <div className="profile-head">
-                    <h5>{user.fullname || "Name here"}</h5>
+                    <h5>{user.user[0].fullname || "Name here"}</h5>
+
                     <ul className="nav nav-tabs" id="myTab" role="tablist">
                       <li className="nav-item">
                         <a
@@ -131,7 +138,7 @@ export default function UserDetails() {
                           <label>Full Name</label>
                         </div>
                         <div className="col-md-6">
-                          <p>{user.fullname || "On fix :("}</p>
+                          <p>{user.user[0].fullname || "On fix :("}</p>
                         </div>
                       </div>
                       <div className="row">
@@ -139,7 +146,7 @@ export default function UserDetails() {
                           <label>Phone Number</label>
                         </div>
                         <div className="col-md-6">
-                          <p>{user.phone || "Dont have XD"}</p>
+                          <p>{user.user[0].phone || "Dont have XD"}</p>
                         </div>
                       </div>
                       <div className="row">
@@ -147,7 +154,7 @@ export default function UserDetails() {
                           <label>Address</label>
                         </div>
                         <div className="col-md-6">
-                          <p>{user.address || "Fix Yea"}</p>
+                          <p>{user.user[0].address || "Fix Yea"}</p>
                         </div>
                       </div>
                       <div className="row">
@@ -155,7 +162,7 @@ export default function UserDetails() {
                           <label>Phone</label>
                         </div>
                         <div className="col-md-6">
-                          <p>{user.phone || "123 456 7890"}</p>
+                          <p>{user.user[0].phone || "123 456 7890"}</p>
                         </div>
                       </div>
                       <div className="row">
