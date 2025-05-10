@@ -33,9 +33,9 @@ function Sidebar() {
                 </Nav.Link>
                 <Nav.Link
                     className="text-white d-flex align-items-center"
-                    onClick={() => navigate('/manaCategory')}
+                    onClick={() => navigate('/manaProduct')}
                 >
-                    <FaLayerGroup className="me-2" /> Manage Category
+                    <FaLayerGroup className="me-2" /> Manage Product
                 </Nav.Link>
                 <Nav.Link
                     className="text-white d-flex align-items-center"

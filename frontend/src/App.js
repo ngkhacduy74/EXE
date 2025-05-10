@@ -14,6 +14,7 @@ import Register from "./Pages/Register";
 import OTP from "./Pages/OTP";
 import ManaAccount from "./Admin/ManaAccount";
 import UserDetails from "./Admin/UserDetails";
+import ManaProduct from "./Admin/ManaProduct";
 
 const App = () => {
   const [message, setMessage] = useState("");
@@ -38,6 +39,8 @@ const App = () => {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/manaAccount" element={<ManaAccount />} />
          <Route path="/user/:userId" element={<UserDetails />} />
+          <Route path="/user/:userId" element={<UserDetails />} />
+          <Route path="/manaProduct" element={<ManaProduct />} />
         </Routes>
       </div>
     </Router>
