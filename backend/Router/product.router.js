@@ -19,8 +19,9 @@ router.post(
     res.status(200).json(result);
   }
 );
-router.get("/:id", async (req, res) => {
-  const result = await updateProduct(req.params.id);
+router.post("/update/:id", async (req, res) => {
+  const data = req.body;
+  const result = await updateProduct(req.params.id, data);
   if (result.success === false) {
     return res.status(500).json(result);
   }

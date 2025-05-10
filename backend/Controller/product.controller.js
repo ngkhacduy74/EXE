@@ -63,7 +63,31 @@ const getProductById = async (id) => {
     product,
   };
 };
-const updateProduct = async () => {};
+const updateProduct = async (id, data) => {
+  console.log("iuq2oeiuq", id, data);
+  const product = await Product.findOneAndUpdate(
+    { id: id },
+    {
+      $set: data,
+    },
+    {
+      new: true,
+    }
+  );
+  console.log("81923qwe", product);
+  if (!product) {
+    return {
+      success: false,
+      message: "Can not update Product",
+      description: "func updateProduct",
+    };
+  }
+  return {
+    success: true,
+    message: "Update Product successful",
+    data: product,
+  };
+};
 const deleteProduct = async (idProduct) => {
   const exist = await Product.findOne({ id: idProduct });
   if (!exist) {
@@ -98,7 +122,7 @@ const loadAllProduct = async () => {
   const pipeline = [];
   pipeline.push({ $match: {} });
   pipeline.push({ $sort: { createdAt: -1 } });
-  const product = Product.aggregate(pipeline);
+  const product = await Product.aggregate(pipeline);
   if (!product) {
     return {
       success: false,
