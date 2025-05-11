@@ -64,7 +64,6 @@ const getProductById = async (id) => {
   };
 };
 const updateProduct = async (id, data) => {
-  console.log("iuq2oeiuq", id, data);
   const product = await Product.findOneAndUpdate(
     { id: id },
     {
@@ -74,7 +73,6 @@ const updateProduct = async (id, data) => {
       new: true,
     }
   );
-  console.log("81923qwe", product);
   if (!product) {
     return {
       success: false,

@@ -7,6 +7,7 @@ const {
   deletePost,
   changePostCondition,
   getPostByUserId,
+  loadAllPost,
 } = require("../Controller/post.controller");
 const { getUserById } = require("../Controller/user.controller");
 
@@ -70,6 +71,13 @@ router.put("/update-post/:id", async (req, res) => {
 });
 router.delete("/deletePost/:id", async (req, res) => {
   const result = await deletePost(req.params.id);
+  if (result.success === false) {
+    return res.status(500).json(result);
+  }
+  res.status(200).json(result);
+});
+router.get("/", async (req, res) => {
+  const result = await loadAllPost();
   if (result.success === false) {
     return res.status(500).json(result);
   }

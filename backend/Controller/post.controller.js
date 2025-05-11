@@ -47,6 +47,22 @@ const createPost = async (data) => {
     };
   }
 };
+
+const loadAllPost = async () => {
+  const post = await Post.find();
+  if (!post) {
+    return {
+      success: false,
+      message: "load all post error",
+      description: "func loadAllPost",
+    };
+  }
+  return {
+    success: true,
+    message: "load all post successfull",
+    data: post,
+  };
+};
 const deletePost = async (id) => {
   const delete_post = await Post.findOneAndDelete(id);
   if (!delete_post) {
@@ -143,4 +159,5 @@ module.exports = {
   deletePost,
   changePostCondition,
   getPostByUserId,
+  loadAllPost,
 };
