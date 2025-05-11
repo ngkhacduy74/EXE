@@ -3,6 +3,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import './styles/style.css'; // Adjust path if needed
 import './styles/vendor.css'; // Adjust path if needed
 import CategoryCarousel from '../Components/CategoryCarousel';
+import BrandCarousel from '../Components/BrandCarousel';
 
 const Home = () => {
   const handleSearchSubmit = (e) => {
@@ -258,7 +259,12 @@ const Home = () => {
           </div>
           <div className="container-fluid">
             <div className="row py-3">
-              <div className="d-flex justify-content-sm-between align-items-center">
+              <div
+                className="d-flex justify-content-sm-between align-items-center"
+                style={{ marginLeft: '200px' }}
+              >
+
+
                 <nav className="main-menu d-flex navbar navbar-expand-lg">
                   <button
                     className="navbar-toggler"
@@ -559,7 +565,7 @@ const Home = () => {
         </section>
 
         <CategoryCarousel />
-
+        <BrandCarousel />
 
 
 
