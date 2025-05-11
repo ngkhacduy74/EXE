@@ -4,6 +4,7 @@ import './styles/style.css'; // Adjust path if needed
 import './styles/vendor.css'; // Adjust path if needed
 import CategoryCarousel from '../Components/CategoryCarousel';
 import BrandCarousel from '../Components/BrandCarousel';
+import ProductsCarousel from '../Components/ProductCarousel';
 
 const Home = () => {
   const handleSearchSubmit = (e) => {
@@ -566,7 +567,7 @@ const Home = () => {
 
         <CategoryCarousel />
         <BrandCarousel />
-
+        <ProductsCarousel />
 
 
       </div>
