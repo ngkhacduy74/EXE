@@ -1,7 +1,6 @@
 const Post = require("../Model/post.model");
 const { v1 } = require("uuid");
-const { describe } = require("../Validator/user.validator");
-const createPost = async (data) => {
+const createPost = async (data, seller) => {
   const {
     category,
     image,
@@ -11,7 +10,6 @@ const createPost = async (data) => {
     user_position,
     address,
     description,
-    seller,
     phone,
     email,
   } = data;
@@ -30,6 +28,7 @@ const createPost = async (data) => {
       seller,
       phone,
       email,
+      condition: "Pending",
     });
 
     await newPost.save();
@@ -46,6 +45,22 @@ const createPost = async (data) => {
       error: error.message,
     };
   }
+};
+
+const loadAllPost = async () => {
+  const post = await Post.find();
+  if (!post) {
+    return {
+      success: false,
+      message: "load all post error",
+      description: "func loadAllPost",
+    };
+  }
+  return {
+    success: true,
+    message: "load all post successfull",
+    data: post,
+  };
 };
 const deletePost = async (id) => {
   const delete_post = await Post.findOneAndDelete(id);
@@ -86,5 +101,62 @@ const updatePost = async (params) => {
 
   return { success: true, data: updatePost };
 };
-
-module.exports = { createPost, updatePost, deletePost };
+const changePostCondition = async (condition, id) => {
+  try {
+    const change = await Post.findOneAndUpdate(
+      { id: id },
+      { condition: condition },
+      {
+        new: true,
+      }
+    );
+    if (!change) {
+      return {
+        success: false,
+        message: "Can't change the condition of this post",
+        description: "func changePostCondition",
+      };
+    }
+    return {
+      success: true,
+      message: "Change this post successfully",
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: "Change post unsuccessfully",
+      error: err.message,
+    };
+  }
+};
+const getPostByUserId = async (userId) => {
+  try {
+    const post = await Post.find({ "seller.id": userId });
+    if (!post) {
+      return {
+        success: false,
+        message: "Cant get post by user id",
+        description: "func getPostByUserId",
+      };
+    }
+    return {
+      success: true,
+      message: "Get post by user id success",
+      data: post,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: "Cant't get post",
+      error: err.message,
+    };
+  }
+};
+module.exports = {
+  createPost,
+  updatePost,
+  deletePost,
+  changePostCondition,
+  getPostByUserId,
+  loadAllPost,
+};

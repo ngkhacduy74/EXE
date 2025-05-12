@@ -1,6 +1,7 @@
 const Product = require("../Model/product.model");
 const mongoose = require("mongoose");
 const { v1 } = require("uuid");
+
 const createProduct = async (data) => {
   const {
     image,
@@ -62,7 +63,29 @@ const getProductById = async (id) => {
     product,
   };
 };
-const updateProduct = async () => {};
+const updateProduct = async (id, data) => {
+  const product = await Product.findOneAndUpdate(
+    { id: id },
+    {
+      $set: data,
+    },
+    {
+      new: true,
+    }
+  );
+  if (!product) {
+    return {
+      success: false,
+      message: "Can not update Product",
+      description: "func updateProduct",
+    };
+  }
+  return {
+    success: true,
+    message: "Update Product successful",
+    data: product,
+  };
+};
 const deleteProduct = async (idProduct) => {
   const exist = await Product.findOne({ id: idProduct });
   if (!exist) {
@@ -93,10 +116,26 @@ const loadProductStatus = async (status) => {
   const listProduct = Product.aggregate(pipeline);
   return listProduct;
 };
+const loadAllProduct = async () => {
+  const pipeline = [];
+  pipeline.push({ $match: {} });
+  pipeline.push({ $sort: { createdAt: -1 } });
+  const product = await Product.aggregate(pipeline);
+  if (!product) {
+    return {
+      success: false,
+      data: null,
+      message: "Not found Product",
+      description: "func loadAllProduct",
+    };
+  }
+  return { success: true, data: product };
+};
 module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
   loadProductStatus,
   getProductById,
+  loadAllProduct,
 };

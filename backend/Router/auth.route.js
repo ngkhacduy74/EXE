@@ -14,7 +14,7 @@ router.post("/login", async (req, res) => {
 router.post("/register", authMiddleware.validateUser, async (req, res) => {
   const result = await Register(req.body);
   if (result.success === false) {
-    res.status(500).json(result);
+    return res.status(500).json(result);
   }
   res.status(200).json(result);
 });

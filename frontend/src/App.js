@@ -10,9 +10,13 @@ import {
 } from "react-router-dom";
 import AdminPage from "./Admin/Dashboard";
 import Login from "./Pages/Login";
+import Home from "./Pages/Home";
 import Register from "./Pages/Register";
 import OTP from "./Pages/OTP";
 import ManaAccount from "./Admin/ManaAccount";
+import UserDetails from "./Admin/UserDetails";
+import ManaProduct from "./Admin/ManaProduct";
+import ProductDetails from "./Admin/ProductDetail";
 
 const App = () => {
   const [message, setMessage] = useState("");
@@ -28,12 +32,18 @@ const App = () => {
     <Router>
       <div>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/manaAccount" element={<ManaAccount />} />
+          <Route path='/' element={<Home/>}/>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/otp" element={<OTP />} />
+
+          {/* UI ADMIN */}
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/manaAccount" element={<ManaAccount />} />
+         <Route path="/user/:userId" element={<UserDetails />} />
+          <Route path="/user/:userId" element={<UserDetails />} />
+          <Route path="/manaProduct" element={<ManaProduct />} />
+          <Route path="/products/:productId" element={<ProductDetails />} />
         </Routes>
       </div>
     </Router>
