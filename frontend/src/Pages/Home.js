@@ -5,7 +5,9 @@ import './styles/vendor.css'; // Adjust path if needed
 import CategoryCarousel from '../Components/CategoryCarousel';
 import BrandCarousel from '../Components/BrandCarousel';
 import ProductsCarousel from '../Components/ProductCarousel';
-
+import BestSellingCarousel from '../Components/BestSellingCarousel';
+import BlogCarousel from '../Components/BlogCarousel';
+import RecommendTagCarousel from '../Components/RecommendTagCarousel';
 const Home = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -19,7 +21,7 @@ const Home = () => {
 
   return (
     <HelmetProvider>
-      <div>
+      <div style={{ overflowX: 'hidden' }}>
         <Helmet>
           <title>Vinsaky Shop</title>
           <meta charSet="utf-8" />
@@ -568,7 +570,10 @@ const Home = () => {
         <CategoryCarousel />
         <BrandCarousel />
         <ProductsCarousel />
-
+        <BestSellingCarousel/>
+        <BlogCarousel />
+<RecommendTagCarousel />
+        
 
       </div>
     </HelmetProvider>
