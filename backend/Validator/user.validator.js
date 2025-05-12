@@ -14,6 +14,7 @@ const userSchema = Joi.object({
   password: Joi.string().min(8).max(30).required(),
   gender: Joi.string().valid("Male", "Female", "Other").optional(),
   // role: Joi.string().valid("User", "Admin").required(),
+  license: Joi.string().optional(),
   ava_img_url: Joi.string().optional(),
 });
 

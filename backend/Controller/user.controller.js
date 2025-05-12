@@ -15,6 +15,7 @@ const getAllUser = async () => {
       role: 1,
       is_active: 1,
       ava_img_url: 1,
+      license: 1,
     },
   });
 

@@ -11,7 +11,6 @@ function generateOTP() {
 
 async function sendOTP(email) {
   try {
-    console.log("object :>> ");
     const otp = generateOTP();
     const newOTP = new Otps({ email, otp });
     await newOTP.save();
