@@ -20,6 +20,7 @@ async function Login(params) {
   if (!user) {
     throw new Error("Tài khoản không tồn tại!");
   }
+  console.log("alkjdasdj", params.password);
   const checkPassword = await bcrypt.compare(params.password, user.password);
   if (!checkPassword) {
     throw new Error("Mật khẩu không chính xác");
