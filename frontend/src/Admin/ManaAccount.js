@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Table, Button } from "react-bootstrap";
+import { Container, Row, Col, Table, Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "../Components/Sidebar";
@@ -9,8 +9,11 @@ import ErrorPage from "../Components/ErrorPage";
 function ManaAccount() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   // Fetch user data
   useEffect(() => {
@@ -29,6 +32,7 @@ function ManaAccount() {
         }
 
         setUsers(userData);
+        setFilteredUsers(userData);
         setLoading(false);
       } catch (err) {
         console.error("Fetch Error:", err);
@@ -39,16 +43,64 @@ function ManaAccount() {
     fetchUsers();
   }, []);
 
+  // Apply filters whenever searchTerm or statusFilter changes
+  useEffect(() => {
+    let result = users;
+
+    // Filter by search term
+    if (searchTerm) {
+      result = result.filter((user) =>
+        user.fullname?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by status
+    if (statusFilter !== "All") {
+      const isActive = statusFilter === "Active" ? "true" : "false";
+      result = result.filter((user) => user.is_active === isActive);
+    }
+
+    setFilteredUsers(result);
+  }, [searchTerm, statusFilter, users]);
+
+  // Handle search input change
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Handle status dropdown change
+  const handleStatusChange = (e) => {
+    setStatusFilter(e.target.value);
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("All");
+  };
+
   // Handle view details
   const handleViewDetails = (userId) => {
-    console.log("Navigating to user:", userId); // Debug
+    console.log("Navigating to user:", userId);
     navigate(`/user/${userId}`);
   };
 
-  // Handle activate/deactivate (ignored for now)
+  // Handle activate/deactivate
   const handleToggleActive = async (userId, currentStatus) => {
-    // Placeholder: To be fixed later
-    console.log("Toggle active for user:", userId, "Status:", currentStatus);
+    const newStatus = currentStatus === "true" ? "false" : "true";
+    try {
+      await axios.put(`http://localhost:4000/user/${userId}`, {
+        is_active: newStatus,
+      });
+      setUsers(
+        users.map((user) =>
+          user.id === userId ? { ...user, is_active: newStatus } : user
+        )
+      );
+    } catch (err) {
+      console.error("Toggle Status Error:", err);
+      setError("Failed to update user status.");
+    }
   };
 
   if (loading) {
@@ -77,7 +129,38 @@ function ManaAccount() {
         <Col style={{ marginLeft: "10px" }} className="p-4">
           <div id="manage-users" className="mb-5">
             <h3 className="mb-4">Manage Users</h3>
-            {users.length === 0 ? (
+
+            {/* Filter Controls */}
+            <Row className="mb-4">
+              <Col md={4}>
+                <Form.Group>
+                  <Form.Label>Search by Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter user name"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Label>Filter by Status</Form.Label>
+                  <Form.Select value={statusFilter} onChange={handleStatusChange}>
+                    <option value="All">All</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={2} className="d-flex align-items-end">
+                <Button variant="secondary" onClick={handleClearFilters}>
+                  Clear
+                </Button>
+              </Col>
+            </Row>
+
+            {filteredUsers.length === 0 ? (
               <p>No users found.</p>
             ) : (
               <Table
@@ -98,12 +181,12 @@ function ManaAccount() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user, index) => (
+                  {filteredUsers.map((user, index) => (
                     <tr key={user.id}>
                       <td>{index + 1}</td>
-                      <td>{user.fullname}</td>
-                      <td>{user.email}</td>
-                      <td>{user.role}</td>
+                      <td>{user.fullname || "N/A"}</td>
+                      <td>{user.email || "N/A"}</td>
+                      <td>{user.role || "N/A"}</td>
                       <td>{user.is_active === "true" ? "Active" : "Inactive"}</td>
                       <td>
                         <Button
