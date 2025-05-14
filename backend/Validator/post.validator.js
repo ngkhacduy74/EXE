@@ -10,7 +10,7 @@ const postSchema = Joi.object({
   user_position: Joi.string().valid("Newbie", "Professional").required(),
   address: Joi.string().required(),
   description: Joi.string().min(6).max(1500).required(),
-  seller: Joi.object().required(),
+  // seller: Joi.object().required(),
 });
 
 module.exports = postSchema;

@@ -1,6 +1,6 @@
 const Post = require("../Model/post.model");
 const { v1 } = require("uuid");
-const createPost = async (data) => {
+const createPost = async (data, seller) => {
   const {
     category,
     image,
@@ -10,7 +10,6 @@ const createPost = async (data) => {
     user_position,
     address,
     description,
-    seller,
     phone,
     email,
   } = data;

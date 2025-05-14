@@ -20,6 +20,7 @@ async function Login(params) {
   if (!user) {
     throw new Error("Tài khoản không tồn tại!");
   }
+  console.log("alkjdasdj", params.password);
   const checkPassword = await bcrypt.compare(params.password, user.password);
   if (!checkPassword) {
     throw new Error("Mật khẩu không chính xác");
@@ -53,6 +54,7 @@ async function Register(params) {
     role: "User",
     ava_img_url: params.ava_img_url,
     is_active: true,
+    license: true,
   });
   try {
     await newUser.save();

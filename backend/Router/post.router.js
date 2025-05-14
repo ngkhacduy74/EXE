@@ -1,4 +1,5 @@
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 const postMiddleware = require("../Middleware/index");
 const {
@@ -10,6 +11,7 @@ const {
   loadAllPost,
 } = require("../Controller/post.controller");
 const { getUserById } = require("../Controller/user.controller");
+const { token } = require("../Middleware/auth.middleware");
 
 router.get("/user-post", async (req, res) => {
   const result = await getPostByUserId(req.user.id);
@@ -28,7 +30,12 @@ router.post("/change-condition/:condition/:id", async (req, res) => {
   res.status(200).json(result);
 });
 router.post("/createPost", postMiddleware.postMiddleware, async (req, res) => {
-  const seller = await getUserById(req.user.id);
+  const authHeader = req.headers.authorization;
+
+  console.log("akjdaksd", authHeader);
+  const token = jwt.decode(authHeader.split(" ")[1]);
+  console.log("lkahsasd", token);
+  // const seller = await getUserById(token.user.id);
   const result = await createPost(req.body);
   if (result.success === false) {
     return res.status(500).json(result);
