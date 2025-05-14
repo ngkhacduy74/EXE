@@ -19,7 +19,7 @@ router.post(
     res.status(200).json(result);
   }
 );
-router.post("/update/:id", async (req, res) => {
+router.put("/update/:id", async (req, res) => {
   const data = req.body;
   const result = await updateProduct(req.params.id, data);
   if (result.success === false) {
