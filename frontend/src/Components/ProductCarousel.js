@@ -11,7 +11,7 @@ const ProductsCarousel = () => {
     carousels.forEach((carousel) => {
       new Swiper(carousel, {
         modules: [Navigation],
-        slidesPerView: 5,
+        slidesPerView: 10,
         spaceBetween: 30,
         speed: 500,
         navigation: {

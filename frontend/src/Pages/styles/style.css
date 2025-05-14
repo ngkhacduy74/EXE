@@ -244,8 +244,12 @@ h1,h2,h3,h4,h5,h6 {
   transition: background 0.3s ease-out;
 }
 .banner-ad .swiper-pagination .swiper-pagination-bullet.swiper-pagination-bullet-active{
-  background: #FFC43F;
+  background: #3facff;
 }
+
+
+
+
 .banner-ad .swiper-slide {
   min-height: 630px;
   display: flex;

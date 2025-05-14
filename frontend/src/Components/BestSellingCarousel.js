@@ -1,21 +1,92 @@
-
 import React, { useEffect, useState } from 'react';
 import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
+const ProductItem = ({ image, title, discount }) => {
+  const [quantity, setQuantity] = useState(1);
+
+  const handlePlus = () => setQuantity(q => q + 1);
+  const handleMinus = () => setQuantity(q => (q > 1 ? q - 1 : 1));
+
+  return (
+    <div className="swiper-slide product-item">
+      {discount && (
+        <span className="badge bg-success position-absolute m-3">
+          {discount}
+        </span>
+      )}
+      <a href="#" className="btn-wishlist">
+        <svg width="24" height="24">
+          <use href="#heart" />
+        </svg>
+      </a>
+      <figure>
+        <a href="/" title={title}>
+          <img src={image} className="tab-image" alt={title} />
+        </a>
+      </figure>
+      <h3>{title}</h3>
+      <span className="qty">1 Unit</span>
+      <span className="rating">
+        <svg width="24" height="24" className="text-primary">
+          <use href="#star-solid" />
+        </svg>{' '}
+        4.5
+      </span>
+      <span className="price">$18.00</span>
+       <div className="d-flex align-items-center justify-content-between">
+       <div className="input-group product-qty" >
+          <span className="input-group-btn">
+            <button
+              type="button"
+              className="quantity-left-minus btn btn-danger btn-number"
+              onClick={handleMinus}
+            >
+              <svg width="16" height="16">
+                <use href="#minus" />
+              </svg>
+            </button>
+          </span>
+          <input
+                                type="text"
+                                id="quantity"
+                                name="quantity"
+                                className="form-control input-number"
+                                value={quantity}
+                              />
+          
+          <span className="input-group-btn">
+            <button
+              type="button"
+              className="quantity-right-plus btn btn-success btn-number"
+              onClick={handlePlus}
+            >
+              <svg width="16" height="16">
+                <use href="#plus" />
+              </svg>
+            </button>
+          </span>
+        </div>
+        <a href="#" className="nav-link">
+          Add to Cart <iconify-icon icon="uil:shopping-cart" />
+        </a>
+      </div>
+    </div>
+  );
+};
+
 const BestSellingCarousel = () => {
   useEffect(() => {
-    // Initialize Swiper
     new Swiper('.products-carousel', {
       modules: [Navigation],
       slidesPerView: 5,
       spaceBetween: 30,
       speed: 500,
       navigation: {
-        nextEl: '.products-carousel-next',
-        prevEl: '.products-carousel-prev',
+        nextEl: '.category-carousel-next',
+        prevEl: '.category-carousel-prev',
       },
       breakpoints: {
         0: { slidesPerView: 1 },
@@ -26,78 +97,18 @@ const BestSellingCarousel = () => {
     });
   }, []);
 
-  const ProductItem = ({ image, title, discount }) => {
-    const [quantity, setQuantity] = useState(1);
-
-    const handlePlus = () => setQuantity(quantity + 1);
-    const handleMinus = () => quantity > 0 && setQuantity(quantity - 1);
-
-    return (
-      <div className="product-item swiper-slide">
-        {discount && (
-          <span className="badge bg-success position-absolute m-3">
-            {discount}
-          </span>
-        )}
-        <a href="#" className="btn-wishlist">
-          <svg width="24" height="24">
-            <use href="#heart" />
-          </svg>
-        </a>
-        <figure>
-          <a href="/" title="Product Title">
-            <img src={image} className="tab-image" alt="Product" />
-          </a>
-        </figure>
-        <h3>{title}</h3>
-        <span className="qty">1 Unit</span>
-        <span className="rating">
-          <svg width="24" height="24" className="text-primary">
-            <use href="#star-solid" />
-          </svg>{' '}
-          4.5
-        </span>
-        <span className="price">$18.00</span>
-        <div className="d-flex align-items-center justify-content-between">
-          <div className="input-group product-qty">
-            {/* Check later */}
-            <span className="input-group-btn">
-              <button
-                type="button"
-                className="quantity-left-minus btn btn-danger btn-number"
-                data-type="minus"
-              >
-                <svg width="16" height="16">
-                  <use href="#minus" />
-                </svg>
-              </button>
-            </span>
-            <input
-              type="text"
-              id="quantity"
-              name="quantity"
-              className="form-control input-number"
-              value="1"
-            />
-            <span className="input-group-btn">
-              <button
-                type="button"
-                className="quantity-right-plus btn btn-success btn-number"
-                data-type="plus"
-              >
-                <svg width="16" height="16">
-                  <use href="#plus" />
-                </svg>
-              </button>
-            </span>
-          </div>
-          <a href="#" className="nav-link">
-            Add to Cart <iconify-icon icon="uil:shopping-cart" />
-          </a>
-        </div>
-      </div>
-    );
-  };
+  const products = [
+    { image: '/images/thumb-tomatoes.png', title: 'Fresh Tomatoes', discount: '-15%' },
+    { image: '/images/thumb-tomatoketchup.png', title: 'Tomato Ketchup', discount: '-15%' },
+    { image: '/images/thumb-orange-juice.png', title: 'Orange Juice', discount: '-15%' },
+    { image: '/images/thumb-cucumber.png', title: 'Cucumber', discount: '-15%' },
+    { image: '/images/thumb-broccoli.png', title: 'Broccoli', discount: '-15%' },
+    { image: '/images/thumb-vegetable.png', title: 'Vegetable', discount: '-15%' },
+    { image: '/images/thumb-vegetable-juice.png', title: 'Vegetable Juice', discount: '-15%' },
+    { image: '/images/thumb-vegetables.png', title: 'Vegetables', discount: '-15%' },
+    { image: '/images/thumb-potato.png', title: 'Potato', discount: '-15%' },
+    { image: '/images/thumb-cabbage.png', title: 'Cabbage', discount: '-15%' },
+  ];
 
   return (
     <section className="py-5 overflow-hidden">
@@ -126,21 +137,9 @@ const BestSellingCarousel = () => {
           <div className="col-md-12">
             <div className="products-carousel swiper">
               <div className="swiper-wrapper">
-                <ProductItem
-                  image="/images/thumb-tomatoes.png"
-                  title="Fresh Tomatoes"
-                  discount="-15%"
-                />
-                <ProductItem
-                  image="/images/thumb-tomatoketchup.png"
-                  title="Tomato Ketchup"
-                  discount="-15%"
-                />
-                <ProductItem
-                  image="/images/thumb-bananas.png"
-                  title="Fresh Bananas"
-                  discount="-15%"
-                />
+                {products.map((product, index) => (
+                  <ProductItem key={index} {...product} />
+                ))}
               </div>
             </div>
           </div>

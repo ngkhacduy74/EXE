@@ -1,0 +1,46 @@
+role:
+-Admin (hỗ trợ bán hàng doanh nghiệp) - User - Seller (Bán hàng) - Manage (Quản lí bài viết - Quản lí người dùng)
+Login
+Đăng kí -> user
+Bán hàng thì hỏi mua gói người bán (không đăng đồ mới đc) *
+-> Thông qua admin (chờ duyệt 3 trạng thái Đang gửi, Chấp nhận, Từ chối) có thông báo
+(Doanh nghiệp sẽ đăng kí qua quản lí)
+
+Trang Home 
+Hiển thị sản phẩm bảo gồm
+Banner
+Giới thiệu
+Top 5 sản phẩm bán chạy
+Sản phẩm mới chính hãng
+Đồ cũ giá rẻ - Gần đây
+Tin tức (Hiển thị như thế nào theo sản phẩm lọc hay theo thông tin thông thường)
+
+Trang product
+Search product
+Filter theo giá
+Filter theo hãng
+Filter theo trạng thái (mới cũ)
+Filter đồng thời 
+
+Trang product detail
+Liên hệ người bán 
+
+Dữ liệu làm như thế nào
+(Post)
+idUser
+Tên sản phẩm
+Số điện thoại
+Số lượng
+Ngày đăng
+Trạng thái 
+Mô tả
+Hình ảnh
+status
+
+
+Duyệt post - Qua manage
+
+
+
+
+

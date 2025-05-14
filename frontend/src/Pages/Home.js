@@ -8,6 +8,7 @@ import ProductsCarousel from '../Components/ProductCarousel';
 import BestSellingCarousel from '../Components/BestSellingCarousel';
 import BlogCarousel from '../Components/BlogCarousel';
 import RecommendTagCarousel from '../Components/RecommendTagCarousel';
+import Footer from '../Components/Footer';
 const Home = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +22,7 @@ const Home = () => {
 
   return (
     <HelmetProvider>
-      <div style={{ overflowX: 'hidden' }}>
+      <div style={{ overflowX: 'hidden', paddingLeft: '10px', paddingRight: '10px' }}>
         <Helmet>
           <title>Vinsaky Shop</title>
           <meta charSet="utf-8" />
@@ -570,10 +571,11 @@ const Home = () => {
         <CategoryCarousel />
         <BrandCarousel />
         <ProductsCarousel />
-        <BestSellingCarousel/>
+        <BestSellingCarousel />
         <BlogCarousel />
-<RecommendTagCarousel />
-        
+        <RecommendTagCarousel />
+        <Footer />
+
 
       </div>
     </HelmetProvider>

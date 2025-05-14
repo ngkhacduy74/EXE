@@ -15,43 +15,44 @@ const ManageProduct = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/product/");
-        // Log the response for debugging
+        const response = await axios.get("http://localhost:4000/post/");
         console.log("API Response:", response.data);
 
-        // Extract the product array from response.data.data
+        // Extract the product array, assuming response.data.data is the array
         const productData = Array.isArray(response.data.data)
           ? response.data.data
+          : Array.isArray(response.data)
+          ? response.data
           : [];
-        
         setProducts(productData);
+        setLoading(false);
       } catch (err) {
-        console.error("Fetch Error:", err);
-        setError("Failed to fetch products. Please try again later.");
-        setProducts([]); // Ensure products remains an array
-      } finally {
+        console.error("Error fetching products:", err);
+        setError("Failed to load products. Please try again.");
         setLoading(false);
       }
     };
+
     fetchProducts();
   }, []);
 
   const handleViewDetails = (productId) => {
-    navigate(`/products/${productId}`);
+    navigate(`/post/${productId}`);
   };
 
   const handleToggleStatus = async (productId, currentStatus) => {
-    const newStatus = currentStatus === "New" ? "Discontinued" : "New"; // Adjust based on your API
     try {
-      await axios.put(`http://localhost:4000/product/${productId}`, {
+      const newStatus = currentStatus === "New" ? "Discontinued" : "New";
+      await axios.patch(`http://localhost:4000/post/${productId}`, {
         status: newStatus,
       });
       setProducts(
         products.map((product) =>
-          product.id === productId ? { ...product, status: newStatus } : product
+          product._id === productId ? { ...product, status: newStatus } : product
         )
       );
     } catch (err) {
+      console.error("Error updating status:", err);
       setError("Failed to update product status.");
     }
   };
@@ -95,40 +96,36 @@ const ManageProduct = () => {
                 <thead className="bg-primary text-white">
                   <tr>
                     <th>#</th>
-                    <th>Name</th>
-                    <th>Brand</th>
-                    <th>Price</th>
-                    <th>Capacity</th>
+                    <th>Title</th>
+                    <th>Category</th>
                     <th>Status</th>
+                    <th>Condition</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {products.map((product, index) => (
-                    <tr key={product.id}>
+                    <tr key={product._id}>
                       <td>{index + 1}</td>
-                      <td>{product.name || "N/A"}</td>
-                      <td>{product.brand || "N/A"}</td>
-                      <td>
-                        {product.price
-                          ? `${parseFloat(product.price).toLocaleString("vi-VN")} VND`
-                          : "N/A"}
-                      </td>
-                      <td>{product.capacity ? `${product.capacity} kg` : "N/A"}</td>
+                      <td>{product.title || "N/A"}</td>
+                      <td>{product.category || "N/A"}</td>
                       <td>{product.status || "N/A"}</td>
+                      <td>{product.condition || "N/A"}</td>
                       <td>
                         <Button
                           variant="info"
                           size="sm"
                           className="me-2"
-                          onClick={() => handleViewDetails(product.id)}
+                          onClick={() => handleViewDetails(product._id)}
                         >
                           Details
                         </Button>
                         <Button
                           variant={product.status === "New" ? "danger" : "success"}
                           size="sm"
-                          onClick={() => handleToggleStatus(product.id, product.status)}
+                          onClick={() =>
+                            handleToggleStatus(product._id, product.status)
+                          }
                         >
                           {product.status === "New" ? "Discontinue" : "Set New"}
                         </Button>
@@ -145,4 +142,4 @@ const ManageProduct = () => {
   );
 };
 
-export default ManagePost;
+export default ManageProduct;
