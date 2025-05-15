@@ -33,9 +33,10 @@ router.post("/createPost", postMiddleware.postMiddleware, async (req, res) => {
   const authHeader = req.headers.authorization;
 
   console.log("akjdaksd", authHeader);
-  const token = jwt.decode(authHeader.split(" ")[1]);
-  console.log("lkahsasd", token);
-  // const seller = await getUserById(token.user.id);
+  // const token = jwt.decode(authHeader.split(" ")[1]);
+  const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
+  console.log("lkahsasd", decoded);
+
   const result = await createPost(req.body);
   if (result.success === false) {
     return res.status(500).json(result);
