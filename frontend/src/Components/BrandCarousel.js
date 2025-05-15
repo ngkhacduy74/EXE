@@ -51,7 +51,7 @@ const BrandCarousel = () => {
         <div className="row">
           <div className="col-md-12">
             <div className="brand-carousel swiper">
-              <div className="swiper-wrapper">
+              <div className="swiper-wrapper" style={{ width: '220.5px' }}>
                 <div className="swiper-slide">
                   <div className="card mb-3 p-3 rounded-4 shadow border-0">
                     <div className="row g-0">

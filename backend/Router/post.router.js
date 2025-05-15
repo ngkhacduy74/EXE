@@ -21,7 +21,7 @@ router.get("/user-post", async (req, res) => {
   res.status(200).json(result);
 });
 //verify admin
-router.post("/change-condition/:condition/:id", async (req, res) => {
+router.get("/change-condition/:condition/:id", async (req, res) => {
   const { condition, id } = req.params;
   const result = await changePostCondition(condition, id);
   if (result.success === false) {

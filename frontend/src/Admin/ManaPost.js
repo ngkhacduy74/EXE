@@ -1,58 +1,121 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Table, Button } from "react-bootstrap";
+import { Container, Row, Col, Table, Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
 
-const ManageProduct = () => {
-  const [products, setProducts] = useState([]);
+const ManagePost = () => {
+  const [posts, setPosts] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [conditionFilter, setConditionFilter] = useState("All");
+  const [conditions, setConditions] = useState([]);
   const navigate = useNavigate();
 
+  // Fetch post data and extract unique conditions
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchPosts = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/product/");
-        // Log the response for debugging
+        const response = await axios.get("http://localhost:4000/post/");
         console.log("API Response:", response.data);
 
-        // Extract the product array from response.data.data
-        const productData = Array.isArray(response.data.data)
+        // Extract the post array
+        const postData = Array.isArray(response.data.data)
           ? response.data.data
+          : Array.isArray(response.data)
+          ? response.data
           : [];
-        
-        setProducts(productData);
+
+        setPosts(postData);
+        setFilteredPosts(postData);
+
+        // Extract unique conditions
+        const uniqueConditions = [
+          ...new Set(postData.map((p) => p.condition).filter(Boolean)),
+        ];
+        setConditions(uniqueConditions);
+        setLoading(false);
       } catch (err) {
-        console.error("Fetch Error:", err);
-        setError("Failed to fetch products. Please try again later.");
-        setProducts([]); // Ensure products remains an array
-      } finally {
+        console.error("Error fetching posts:", err);
+        setError("Failed to load posts. Please try again.");
         setLoading(false);
       }
     };
-    fetchProducts();
+
+    fetchPosts();
   }, []);
 
-  const handleViewDetails = (productId) => {
-    navigate(`/products/${productId}`);
+  // Apply filters whenever searchTerm, statusFilter, or conditionFilter changes
+  useEffect(() => {
+    let result = posts;
+
+    // Filter by search term
+    if (searchTerm) {
+      result = result.filter((post) =>
+        post.title?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by status
+    if (statusFilter !== "All") {
+      result = result.filter((post) => post.status === statusFilter);
+    }
+
+    // Filter by condition
+    if (conditionFilter !== "All") {
+      result = result.filter((post) => post.condition === conditionFilter);
+    }
+
+    setFilteredPosts(result);
+  }, [searchTerm, statusFilter, conditionFilter, posts]);
+
+  // Handle search input change
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
   };
 
-  const handleToggleStatus = async (productId, currentStatus) => {
-    const newStatus = currentStatus === "New" ? "Discontinued" : "New"; // Adjust based on your API
+  // Handle status dropdown change
+  const handleStatusChange = (e) => {
+    setStatusFilter(e.target.value);
+  };
+
+  // Handle condition dropdown change
+  const handleConditionChange = (e) => {
+    setConditionFilter(e.target.value);
+  };
+
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("All");
+    setConditionFilter("All");
+  };
+
+  // Handle view details
+  const handleViewDetails = (postId) => {
+    navigate(`/post/${postId}`);
+  };
+
+  // Handle toggle status
+  const handleToggleStatus = async (postId, currentStatus) => {
     try {
-      await axios.put(`http://localhost:4000/product/${productId}`, {
+      const newStatus = currentStatus === "New" ? "Discontinued" : "New";
+      await axios.patch(`http://localhost:4000/post/${postId}`, {
         status: newStatus,
       });
-      setProducts(
-        products.map((product) =>
-          product.id === productId ? { ...product, status: newStatus } : product
+      setPosts(
+        posts.map((post) =>
+          post._id === postId ? { ...post, status: newStatus } : post
         )
       );
     } catch (err) {
-      setError("Failed to update product status.");
+      console.error("Error updating status:", err);
+      setError("Failed to update post status.");
     }
   };
 
@@ -61,7 +124,7 @@ const ManageProduct = () => {
   }
 
   if (loading) {
-    return <p>Loading products...</p>;
+    return <p>Loading posts...</p>;
   }
 
   return (
@@ -80,10 +143,60 @@ const ManageProduct = () => {
           <Sidebar />
         </Col>
         <Col style={{ marginLeft: "10px" }} className="p-4">
-          <div id="manage-products" className="mb-5">
-            <h3 className="mb-4">Manage Products</h3>
-            {products.length === 0 ? (
-              <p>No products found.</p>
+          <div id="manage-posts" className="mb-5">
+            <h3 className="mb-4">Manage Posts</h3>
+
+            {/* Filter Controls */}
+            <Row className="mb-4">
+              <Col md={4}>
+                <Form.Group>
+                  <Form.Label>Search by Title</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter post title"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Label>Filter by Status</Form.Label>
+                  <Form.Select
+                    value={statusFilter}
+                    onChange={handleStatusChange}
+                  >
+                    <option value="All">All</option>
+                    <option value="New">New</option>
+                    <option value="Denied">Denied</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Label>Filter by Condition</Form.Label>
+                  <Form.Select
+                    value={conditionFilter}
+                    onChange={handleConditionChange}
+                  >
+                    <option value="All">All</option>
+                    {conditions.map((condition) => (
+                      <option key={condition} value={condition}>
+                        {condition}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={2} className="d-flex align-items-end">
+                <Button variant="secondary" onClick={handleClearFilters}>
+                  Clear
+                </Button>
+              </Col>
+            </Row>
+
+            {filteredPosts.length === 0 ? (
+              <p>No posts found.</p>
             ) : (
               <Table
                 striped
@@ -95,42 +208,38 @@ const ManageProduct = () => {
                 <thead className="bg-primary text-white">
                   <tr>
                     <th>#</th>
-                    <th>Name</th>
-                    <th>Brand</th>
-                    <th>Price</th>
-                    <th>Capacity</th>
+                    <th>Title</th>
+                    <th>Category</th>
                     <th>Status</th>
+                    <th>Condition</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((product, index) => (
-                    <tr key={product.id}>
+                  {filteredPosts.map((post, index) => (
+                    <tr key={post._id}>
                       <td>{index + 1}</td>
-                      <td>{product.name || "N/A"}</td>
-                      <td>{product.brand || "N/A"}</td>
-                      <td>
-                        {product.price
-                          ? `${parseFloat(product.price).toLocaleString("vi-VN")} VND`
-                          : "N/A"}
-                      </td>
-                      <td>{product.capacity ? `${product.capacity} kg` : "N/A"}</td>
-                      <td>{product.status || "N/A"}</td>
+                      <td>{post.title || "N/A"}</td>
+                      <td>{post.category || "N/A"}</td>
+                      <td>{post.status || "N/A"}</td>
+                      <td>{post.condition || "N/A"}</td>
                       <td>
                         <Button
                           variant="info"
                           size="sm"
                           className="me-2"
-                          onClick={() => handleViewDetails(product.id)}
+                          onClick={() => handleViewDetails(post._id)}
                         >
                           Details
                         </Button>
                         <Button
-                          variant={product.status === "New" ? "danger" : "success"}
+                          variant={post.status === "New" ? "danger" : "success"}
                           size="sm"
-                          onClick={() => handleToggleStatus(product.id, product.status)}
+                          onClick={() =>
+                            handleToggleStatus(post._id, post.status)
+                          }
                         >
-                          {product.status === "New" ? "Discontinue" : "Set New"}
+                          {post.status === "New" ? "Denied" : "Set New"}
                         </Button>
                       </td>
                     </tr>

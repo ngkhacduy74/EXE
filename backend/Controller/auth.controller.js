@@ -54,6 +54,7 @@ async function Register(params) {
     role: "User",
     ava_img_url: params.ava_img_url,
     is_active: true,
+    license: true,
   });
   try {
     await newUser.save();

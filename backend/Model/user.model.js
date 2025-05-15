@@ -43,6 +43,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    license: { type: Boolean, require: true },
   },
   { timestamps: true, versionKey: false }
 );
