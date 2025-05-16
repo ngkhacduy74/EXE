@@ -23,21 +23,21 @@ router.get("/user-post", async (req, res) => {
 //verify admin
 router.get("/change-condition/:condition/:id", async (req, res) => {
   const { condition, id } = req.params;
-  const result = await changePostCondition(condition, id);
+  const authHeader = req.headers.token;
+  const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
+  console.log("jhs", decoded);
+  const result = await changePostCondition(condition, id, decoded);
   if (result.success === false) {
     return res.status(500).json(result);
   }
   res.status(200).json(result);
 });
 router.post("/createPost", postMiddleware.postMiddleware, async (req, res) => {
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers.token;
 
-  console.log("akjdaksd", authHeader);
-  // const token = jwt.decode(authHeader.split(" ")[1]);
   const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
-  console.log("lkahsasd", decoded);
 
-  const result = await createPost(req.body);
+  const result = await createPost(req.body, decoded);
   if (result.success === false) {
     return res.status(500).json(result);
   }
