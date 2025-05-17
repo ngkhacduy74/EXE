@@ -9,6 +9,7 @@ import BestSellingCarousel from '../Components/BestSellingCarousel';
 import BlogCarousel from '../Components/BlogCarousel';
 import RecommendTagCarousel from '../Components/RecommendTagCarousel';
 import Footer from '../Components/Footer';
+import Chat from '../Components/Chat';
 const Home = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -574,6 +575,8 @@ const Home = () => {
         <BestSellingCarousel />
         <BlogCarousel />
         <RecommendTagCarousel />
+        <Chat />
+        {/* Footer */}
         <Footer />
 
 

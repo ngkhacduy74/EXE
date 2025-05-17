@@ -20,6 +20,7 @@ import ProductDetails from "./Admin/ProductDetail";
 import ManaPost from "./Admin/ManaPost";
 import ProductDetail from "./Pages/ProductDetail";
 
+
 const App = () => {
   const [message, setMessage] = useState("");
 
@@ -48,6 +49,7 @@ const App = () => {
           <Route path="/manaPost" element={<ManaPost />} />
           <Route path="/products/:productId" element={<ProductDetails />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
+
         </Routes>
       </div>
     </Router>
