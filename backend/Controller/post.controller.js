@@ -1,6 +1,6 @@
 const Post = require("../Model/post.model");
 const { v1 } = require("uuid");
-const createPost = async (data, seller) => {
+const createPost = async (data, token) => {
   const {
     category,
     image,
@@ -13,7 +13,8 @@ const createPost = async (data, seller) => {
     phone,
     email,
   } = data;
-
+  const seller = token;
+  console.log("21812", seller);
   try {
     const newPost = new Post({
       id: v1(),
@@ -25,9 +26,17 @@ const createPost = async (data, seller) => {
       user_position,
       address,
       description,
-      seller,
+      seller: {
+        id: seller.user.id,
+        fullname: seller.user.fullname,
+        email: seller.user.email,
+        phone: seller.user.phone,
+        address: seller.user.address,
+        gender: seller.user.gender,
+      },
       phone,
       email,
+
       condition: "Pending",
     });
 
@@ -101,15 +110,26 @@ const updatePost = async (params) => {
 
   return { success: true, data: updatePost };
 };
-const changePostCondition = async (condition, id) => {
+const changePostCondition = async (condition, id, token) => {
   try {
     const change = await Post.findOneAndUpdate(
       { id: id },
-      { condition: condition },
       {
-        new: true,
-      }
+        $set: {
+          condition: condition,
+          seller: {
+            id: token.user.id,
+            fullname: token.user.fullname,
+            email: token.user.email,
+            phone: token.user.phone,
+            address: token.user.address,
+            gender: token.user.gender,
+          },
+        },
+      },
+      { new: true }
     );
+
     if (!change) {
       return {
         success: false,

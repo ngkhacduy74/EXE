@@ -1,10 +1,15 @@
 const mongoose = require("mongoose");
-const peopleSchema = new mongoose.Schema({
-  id: { type: String, require: true },
-  fullname: { type: String, require: true },
-  phone: { type: String, require: true },
-  email: { type: String, require: true },
-});
+const peopleSchema = new mongoose.Schema(
+  {
+    id: { type: String, require: true },
+    fullname: { type: String, require: true },
+    phone: { type: String, require: true },
+    email: { type: String, require: true },
+    address: { type: String, require: true },
+    gender: { type: String, require: true },
+  },
+  { _id: false }
+);
 const postSchema = new mongoose.Schema(
   {
     id: { type: String, require: true },

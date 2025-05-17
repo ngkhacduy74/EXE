@@ -51,10 +51,7 @@ async function verifyOTP(req, res) {
 
     const token = jwt.sign(
       {
-        id: user._id,
-        fullname: user.fullname,
-        email: user.email,
-        role: user.role,
+        user,
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: "1d" }
@@ -64,12 +61,6 @@ async function verifyOTP(req, res) {
       success: true,
       message: "Xác minh OTP thành công",
       token,
-      user: {
-        id: user.id,
-        fullname: user.fullname,
-        email: user.email,
-        role: user.role,
-      },
     });
   } catch (error) {
     console.error("Lỗi xác minh OTP:", error);
