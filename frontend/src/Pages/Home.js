@@ -9,7 +9,8 @@ import BestSellingCarousel from '../Components/BestSellingCarousel';
 import BlogCarousel from '../Components/BlogCarousel';
 import RecommendTagCarousel from '../Components/RecommendTagCarousel';
 import Footer from '../Components/Footer';
-import Chat from '../Components/Chat';
+import Canvas from '../Components/Canvas'; // Assuming you have a Canvas component for the cart
+import ChatWidget from '../Components/WidgetChat';
 const Home = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -73,46 +74,7 @@ const Home = () => {
             ></button>
           </div>
           <div className="offcanvas-body">
-            <div className="order-md-last">
-              <h4 className="d-flex justify-content-between align-items-center mb-3">
-                <span className="text-primary">Your cart</span>
-                <span className="badge bg-primary rounded-pill">3</span>
-              </h4>
-              <ul className="list-group mb-3">
-                <li className="list-group-item d-flex justify-content-between lh-sm">
-                  <div>
-                    <h6 className="my-0">Growers cider</h6>
-                    <small className="text-body-secondary">Brief description</small>
-                  </div>
-                  <span className="text-body-secondary">$12</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between lh-sm">
-                  <div>
-                    <h6 className="my-0">Fresh grapes</h6>
-                    <small className="text-body-secondary">Brief description</small>
-                  </div>
-                  <span className="text-body-secondary">$8</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between lh-sm">
-                  <div>
-                    <h6 className="my-0">Heinz tomato ketchup</h6>
-                    <small className="text-body-secondary">Brief description</small>
-                  </div>
-                  <span className="text-body-secondary">$5</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between">
-                  <span>Total (USD)</span>
-                  <strong>$20</strong>
-                </li>
-              </ul>
-              <button
-                className="w-100 btn btn-primary btn-lg"
-                type="button"
-                onClick={() => alert('Proceeding to checkout...')}
-              >
-                Continue to checkout
-              </button>
-            </div>
+            <Canvas />
           </div>
         </div>
 
@@ -219,6 +181,14 @@ const Home = () => {
                       </svg>
                     </a>
                   </li>
+                  <li>
+                    <a href="#" className="rounded-circle bg-light p-2 mx-1">
+                      <svg width="24" height="24" viewBox="0 0 24 24">
+                        <use href="#heart" />
+                      </svg>
+                    </a>
+                  </li>
+
                   <li className="d-lg-none">
                     <a
                       href="#"
@@ -246,19 +216,6 @@ const Home = () => {
                     </a>
                   </li>
                 </ul>
-
-                <div className="cart text-end d-none d-lg-block dropdown">
-                  <button
-                    className="border-0 bg-transparent d-flex flex-column gap-2 lh-1"
-                    type="button"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasCart"
-                    aria-controls="offcanvasCart"
-                  >
-                    <span className="fs-6 text-muted dropdown-toggle">Your Cart</span>
-                    <span className="cart-total fs-5 fw-bold">$1290.00</span>
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -575,7 +532,8 @@ const Home = () => {
         <BestSellingCarousel />
         <BlogCarousel />
         <RecommendTagCarousel />
-        <Chat />
+        <ChatWidget />
+
         {/* Footer */}
         <Footer />
 
