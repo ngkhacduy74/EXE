@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, User, Bot, MessageCircle, X } from 'lucide-react';
 
-// Inline styles to avoid CSS conflicts
+// Inline styles (unchanged)
 const styles = {
   container: {
     position: 'fixed',
@@ -123,25 +123,48 @@ const styles = {
 };
 
 export default function ChatWidget() {
-  const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! How can I help you today?", sender: "bot" },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      // Retrieve user data from localStorage when chat opens
+      const userData = localStorage.getItem("user");
+      let username = "User";
+
+      if (userData) {
+        const user = JSON.parse(userData);
+        username = user.fullname || user.username || user.email || "User";
+      }
+
+      // Set initial bot message with personalized greeting
+      setMessages([
+        {
+          id: 1,
+          text: `Hi, ${username}! How can I help you today?`,
+          sender: "bot"
+        }
+      ]);
+    } else {
+      // Clear messages when chat closes
+      setMessages([]);
+    }
+  }, [isOpen]);
+
   const handleSendMessage = () => {
     if (inputValue.trim() === "") return;
-    
+
     // Add user message
     const newUserMessage = {
       id: messages.length + 1,
       text: inputValue,
       sender: "user"
     };
-    
+
     setMessages([...messages, newUserMessage]);
     setInputValue("");
-    
+
     // Simulate bot response
     setTimeout(() => {
       const botResponse = {

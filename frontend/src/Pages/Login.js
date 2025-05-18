@@ -8,34 +8,40 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Trong file Login.js, sửa hàm handleLogin:
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const response = await axios.post("http://localhost:4000/auth/login", {
-        email,
-        password,
-      });
-      console.log("123y", response);
-      console.log("email123", email);
+  try {
+    const response = await axios.post("http://localhost:4000/auth/login", {
+      email,
+      password,
+    });
+    // Log the entire response to inspect its structure
+    console.log("Full login response:", response);
+    console.log("Response data:", response.data);
 
-      // const { token, user } = response.data;
-      // localStorage.setItem("token", token);
-      // localStorage.setItem("user", JSON.stringify(user));
-      if (response) {
-        navigate("/otp", { state: { email } });
-      }
+    if (response.data.success) {
+      const { token, user } = response.data;
+      console.log("Token received:", token); // Log the token specifically
+      console.log("User data:", user); // Log user data
 
-      // }
-    } catch (error) {
-      console.error("Login error:", error);
-      alert(error.response?.data?.message || "Login failed, please try again");
-    } finally {
-      setLoading(false);
+      // Store token and user data
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      navigate("/otp", { state: { email, token, user } });
+    } else {
+      throw new Error(response.data.message || "Login failed");
     }
-  };
+  } catch (error) {
+    console.error("Login error:", error);
+    console.error("Error response:", error.response?.data); // Log error details
+    alert(error.response?.data?.message || "Login failed, please try again");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <section className="vh-100" style={{ backgroundColor: "#508BFC" }}>
