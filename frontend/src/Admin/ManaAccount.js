@@ -14,34 +14,100 @@ function ManaAccount() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Fetch user data
+  // Check authentication on component mount
   useEffect(() => {
-    const fetchUsers = async () => {
+    checkAuthentication();
+  }, []);
+
+  // Function to check if user is authenticated
+  const checkAuthentication = () => {
+    // Get the token from localStorage
+    const token = localStorage.getItem("token");
+    
+    // If no token exists, user is not authenticated
+    if (!token) {
+      setIsAuthenticated(false);
+      setLoading(false);
+      return;
+    }
+
+    // Validate token on the backend (optional but recommended)
+    // This could be a separate API endpoint that verifies the token
+    const validateToken = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/user/allUser");
-        console.log("API Response:", response.data);
+        // Set the Authorization header with the token
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        };
 
-        let userData = [];
-        if (response.data.success && Array.isArray(response.data.data)) {
-          userData = response.data.data;
-        } else if (response.data.success && response.data.data) {
-          userData = [response.data.data];
+        // You can create a specific endpoint for token validation
+        // or use an existing endpoint that requires authentication
+        const response = await axios.get("http://localhost:4000/auth/validate", config);
+        
+        // If validation is successful, set authentication to true
+        if (response.data.success) {
+          setIsAuthenticated(true);
+          fetchUsers(token); // Pass the token to fetchUsers
         } else {
-          console.warn("Unexpected response structure:", response.data);
+          // Token is invalid
+          setIsAuthenticated(false);
+          localStorage.removeItem("token"); // Clear invalid token
+          setLoading(false);
         }
-
-        setUsers(userData);
-        setFilteredUsers(userData);
-        setLoading(false);
       } catch (err) {
-        console.error("Fetch Error:", err);
-        setError("Failed to fetch users. Please try again.");
+        console.error("Token validation error:", err);
+        setIsAuthenticated(false);
+        localStorage.removeItem("token"); // Clear invalid token
         setLoading(false);
       }
     };
-    fetchUsers();
-  }, []);
+
+    validateToken();
+  };
+
+  // Fetch user data with token
+  const fetchUsers = async (token) => {
+    try {
+      // Include the token in the request headers
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+
+      const response = await axios.get("http://localhost:4000/user/allUser", config);
+      console.log("API Response:", response.data);
+
+      let userData = [];
+      if (response.data.success && Array.isArray(response.data.data)) {
+        userData = response.data.data;
+      } else if (response.data.success && response.data.data) {
+        userData = [response.data.data];
+      } else {
+        console.warn("Unexpected response structure:", response.data);
+      }
+
+      setUsers(userData);
+      setFilteredUsers(userData);
+      setLoading(false);
+    } catch (err) {
+      console.error("Fetch Error:", err);
+      
+      // Check if error is due to unauthorized access (401)
+      if (err.response && err.response.status === 401) {
+        setIsAuthenticated(false);
+        localStorage.removeItem("token"); // Clear invalid token
+      } else {
+        setError("Failed to fetch users. Please try again.");
+      }
+      
+      setLoading(false);
+    }
+  };
 
   // Apply filters whenever searchTerm or statusFilter changes
   useEffect(() => {
@@ -85,13 +151,27 @@ function ManaAccount() {
     navigate(`/user/${userId}`);
   };
 
-  // Handle activate/deactivate
+  // Handle activate/deactivate with token
   const handleToggleActive = async (userId, currentStatus) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsAuthenticated(false);
+      return;
+    }
+
     const newStatus = currentStatus === "true" ? "false" : "true";
     try {
+      // Include the token in the request headers
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+
       await axios.put(`http://localhost:4000/user/${userId}`, {
         is_active: newStatus,
-      });
+      }, config);
+      
       setUsers(
         users.map((user) =>
           user.id === userId ? { ...user, is_active: newStatus } : user
@@ -99,12 +179,36 @@ function ManaAccount() {
       );
     } catch (err) {
       console.error("Toggle Status Error:", err);
-      setError("Failed to update user status.");
+      
+      // Check if error is due to unauthorized access (401)
+      if (err.response && err.response.status === 401) {
+        setIsAuthenticated(false);
+        localStorage.removeItem("token"); // Clear invalid token
+      } else {
+        setError("Failed to update user status.");
+      }
     }
+  };
+
+  // Redirect to login if not authenticated
+  const handleRedirectToLogin = () => {
+    navigate("/login", { state: { from: "/manage-accounts" } });
   };
 
   if (loading) {
     return <Container fluid>Loading users...</Container>;
+  }
+
+  // If not authenticated, show error page with login option
+  if (!isAuthenticated) {
+    return (
+      <ErrorPage 
+        message="Access Denied - You must be logged in to view this page" 
+        code={401}
+        action={handleRedirectToLogin}
+        actionText="Go to Login"
+      />
+    );
   }
 
   if (error) {

@@ -19,6 +19,7 @@ import ManaProduct from "./Admin/ManaProduct";
 import ProductDetails from "./Admin/ProductDetail";
 import ManaPost from "./Admin/ManaPost";
 import ProductDetail from "./Pages/ProductDetail";
+import ErrorPage from "./Components/ErrorPage";
 
 
 const App = () => {
@@ -49,6 +50,10 @@ const App = () => {
           <Route path="/manaPost" element={<ManaPost />} />
           <Route path="/products/:productId" element={<ProductDetails />} />
           <Route path="/product/:productId" element={<ProductDetail />} />
+
+
+          {/* Error */}
+          <Route path="/error" element={<ErrorPage />} />
 
         </Routes>
       </div>

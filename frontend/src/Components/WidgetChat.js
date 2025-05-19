@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Send, User, Bot, MessageCircle, X } from 'lucide-react';
+import { Send, User, Bot, MessageCircle, X, LogIn } from 'lucide-react';
 
 // Inline styles (unchanged)
 const styles = {
@@ -119,6 +119,29 @@ const styles = {
     border: 'none',
     padding: '8px 12px',
     cursor: 'pointer'
+  },
+  loginMessage: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+    padding: '20px',
+    textAlign: 'center'
+  },
+  loginButton: {
+    backgroundColor: '#2563eb',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '10px 16px',
+    marginTop: '16px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontSize: '14px',
+    fontWeight: 500
   }
 };
 
@@ -126,26 +149,63 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     if (isOpen) {
-      // Retrieve user data from localStorage when chat opens
+      // Check if user is logged in
       const userData = localStorage.getItem("user");
-      let username = "User";
-
+      
       if (userData) {
-        const user = JSON.parse(userData);
-        username = user.fullname || user.username || user.email || "User";
-      }
-
-      // Set initial bot message with personalized greeting
-      setMessages([
-        {
-          id: 1,
-          text: `Hi, ${username}! How can I help you today?`,
-          sender: "bot"
+        try {
+          const user = JSON.parse(userData);
+          const name = user.fullname || user.username || user.email || null;
+          
+          if (name) {
+            setIsLoggedIn(true);
+            setUsername(name);
+            
+            // Set initial bot message with personalized greeting
+            setMessages([
+              {
+                id: 1,
+                text: `Hi, ${name}! How can I help you today?`,
+                sender: "bot"
+              }
+            ]);
+          } else {
+            setIsLoggedIn(false);
+            setMessages([
+              {
+                id: 1,
+                text: "You must login to use chat box",
+                sender: "bot"
+              }
+            ]);
+          }
+        } catch (error) {
+          // Handle JSON parse error
+          setIsLoggedIn(false);
+          setMessages([
+            {
+              id: 1,
+              text: "You must login to use chat box",
+              sender: "bot"
+            }
+          ]);
         }
-      ]);
+      } else {
+        // No user data found
+        setIsLoggedIn(false);
+        setMessages([
+          {
+            id: 1,
+            text: "You must login to use chat box",
+            sender: "bot"
+          }
+        ]);
+      }
     } else {
       // Clear messages when chat closes
       setMessages([]);
@@ -153,7 +213,7 @@ export default function ChatWidget() {
   }, [isOpen]);
 
   const handleSendMessage = () => {
-    if (inputValue.trim() === "") return;
+    if (inputValue.trim() === "" || !isLoggedIn) return;
 
     // Add user message
     const newUserMessage = {
@@ -186,6 +246,11 @@ export default function ChatWidget() {
     setIsOpen(!isOpen);
   };
 
+  const redirectToLogin = () => {
+    // Redirect to login page - replace with your actual login URL
+    window.location.href = "/login";
+  };
+
   return (
     <div style={styles.container}>
       {/* Chat Icon Button */}
@@ -211,53 +276,70 @@ export default function ChatWidget() {
             </button>
           </div>
           
-          {/* Messages Container */}
-          <div style={styles.messagesContainer}>
-            {messages.map((message) => (
-              <div 
-                key={message.id} 
-                style={{
-                  ...styles.messageRow,
-                  ...(message.sender === "user" ? styles.userRow : styles.botRow)
-                }}
-              >
-                <div 
-                  style={{
-                    ...styles.messageBubble,
-                    ...(message.sender === "user" ? styles.userBubble : styles.botBubble)
-                  }}
-                >
-                  <div style={styles.iconContainer}>
-                    {message.sender === "user" ? 
-                      <User size={16} /> : 
-                      <Bot size={16} />
-                    }
+          {isLoggedIn ? (
+            <>
+              {/* Messages Container */}
+              <div style={styles.messagesContainer}>
+                {messages.map((message) => (
+                  <div 
+                    key={message.id} 
+                    style={{
+                      ...styles.messageRow,
+                      ...(message.sender === "user" ? styles.userRow : styles.botRow)
+                    }}
+                  >
+                    <div 
+                      style={{
+                        ...styles.messageBubble,
+                        ...(message.sender === "user" ? styles.userBubble : styles.botBubble)
+                      }}
+                    >
+                      <div style={styles.iconContainer}>
+                        {message.sender === "user" ? 
+                          <User size={16} /> : 
+                          <Bot size={16} />
+                        }
+                      </div>
+                      <p>{message.text}</p>
+                    </div>
                   </div>
-                  <p>{message.text}</p>
+                ))}
+              </div>
+              
+              {/* Input Area */}
+              <div style={styles.inputArea}>
+                <div style={styles.inputContainer}>
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type a message..."
+                    style={styles.input}
+                  />
+                  <button 
+                    onClick={handleSendMessage}
+                    style={styles.sendButton}
+                  >
+                    <Send size={18} />
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-          
-          {/* Input Area */}
-          <div style={styles.inputArea}>
-            <div style={styles.inputContainer}>
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type a message..."
-                style={styles.input}
-              />
-              <button 
-                onClick={handleSendMessage}
-                style={styles.sendButton}
-              >
-                <Send size={18} />
+            </>
+          ) : (
+            /* Login Required Message */
+            <div style={styles.loginMessage}>
+              <Bot size={48} color="#2563eb" />
+              <h3 style={{ marginTop: '16px', color: '#1f2937' }}>Please login to chat</h3>
+              <p style={{ color: '#6b7280', margin: '8px 0' }}>
+                You must login to use the chat box. Please sign in to continue.
+              </p>
+              <button style={styles.loginButton} onClick={redirectToLogin}>
+                <LogIn size={18} />
+                Login Now
               </button>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
