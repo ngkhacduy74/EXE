@@ -52,8 +52,7 @@ const App = () => {
           <Route path="/product/:productId" element={<ProductDetail />} />
 
 
-          {/* Error */}
-          <Route path="/error" element={<ErrorPage />} />
+
 
         </Routes>
       </div>

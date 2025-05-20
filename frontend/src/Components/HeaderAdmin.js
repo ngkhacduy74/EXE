@@ -3,6 +3,8 @@ import { Row, Col } from "react-bootstrap";
 import { FaUserCircle, FaBell, FaHome, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { notification } from "antd";
+
 
 function HeaderAdmin() {
   const [user, setUser] = useState(null);
@@ -103,16 +105,14 @@ function HeaderAdmin() {
 
   const isAdmin = user?.role === "Admin";
   if (!isAdmin) {
-    navigate("/error", {
-      state: {
-        message: "You don't have permission to access the admin dashboard",
-        code: 403,
-        actionText: "Go to Home",
-        redirectTo: "/",
-      },
-    });
-    return null;
-  }
+  notification.success({
+    message: "Quyền truy cập hạn chế",
+    description: "Người dùng không được phép truy cập trang này",
+  });
+  navigate("/", { replace: true });
+  return null;
+}
+
 
   return (
     <Row
