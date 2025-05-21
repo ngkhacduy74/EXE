@@ -1,7 +1,83 @@
-import React from 'react';
-import { Edit, LogOut } from 'lucide-react'; // Ensure you're using lucide-react or adjust if not
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Edit, LogOut, LogIn } from 'lucide-react';
+import axios from 'axios';
 
-const Header = ({ handleLogout }) => {
+function Header() {
+  const [user, setUser] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      if (isLoggingOut) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+
+        // if (!token) {
+        //   setLoading(false);
+        //   navigate('/login', { replace: true });
+        //   return;
+        // }
+
+        const userData = localStorage.getItem('user');
+        let parsedUser = null;
+
+        try {
+          if (userData) {
+            parsedUser = JSON.parse(userData);
+            setUser(parsedUser);
+          }
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+        }
+
+        if (parsedUser?.email) {
+          try {
+            const response = await axios.get(
+              `http://localhost:4000/auth/getUserByEmail?email=${encodeURIComponent(parsedUser.email)}`
+            );
+
+            if (response.data && response.data.user) {
+              setUser(response.data.user);
+              localStorage.setItem('user', JSON.stringify(response.data.user));
+            } else {
+              handleLogout();
+            }
+          } catch (err) {
+            console.error('Failed to fetch user by email:', err);
+            if (err.response?.status === 401) {
+              handleLogout();
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Authentication check failed:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuthentication();
+  }, [isLoggingOut, navigate]);
+
+  const handleLogout = () => {
+    setIsLoggingOut(true);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    navigate('/login', { replace: true });
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <header>
       <div className="container-fluid">
@@ -9,7 +85,7 @@ const Header = ({ handleLogout }) => {
           <div className="col-sm-4 col-lg-3 text-center text-sm-start">
             <div className="main-logo">
               <a href="/">
-                <img src="./styles/images/logo.png" alt="logo" className="img-fluid" />
+                <img src="/styles/images/logo.png" alt="logo" className="img-fluid" />
               </a>
             </div>
           </div>
@@ -53,14 +129,16 @@ const Header = ({ handleLogout }) => {
                   </svg>
                 </a>
               </li>
-              <li>
-                <a href="/newPost" className="rounded-circle bg-light p-2 mx-1">
-                  <Edit width={24} height={24} />
-                </a>
-              </li>
-              <li onClick={handleLogout} style={{ cursor: "pointer" }}>
+              {user && (
+                <li>
+                  <a href="/newPost" className="rounded-circle bg-light p-2 mx-1">
+                    <Edit width={24} height={24} />
+                  </a>
+                </li>
+              )}
+              <li onClick={user ? handleLogout : () => navigate('/login')} style={{ cursor: 'pointer' }}>
                 <a className="rounded-circle bg-light p-2 mx-1">
-                  <LogOut width={24} height={24} />
+                  {user ? <LogOut width={24} height={24} /> : <LogIn width={24} height={24} />}
                 </a>
               </li>
               <li className="d-lg-none">
@@ -96,10 +174,7 @@ const Header = ({ handleLogout }) => {
 
       <div className="container-fluid">
         <div className="row py-3">
-          <div
-            className="d-flex justify-content-sm-between align-items-center"
-            style={{ marginLeft: '200px' }}
-          >
+          <div className="d-flex justify-content-sm-between align-items-center">
             <nav className="main-menu d-flex navbar navbar-expand-lg">
               <button
                 className="navbar-toggler"
@@ -136,14 +211,14 @@ const Header = ({ handleLogout }) => {
 
                   <ul className="navbar-nav justify-content-end menu-list list-unstyled d-flex gap-md-3 mb-0">
                     {[
-                      'Category?',
-                      'Category?',
-                      'Category?',
-                      'Category?',
-                      'Brand?',
-                      'Category?',
-                      'Category?',
-                      'Blog?',
+                      'Category1',
+                      'Category2',
+                      'Category3',
+                      'Category4',
+                      'Brand1',
+                      'Category5',
+                      'Category6',
+                      'Blog',
                     ].map((item, index) => (
                       <li key={index} className="nav-item">
                         <a href="#" className="nav-link">{item}</a>
@@ -158,7 +233,7 @@ const Header = ({ handleLogout }) => {
                         data-bs-toggle="dropdown"
                         aria-expanded="false"
                       >
-                        Brand?
+                        Brands
                       </a>
                       <ul className="dropdown-menu" aria-labelledby="pages">
                         {[
@@ -192,6 +267,6 @@ const Header = ({ handleLogout }) => {
       </div>
     </header>
   );
-};
+}
 
 export default Header;
