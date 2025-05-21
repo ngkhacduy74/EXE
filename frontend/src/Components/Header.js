@@ -19,11 +19,11 @@ function Header() {
       try {
         const token = localStorage.getItem('token');
 
-        // if (!token) {
-        //   setLoading(false);
-        //   navigate('/login', { replace: true });
-        //   return;
-        // }
+        if (!token) {
+          setLoading(false);
+          navigate('/login', { replace: true });
+          return;
+        }
 
         const userData = localStorage.getItem('user');
         let parsedUser = null;
@@ -173,7 +173,7 @@ function Header() {
       </div>
 
       <div className="container-fluid">
-        <div className="row py-3">
+       
           <div className="d-flex justify-content-sm-between align-items-center">
             <nav className="main-menu d-flex navbar navbar-expand-lg">
               <button
@@ -201,69 +201,11 @@ function Header() {
                   ></button>
                 </div>
 
-                <div className="offcanvas-body">
-                  <select className="filter-categories border-0 mb-0 me-5">
-                    <option>Shop by ABC</option>
-                    <option>A</option>
-                    <option>B</option>
-                    <option>C</option>
-                  </select>
-
-                  <ul className="navbar-nav justify-content-end menu-list list-unstyled d-flex gap-md-3 mb-0">
-                    {[
-                      'Category1',
-                      'Category2',
-                      'Category3',
-                      'Category4',
-                      'Brand1',
-                      'Category5',
-                      'Category6',
-                      'Blog',
-                    ].map((item, index) => (
-                      <li key={index} className="nav-item">
-                        <a href="#" className="nav-link">{item}</a>
-                      </li>
-                    ))}
-
-                    <li className="nav-item dropdown">
-                      <a
-                        className="nav-link dropdown-toggle"
-                        role="button"
-                        id="pages"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        Brands
-                      </a>
-                      <ul className="dropdown-menu" aria-labelledby="pages">
-                        {[
-                          'About Us',
-                          'Shop',
-                          'Single Product',
-                          'Cart',
-                          'Checkout',
-                          'Blog',
-                          'Single Post',
-                          'Styles',
-                          'Contact',
-                          'Thank You',
-                          'My Account',
-                          '404 Error',
-                        ].map((page, idx) => (
-                          <li key={idx}>
-                            <a href="/" className="dropdown-item">
-                              {page}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
-                  </ul>
-                </div>
+                
               </div>
             </nav>
           </div>
-        </div>
+      
       </div>
     </header>
   );

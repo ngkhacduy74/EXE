@@ -105,13 +105,13 @@ function HeaderAdmin() {
 
   const isAdmin = user?.role === "Admin";
   if (!isAdmin) {
-  notification.success({
-    message: "Quyền truy cập hạn chế",
-    description: "Người dùng không được phép truy cập trang này",
-  });
-  navigate("/", { replace: true });
-  return null;
-}
+    notification.error({
+      message: "Quyền truy cập hạn chế",
+      description: "Người dùng không được phép truy cập trang này",
+    });
+    navigate("/", { replace: true });
+    return null;
+  }
 
 
   return (

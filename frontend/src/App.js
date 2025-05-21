@@ -20,6 +20,7 @@ import ProductDetails from "./Admin/ProductDetail";
 import ManaPost from "./Admin/ManaPost";
 import ProductDetail from "./Pages/ProductDetail";
 import ErrorPage from "./Components/ErrorPage";
+import NewPostForm from "./Components/NewPost";
 
 
 const App = () => {
@@ -36,11 +37,13 @@ const App = () => {
     <Router>
       <div>
         <Routes>
+
+          {/* UI USER */}
           <Route path='/' element={<Home/>}/>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/otp" element={<OTP />} />
-
+          <Route path="/newPost" element={<NewPostForm />} />
           {/* UI ADMIN */}
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/manaAccount" element={<ManaAccount />} />
