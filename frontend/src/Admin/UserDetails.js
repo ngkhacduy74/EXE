@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Container, Row, Col, Card } from "react-bootstrap";
+import { Container, Row, Col, Card, Nav, Tab, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import Sidebar from "../Components/Sidebar";
 import "./styles/UserDetails.css";
@@ -9,229 +9,323 @@ export default function UserDetails() {
   const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("about");
 
   useEffect(() => {
     const fetchUser = async () => {
+      if (!userId) {
+        setError("User ID is required");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await axios.get(
-          `http://localhost:4000/user/${userId}`
-        );
-        setUser(response.data);
+        setLoading(true);
+        const response = await axios.get(`http://localhost:4000/user/${userId}`);
+        
+        // Handle different response structures
+        const userData = response.data?.user?.[0] || response.data?.user || response.data;
+        setUser(userData);
+        setError(null);
       } catch (err) {
-        console.error(err);
-        setError("Failed to fetch user details");
+        console.error("Error fetching user:", err);
+        setError(err.response?.data?.message || "Failed to fetch user details");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUser();
   }, [userId]);
 
-  if (error) return <p>{error}</p>;
-  if (!user) return <p>Loading…</p>;
-  console.log("8iuasd", user.user);
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Handle file upload logic here
+      console.log("Selected file:", file);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Container fluid className="bg-light d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+        <div className="text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="mt-2">Loading user details...</p>
+        </div>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container fluid className="bg-light d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+        <Card className="text-center">
+          <Card.Body>
+            <Card.Title className="text-danger">Error</Card.Title>
+            <Card.Text>{error}</Card.Text>
+            <Button variant="primary" onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </Card.Body>
+        </Card>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Container fluid className="bg-light d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+        <Card className="text-center">
+          <Card.Body>
+            <Card.Title>User Not Found</Card.Title>
+            <Card.Text>The requested user could not be found.</Card.Text>
+          </Card.Body>
+        </Card>
+      </Container>
+    );
+  }
+
   return (
     <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
-      <Row>
+      <Row className="h-100">
         <Col
           md="auto"
+          className="p-0"
           style={{
             width: "250px",
             background: "#2c3e50",
             color: "white",
-            padding: 0,
           }}
         >
           <Sidebar />
         </Col>
-        <Col>
+        
+        <Col className="py-4">
           <div className="container emp-profile">
-            <form method="post">
-              <div className="row">
-                <div className="col-md-4">
-                  <div className="profile-img">
-                    <img
-                      src="https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg"
-                      alt="Profile"
-                    />
-                    <div className="file btn btn-lg btn-primary">
-                      Change Photo
-                      <input type="file" name="file" />
+            <Card className="shadow-sm">
+              <Card.Body>
+                <Row className="mb-4">
+                  {/* Profile Image Section */}
+                  <Col md={4} className="text-center">
+                    <div className="profile-img mb-3">
+                      <img
+                        src={user.profileImage || "https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg"}
+                        alt="Profile"
+                        className="rounded-circle"
+                        style={{ width: "150px", height: "150px", objectFit: "cover" }}
+                      />
                     </div>
-                  </div>
-                </div>
+                    <Form.Group>
+                      <Form.Label className="btn btn-primary btn-sm">
+                        Change Photo
+                        <Form.Control
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          style={{ display: "none" }}
+                        />
+                      </Form.Label>
+                    </Form.Group>
+                  </Col>
 
-                <div className="col-md-6">
-                  <div className="profile-head">
-                    <h5>{user.user[0].fullname || "Name here"}</h5>
+                  {/* Profile Header */}
+                  <Col md={6}>
+                    <div className="profile-head">
+                      <h3 className="mb-3">{user.fullname || user.name || "User Name"}</h3>
+                      <p className="text-muted mb-3">{user.profession || "Web Developer and Designer"}</p>
+                    </div>
+                  </Col>
 
-                    <ul className="nav nav-tabs" id="myTab" role="tablist">
-                      <li className="nav-item">
-                        <a
-                          className="nav-link active"
-                          id="home-tab"
-                          data-toggle="tab"
-                          href="#home"
-                          role="tab"
-                          aria-controls="home"
-                          aria-selected="true"
-                        >
-                          About
-                        </a>
-                      </li>
-                      <li className="nav-item">
-                        <a
-                          className="nav-link"
-                          id="profile-tab"
-                          data-toggle="tab"
-                          href="#profile"
-                          role="tab"
-                          aria-controls="profile"
-                          aria-selected="false"
-                        >
-                          Timeline
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="col-md-2">
-                  <input
-                    type="submit"
-                    className="profile-edit-btn"
-                    name="btnAddMore"
-                    value="Edit Profile"
-                  />
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-md-4">
-                  <div className="profile-work">
-                    <p>WORK LINK</p>
-                    <a href="">Website Link</a>
-                    <br />
-                    <a href="">Bootsnipp Profile</a>
-                    <br />
-                    <a href="">Bootply Profile</a>
-                    <p>SKILLS</p>
-                    <a href="">Web Designer</a>
-                    <br />
-                    <a href="">Web Developer</a>
-                    <br />
-                    <a href="">WordPress</a>
-                    <br />
-                    <a href="">WooCommerce</a>
-                    <br />
-                    <a href="">PHP, .Net</a>
-                    <br />
-                  </div>
-                </div>
-                <div className="col-md-8">
-                  <div className="tab-content profile-tab" id="myTabContent">
-                    <div
-                      className="tab-pane fade show active"
-                      id="home"
-                      role="tabpanel"
-                      aria-labelledby="home-tab"
-                    >
-                      <div className="row">
-                        <div className="col-md-3">
-                          <label>Full Name</label>
-                        </div>
-                        <div className="col-md-6">
-                          <p>{user.user[0].fullname || "On fix :("}</p>
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-3">
-                          <label>Phone Number</label>
-                        </div>
-                        <div className="col-md-6">
-                          <p>{user.user[0].phone || "Dont have XD"}</p>
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-3">
-                          <label>Address</label>
-                        </div>
-                        <div className="col-md-6">
-                          <p>{user.user[0].address || "Fix Yea"}</p>
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-3">
-                          <label>Phone</label>
-                        </div>
-                        <div className="col-md-6">
-                          <p>{user.user[0].phone || "123 456 7890"}</p>
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-3">
-                          <label>Profession</label>
-                        </div>
-                        <div className="col-md-6">
-                          <p>Web Developer and Designer</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className="tab-pane fade"
-                      id="profile"
-                      role="tabpanel"
-                      aria-labelledby="profile-tab"
-                    >
-                      <div className="row">
-                        <div className="col-md-6">
-                          <label>Experience</label>
-                        </div>
-                        <div className="col-md-6">
-                          <p>Expert</p>
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-6">
-                          <label>Hourly Rate</label>
-                        </div>
-                        <div className="col-md-6">
-                          <p>10$/hr</p>
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-6">
-                          <label>Total Projects</label>
-                        </div>
-                        <div className="col-md-6">
-                          <p>230</p>
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-6">
-                          <label>English Level</label>
-                        </div>
-                        <div className="col-md-6">
-                          <p>Expert</p>
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-6">
-                          <label>Availability</label>
-                        </div>
-                        <div className="col-md-6">
-                          <p>6 months</p>
-                        </div>
-                      </div>
-                      <div className="row">
-                        <div className="col-md-12">
-                          <label>Your Bio</label>
-                          <br />
-                          <p>Your detail description</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form>
+                  {/* Edit Button */}
+                  <Col md={2} className="text-end">
+                    <Button variant="outline-primary" size="sm">
+                      Edit Profile
+                    </Button>
+                  </Col>
+                </Row>
+
+                {/* Navigation Tabs */}
+                <Tab.Container activeKey={activeTab} onSelect={setActiveTab}>
+                  <Row>
+                    <Col md={4}>
+                      {/* Sidebar Info */}
+                      <Card className="mb-3">
+                        <Card.Header>
+                          <h6 className="mb-0">Work Links</h6>
+                        </Card.Header>
+                        <Card.Body>
+                          <div className="mb-2">
+                            <a href={user.website || "#"} className="text-decoration-none">
+                              Website Link
+                            </a>
+                          </div>
+                          <div className="mb-2">
+                            <a href={user.portfolio || "#"} className="text-decoration-none">
+                              Portfolio
+                            </a>
+                          </div>
+                          <div>
+                            <a href={user.linkedin || "#"} className="text-decoration-none">
+                              LinkedIn Profile
+                            </a>
+                          </div>
+                        </Card.Body>
+                      </Card>
+
+                      <Card>
+                        <Card.Header>
+                          <h6 className="mb-0">Skills</h6>
+                        </Card.Header>
+                        <Card.Body>
+                          {user.skills ? (
+                            user.skills.map((skill, index) => (
+                              <span key={index} className="badge bg-secondary me-1 mb-1">
+                                {skill}
+                              </span>
+                            ))
+                          ) : (
+                            <>
+                              <span className="badge bg-secondary me-1 mb-1">Web Designer</span>
+                              <span className="badge bg-secondary me-1 mb-1">Web Developer</span>
+                              <span className="badge bg-secondary me-1 mb-1">WordPress</span>
+                              <span className="badge bg-secondary me-1 mb-1">React</span>
+                              <span className="badge bg-secondary me-1 mb-1">PHP</span>
+                            </>
+                          )}
+                        </Card.Body>
+                      </Card>
+                    </Col>
+
+                    <Col md={8}>
+                      <Nav variant="tabs" className="mb-3">
+                        <Nav.Item>
+                          <Nav.Link eventKey="about">About</Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                          <Nav.Link eventKey="timeline">Timeline</Nav.Link>
+                        </Nav.Item>
+                      </Nav>
+
+                      <Tab.Content>
+                        <Tab.Pane eventKey="about">
+                          <Row className="mb-3">
+                            <Col md={3}>
+                              <strong>Full Name:</strong>
+                            </Col>
+                            <Col md={9}>
+                              <p className="mb-0">{user.fullname || user.name || "Not provided"}</p>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-3">
+                            <Col md={3}>
+                              <strong>Email:</strong>
+                            </Col>
+                            <Col md={9}>
+                              <p className="mb-0">{user.email || "Not provided"}</p>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-3">
+                            <Col md={3}>
+                              <strong>Phone:</strong>
+                            </Col>
+                            <Col md={9}>
+                              <p className="mb-0">{user.phone || "Not provided"}</p>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-3">
+                            <Col md={3}>
+                              <strong>Address:</strong>
+                            </Col>
+                            <Col md={9}>
+                              <p className="mb-0">{user.address || "Not provided"}</p>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-3">
+                            <Col md={3}>
+                              <strong>Profession:</strong>
+                            </Col>
+                            <Col md={9}>
+                              <p className="mb-0">{user.profession || "Web Developer and Designer"}</p>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-3">
+                            <Col md={3}>
+                              <strong>Bio:</strong>
+                            </Col>
+                            <Col md={9}>
+                              <p className="mb-0">{user.bio || "No bio available"}</p>
+                            </Col>
+                          </Row>
+                        </Tab.Pane>
+
+                        <Tab.Pane eventKey="timeline">
+                          <Row className="mb-3">
+                            <Col md={4}>
+                              <strong>Experience:</strong>
+                            </Col>
+                            <Col md={8}>
+                              <p className="mb-0">{user.experience || "Expert"}</p>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-3">
+                            <Col md={4}>
+                              <strong>Hourly Rate:</strong>
+                            </Col>
+                            <Col md={8}>
+                              <p className="mb-0">{user.hourlyRate || "$10/hr"}</p>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-3">
+                            <Col md={4}>
+                              <strong>Total Projects:</strong>
+                            </Col>
+                            <Col md={8}>
+                              <p className="mb-0">{user.totalProjects || "230"}</p>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-3">
+                            <Col md={4}>
+                              <strong>English Level:</strong>
+                            </Col>
+                            <Col md={8}>
+                              <p className="mb-0">{user.englishLevel || "Expert"}</p>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-3">
+                            <Col md={4}>
+                              <strong>Availability:</strong>
+                            </Col>
+                            <Col md={8}>
+                              <p className="mb-0">{user.availability || "6 months"}</p>
+                            </Col>
+                          </Row>
+
+                          <Row className="mb-3">
+                            <Col md={12}>
+                              <strong>Professional Summary:</strong>
+                              <p className="mt-2">{user.summary || "Experienced web developer with expertise in modern technologies and frameworks."}</p>
+                            </Col>
+                          </Row>
+                        </Tab.Pane>
+                      </Tab.Content>
+                    </Col>
+                  </Row>
+                </Tab.Container>
+              </Card.Body>
+            </Card>
           </div>
         </Col>
       </Row>

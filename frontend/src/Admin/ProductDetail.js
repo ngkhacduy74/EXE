@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
 const ProductDetails = ({ productId }) => {
   const [product, setProduct] = useState(null);
@@ -25,9 +26,9 @@ const ProductDetails = ({ productId }) => {
 
   return (
     <div>
-      <h1>{product.name}</h1>
+      <h1>{product.product[0].name}</h1>
       <p>Price: ${product.price}</p>
-      <p>{product.description}</p>
+      <p>{product.product[0].description}</p>
     </div>
   );
 };
