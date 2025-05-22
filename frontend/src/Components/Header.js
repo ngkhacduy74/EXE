@@ -19,11 +19,11 @@ function Header() {
       try {
         const token = localStorage.getItem('token');
 
-        if (!token) {
-          setLoading(false);
-          navigate('/login', { replace: true });
-          return;
-        }
+        // if (!token) {
+        //   setLoading(false);
+        //   navigate('/login', { replace: true });
+        //   return;
+        // }
 
         const userData = localStorage.getItem('user');
         let parsedUser = null;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Table, Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Plus, Eye, EyeOff, Check, Package } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
@@ -124,6 +125,11 @@ const ManageProduct = () => {
     navigate(`/products/${productId}`);
   };
 
+  // Handle create product
+  const handleCreateProduct = () => {
+    navigate("/create-product");
+  };
+
   // Handle toggle status
   const handleToggleStatus = async (productId, currentStatus) => {
     const newStatus = currentStatus === "New" ? "Second Hand" : "New";
@@ -166,7 +172,19 @@ const ManageProduct = () => {
         </Col>
         <Col style={{ marginLeft: "10px" }} className="p-4">
           <div id="manage-products" className="mb-5">
-            <h3 className="mb-4">Manage Products</h3>
+            {/* Header with title and Create button */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h3 className="mb-0">Manage Products</h3>
+              <Button 
+                variant="success" 
+                size="lg"
+                onClick={handleCreateProduct}
+                className="d-flex align-items-center"
+              >
+                <Plus size={20} className="me-2" />
+                Create Product
+              </Button>
+            </div>
 
             {/* Filter Controls */}
             <Row className="mb-4">
@@ -241,8 +259,27 @@ const ManageProduct = () => {
               </Col>
             </Row>
 
+            {/* Products Summary */}
+            <div className="mb-3">
+              <small className="text-muted">
+                Showing {filteredProducts.length} of {products.length} products
+              </small>
+            </div>
+
             {filteredProducts.length === 0 ? (
-              <p>No products found.</p>
+              <div className="text-center py-5">
+                <Package size={48} className="text-muted mb-3" />
+                <p className="text-muted">No products found.</p>
+                {products.length === 0 && (
+                  <Button 
+                    variant="primary" 
+                    onClick={handleCreateProduct}
+                    className="mt-2"
+                  >
+                    Create your first product
+                  </Button>
+                )}
+              </div>
             ) : (
               <Table
                 striped
@@ -274,23 +311,34 @@ const ManageProduct = () => {
                           : "N/A"}
                       </td>
                       <td>{product.capacity ? `${product.capacity} kg` : "N/A"}</td>
-                      <td>{product.status || "N/A"}</td>
                       <td>
-                        <Button
-                          variant="info"
-                          size="sm"
-                          className="me-2"
-                          onClick={() => handleViewDetails(product.id)}
+                        <span 
+                          className={`badge ${
+                            product.status === "New" ? "bg-success" : "bg-warning"
+                          }`}
                         >
-                          Details
-                        </Button>
-                        <Button
-                          variant={product.status === "New" ? "danger" : "success"}
-                          size="sm"
-                          onClick={() => handleToggleStatus(product.id, product.status)}
-                        >
-                          {product.status === "New" ? "Hide" : "Set New"}
-                        </Button>
+                          {product.status || "N/A"}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="d-flex gap-2">
+                          <Button
+                            variant="info"
+                            size="sm"
+                            onClick={() => handleViewDetails(product.id)}
+                            title="View Details"
+                          >
+                            <Eye size={16} />
+                          </Button>
+                          <Button
+                            variant={product.status === "New" ? "danger" : "success"}
+                            size="sm"
+                            onClick={() => handleToggleStatus(product.id, product.status)}
+                            title={product.status === "New" ? "Hide Product" : "Set as New"}
+                          >
+                            {product.status === "New" ? <EyeOff size={16} /> : <Check size={16} />}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
