@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const sellerSchema = Joi.object({
+const creatorSchema = Joi.object({
   id: Joi.string().required(),
   fullname: Joi.string().required(),
   phone: Joi.string().required(),
@@ -19,7 +19,7 @@ const postSchema = Joi.object({
   address: Joi.string().required(),
   condition: Joi.string().valid("Pending", "Active", "Reject").optional(),
   description: Joi.string().min(6).max(1500).required(),
-  seller: sellerSchema.optional(), // ✅ dùng schema lồng bên trong
+  seller: creatorSchema.optional(),
 });
 
-module.exports = postSchema;
+module.exports = { postSchema, creatorSchema };

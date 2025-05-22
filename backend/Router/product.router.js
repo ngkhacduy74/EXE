@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 const productMiddleware = require("../Middleware/index");
 const {
   createProduct,
@@ -13,11 +14,57 @@ router.post(
   "/createProduct",
   productMiddleware.productMiddleware,
   async (req, res) => {
-    const result = await createProduct(req.body);
-    if (result.success === false) {
-      return res.status(500).json(result);
+    const authHeader = req.headers.token;
+    console.log("Token nhận được:", authHeader);
+
+    // Bước 1: Kiểm tra token trước
+    let decoded;
+    try {
+      decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
+    } catch (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({
+          success: false,
+          message: "Token đã hết hạn",
+        });
+      } else if (err.name === "JsonWebTokenError") {
+        return res.status(403).json({
+          success: false,
+          message: "Token không hợp lệ",
+        });
+      } else {
+        return res.status(500).json({
+          success: false,
+          message: "Lỗi trong quá trình xác thực token",
+          error: err.message,
+        });
+      }
     }
-    res.status(200).json(result);
+
+    // Bước 2: Nếu token hợp lệ => tiến hành tạo sản phẩm
+    try {
+      const result = await createProduct(req.body, decoded);
+
+      if (result.success === false) {
+        return res.status(500).json({
+          success: false,
+          message: "Tạo sản phẩm thất bại",
+          error: result.error || null,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Tạo sản phẩm thành công",
+        data: result.data || null,
+      });
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi máy chủ trong quá trình tạo sản phẩm",
+        error: err.message,
+      });
+    }
   }
 );
 router.put("/update/:id", async (req, res) => {
