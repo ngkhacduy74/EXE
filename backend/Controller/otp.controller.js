@@ -32,10 +32,10 @@ const User = require("../Model/user.model");
 
 async function verifyOTP(req, res) {
   const { email, otp } = req.query;
-  console.log("ljhasd", req.query);
+
   try {
     const existingOTP = await Otps.findOneAndDelete({ email, otp });
-    console.log("12132", existingOTP);
+
     if (!existingOTP) {
       return res
         .status(400)

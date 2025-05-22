@@ -32,35 +32,16 @@ router.get("/change-condition/:condition/:id", async (req, res) => {
   }
   res.status(200).json(result);
 });
-
 router.post("/createPost", postMiddleware.postMiddleware, async (req, res) => {
   const authHeader = req.headers.token;
 
-  try {
-    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
-    const result = await createPost(req.body, decoded);
-    if (result.success === false) {
-      return res.status(500).json(result);
-    }
-    res.status(200).json(result);
-  } catch (err) {
-    if (err.name === "TokenExpiredError") {
-      return res.status(401).json({
-        success: false,
-        message: "Token đã hết hạn",
-      });
-    } else if (err.name === "JsonWebTokenError") {
-      return res.status(403).json({
-        success: false,
-        message: "Token không hợp lệ",
-      });
-    } else {
-      return res.status(500).json({
-        success: false,
-        message: "Lỗi server trong quá trình xác thực token",
-      });
-    }
+  const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
+
+  const result = await createPost(req.body, decoded);
+  if (result.success === false) {
+    return res.status(500).json(result);
   }
+  res.status(200).json(result);
 });
 
 router.put("/update-post/:id", async (req, res) => {

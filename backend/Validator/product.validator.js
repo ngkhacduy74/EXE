@@ -1,5 +1,4 @@
 const Joi = require("joi");
-const { creatorSchema } = require("./post.validator");
 
 const ProductSchema = Joi.object({
   id: Joi.string().required(),
@@ -72,7 +71,6 @@ const ProductSchema = Joi.object({
       })
     )
     .optional(),
-  creator: creatorSchema.optional(),
 });
 
 module.exports = ProductSchema;

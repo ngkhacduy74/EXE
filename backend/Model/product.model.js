@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { peopleSchema } = require("./post.model");
 
 const Other_features = new mongoose.Schema({
   id: { type: String, require: true },
@@ -23,7 +22,6 @@ const ProductSchema = new mongoose.Schema(
     capacity: { type: Number, require: true },
     voltage: { type: String, require: true },
     features: [{ type: Other_features, require: false }],
-    creator: peopleSchema,
   },
   {
     timestamps: true,

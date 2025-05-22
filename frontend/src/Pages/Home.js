@@ -1,19 +1,19 @@
-import React from "react";
-import { Helmet, HelmetProvider } from "react-helmet-async";
-import "./styles/style.css"; // Adjust path if needed
-import "./styles/vendor.css"; // Adjust path if needed
-import CategoryCarousel from "../Components/CategoryCarousel";
-import BrandCarousel from "../Components/BrandCarousel";
-import ProductsCarousel from "../Components/ProductCarousel";
-import BestSellingCarousel from "../Components/BestSellingCarousel";
-import BlogCarousel from "../Components/BlogCarousel";
-import RecommendTagCarousel from "../Components/RecommendTagCarousel";
-import Footer from "../Components/Footer";
-import Canvas from "../Components/Canvas"; // Assuming you have a Canvas component for the cart
-import ChatWidget from "../Components/WidgetChat";
-import Header from "../Components/Header";
-import { House, Edit, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
+import './styles/style.css'; // Adjust path if needed
+import './styles/vendor.css'; // Adjust path if needed
+import CategoryCarousel from '../Components/CategoryCarousel';
+import BrandCarousel from '../Components/BrandCarousel';
+import ProductsCarousel from '../Components/ProductCarousel';
+import BestSellingCarousel from '../Components/BestSellingCarousel';
+import BlogCarousel from '../Components/BlogCarousel';
+import RecommendTagCarousel from '../Components/RecommendTagCarousel';
+import Footer from '../Components/Footer';
+import Canvas from '../Components/Canvas'; // Assuming you have a Canvas component for the cart
+import ChatWidget from '../Components/WidgetChat';
+import Header from '../Components/Header';
+import { House, Edit, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -21,33 +21,28 @@ const Home = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const query = e.target.elements.search.value; // Assuming input has name="search"
-    console.log("Search query:", query);
+    console.log('Search query:', query);
     // Add your search logic here (e.g., navigate to a search results page)
+
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    navigate('/login');
+  }
+
+
 
   return (
+
     <HelmetProvider>
-      <div
-        style={{
-          overflowX: "hidden",
-          paddingLeft: "10px",
-          paddingRight: "10px",
-        }}
-      >
+      <div style={{ overflowX: 'hidden', paddingLeft: '10px', paddingRight: '10px' }}>
         <Helmet>
           <title>Vinsaky Shop</title>
           <meta charSet="utf-8" />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <meta name="format-detection" content="telephone=no" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="author" content="" />
@@ -69,11 +64,7 @@ const Home = () => {
             crossOrigin="anonymous"
           ></script>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossOrigin="anonymous"
-          />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link
             href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap"
             rel="stylesheet"
@@ -155,19 +146,17 @@ const Home = () => {
 
           <ul className="navbar-nav d-flex flex-row gap-3 mb-0 list-unstyled">
             {[
-              "Category1",
-              "Category2",
-              "Category3",
-              "Category4",
-              "Brand1",
-              "Category5",
-              "Category6",
-              "Blog",
+              'Category1',
+              'Category2',
+              'Category3',
+              'Category4',
+              'Brand1',
+              'Category5',
+              'Category6',
+              'Blog',
             ].map((item, index) => (
               <li key={index} className="nav-item">
-                <a href="#" className="nav-link">
-                  {item}
-                </a>
+                <a href="#" className="nav-link">{item}</a>
               </li>
             ))}
 
@@ -183,23 +172,21 @@ const Home = () => {
               </a>
               <ul className="dropdown-menu" aria-labelledby="pages">
                 {[
-                  "About Us",
-                  "Shop",
-                  "Single Product",
-                  "Cart",
-                  "Checkout",
-                  "Blog",
-                  "Single Post",
-                  "Styles",
-                  "Contact",
-                  "Thank You",
-                  "My Account",
-                  "404 Error",
+                  'About Us',
+                  'Shop',
+                  'Single Product',
+                  'Cart',
+                  'Checkout',
+                  'Blog',
+                  'Single Post',
+                  'Styles',
+                  'Contact',
+                  'Thank You',
+                  'My Account',
+                  '404 Error',
                 ].map((page, idx) => (
                   <li key={idx}>
-                    <a href="/" className="dropdown-item">
-                      {page}
-                    </a>
+                    <a href="/" className="dropdown-item">{page}</a>
                   </li>
                 ))}
               </ul>
@@ -207,36 +194,34 @@ const Home = () => {
           </ul>
         </div>
 
+
         <section
           className="py-3"
           style={{
             backgroundImage: "url('./styles/images/background-pattern.jpg')",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "cover",
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
           }}
         >
           <div className="container-fluid">
             <div className="row">
               <div className="col-md-12">
                 <div className="banner-blocks">
-                  <div
-                    className="banner-ad large bg-info block-1"
-                    style={{ "--bs-info-rgb": "230, 243, 250" }}
-                  >
+                  <div className="banner-ad large bg-info block-1" style={{ '--bs-info-rgb': '230, 243, 250' }}>
                     <div className="swiper main-swiper">
                       <div className="swiper-wrapper">
                         <div className="swiper-slide">
-                          <div className="row banner-content p-5">
+                          <div
+                            className="row banner-content p-5"
+
+                          >
+
                             <div className="content-wrapper col-md-7">
-                              <div className="categories my-3">
-                                100% natural
-                              </div>
-                              <h3 className="display-4">
-                                Fresh Smoothie & Summer Juice
-                              </h3>
+                              <div className="categories my-3">100% natural</div>
+                              <h3 className="display-4">Fresh Smoothie & Summer Juice</h3>
                               <p>
-                                Lorem ipsum dolor sit amet, consectetur
-                                adipiscing elit. Dignissim massa diam elementum.
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                Dignissim massa diam elementum.
                               </p>
                               <a
                                 href="#"
@@ -257,15 +242,11 @@ const Home = () => {
                         <div className="swiper-slide">
                           <div className="row banner-content p-5">
                             <div className="content-wrapper col-md-7">
-                              <div className="categories mb-3 pb-3">
-                                100% natural
-                              </div>
-                              <h3 className="banner-title">
-                                Fresh Smoothie & Summer Juice
-                              </h3>
+                              <div className="categories mb-3 pb-3">100% natural</div>
+                              <h3 className="banner-title">Fresh Smoothie & Summer Juice</h3>
                               <p>
-                                Lorem ipsum dolor sit amet, consectetur
-                                adipiscing elit. Dignissim massa diam elementum.
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                Dignissim massa diam elementum.
                               </p>
                               <a
                                 href="#"
@@ -286,15 +267,11 @@ const Home = () => {
                         <div className="swiper-slide">
                           <div className="row banner-content p-5">
                             <div className="content-wrapper col-md-7">
-                              <div className="categories mb-3 pb-3">
-                                100% natural
-                              </div>
-                              <h3 className="banner-title">
-                                Heinz Tomato Ketchup
-                              </h3>
+                              <div className="categories mb-3 pb-3">100% natural</div>
+                              <h3 className="banner-title">Heinz Tomato Ketchup</h3>
                               <p>
-                                Lorem ipsum dolor sit amet, consectetur
-                                adipiscing elit. Dignissim massa diam elementum.
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                Dignissim massa diam elementum.
                               </p>
                               <a
                                 href="#"
@@ -320,20 +297,16 @@ const Home = () => {
                   <div
                     className="banner-ad bg-success-subtle block-2"
                     style={{
-                      background:
-                        "url('./styles/images/ad-image-1.png') no-repeat",
-                      backgroundPosition: "right bottom",
+                      background: "url('./styles/images/ad-image-1.png') no-repeat",
+                      backgroundPosition: 'right bottom',
                     }}
                   >
                     <div className="row banner-content p-5">
                       <div className="content-wrapper col-md-7">
                         <div className="categories sale mb-3 pb-3">20% off</div>
                         <h3 className="banner-title">Fruits & Vegetables</h3>
-                        <a
-                          href="#"
-                          className="d-flex align-items-center nav-link"
-                        >
-                          Shop Collection{" "}
+                        <a href="#" className="d-flex align-items-center nav-link">
+                          Shop Collection{' '}
                           <svg width="24" height="24">
                             <use href="#arrow-right" />
                           </svg>
@@ -345,21 +318,18 @@ const Home = () => {
                   <div
                     className="banner-ad bg-danger block-3"
                     style={{
-                      "--bs-danger-rgb": "249, 235, 231",
-                      background:
-                        "url('./styles/images/ad-image-2.png') no-repeat",
-                      backgroundPosition: "right bottom",
+                      '--bs-danger-rgb': '249, 235, 231',
+                      background: "url('./styles/images/ad-image-2.png') no-repeat",
+                      backgroundPosition: 'right bottom',
                     }}
                   >
+
                     <div className="row banner-content p-5">
                       <div className="content-wrapper col-md-7">
                         <div className="categories sale mb-3 pb-3">15% off</div>
                         <h3 className="item-title">Baked Products</h3>
-                        <a
-                          href="#"
-                          className="d-flex align-items-center nav-link"
-                        >
-                          Shop Collection{" "}
+                        <a href="#" className="d-flex align-items-center nav-link">
+                          Shop Collection{' '}
                           <svg width="24" height="24">
                             <use href="#arrow-right" />
                           </svg>
@@ -383,6 +353,8 @@ const Home = () => {
 
         {/* Footer */}
         <Footer />
+
+
       </div>
     </HelmetProvider>
   );
