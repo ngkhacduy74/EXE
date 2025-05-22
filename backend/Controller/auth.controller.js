@@ -15,25 +15,54 @@ async function getUserByEmail(params) {
 }
 
 async function Login(params) {
-  const user = await User.findOne({ email: params.email });
-  console.log("account", params.email);
-  if (!user) {
-    throw new Error("Tài khoản không tồn tại!");
+  try {
+    const user = await User.findOne({ email: params.email });
+    console.log("account", params.email);
+
+    if (!user) {
+      return {
+        status: false,
+        code: 404,
+        message: "Tài khoản không tồn tại!",
+      };
+    }
+
+    console.log("Mật khẩu nhận được:", params.password);
+
+    const checkPassword = await bcrypt.compare(params.password, user.password);
+    if (!checkPassword) {
+      return {
+        status: false,
+        code: 401,
+        message: "Mật khẩu không chính xác",
+      };
+    }
+
+    const sendotp = await sendOTP(params.email);
+    console.log("Gửi OTP:", sendotp);
+
+    if (!sendotp) {
+      return {
+        status: false,
+        code: 500,
+        message: "Không thể gửi OTP. Vui lòng thử lại sau.",
+      };
+    }
+
+    return {
+      status: true,
+      code: 200,
+      message: "Gửi OTP thành công. Vui lòng kiểm tra email.",
+      data: { email: params.email },
+    };
+  } catch (err) {
+    console.error("Lỗi hệ thống:", err);
+    return {
+      status: false,
+      code: 500,
+      message: "Đã xảy ra lỗi. Vui lòng thử lại sau.",
+    };
   }
-  console.log("alkjdasdj", params.password);
-  const checkPassword = await bcrypt.compare(params.password, user.password);
-  if (!checkPassword) {
-    throw new Error("Mật khẩu không chính xác");
-  }
-  const sendotp = await sendOTP(params.email);
-  console.log("kajdkad", sendotp);
-  if (sendotp) {
-    console.log("OTP send successful");
-  } else {
-    throw new Error("không thể gửi OTP. Vui lòng thử lại sau.");
-  }
-  // cần xác minh được otp đã rồi mới đẩy token lên web
-  return { success: true, email: params.email };
 }
 
 async function Register(params) {

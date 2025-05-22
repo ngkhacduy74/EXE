@@ -2,7 +2,7 @@ const Product = require("../Model/product.model");
 const mongoose = require("mongoose");
 const { v1 } = require("uuid");
 
-const createProduct = async (data) => {
+const createProduct = async (data, tokenHeader) => {
   const {
     image,
     video,
@@ -18,27 +18,40 @@ const createProduct = async (data) => {
     voltage,
     features,
   } = data;
+
+  const seller = tokenHeader;
+
   const newProduct = new Product({
     id: v1(),
-    image: image,
-    video: video,
-    name: name,
-    brand: brand,
-    price: price,
-    description: description,
-    size: size,
-    weight: weight,
-    status: status,
-    warranty_period: warranty_period,
-    capacity: capacity,
-    voltage: voltage,
-    features: features,
+    image,
+    video,
+    name,
+    brand,
+    price,
+    description,
+    size,
+    weight,
+    status,
+    warranty_period,
+    capacity,
+    voltage,
+    features,
+    creator: {
+      id: seller.user.id,
+      fullname: seller.user.fullname,
+      email: seller.user.email,
+      phone: seller.user.phone,
+      address: seller.user.address,
+      gender: seller.user.gender,
+    },
   });
+
   try {
-    await newProduct.save();
+    const savedProduct = await newProduct.save();
     return {
       success: true,
       message: "Save successfully",
+      data: savedProduct,
     };
   } catch (err) {
     return {
@@ -49,6 +62,7 @@ const createProduct = async (data) => {
     };
   }
 };
+
 const getProductById = async (id) => {
   const product = await Product.findOne({ id: id });
   if (!product) {
