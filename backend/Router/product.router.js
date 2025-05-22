@@ -10,14 +10,12 @@ const {
   loadAllProduct,
   getProductById,
 } = require("../Controller/product.controller");
+
 router.post(
   "/createProduct",
   productMiddleware.productMiddleware,
   async (req, res) => {
     const authHeader = req.headers.token;
-    console.log("Token nhận được:", authHeader);
-
-    // Bước 1: Kiểm tra token trước
     let decoded;
     try {
       decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
@@ -40,8 +38,6 @@ router.post(
         });
       }
     }
-
-    // Bước 2: Nếu token hợp lệ => tiến hành tạo sản phẩm
     try {
       const result = await createProduct(req.body, decoded);
 
@@ -67,6 +63,7 @@ router.post(
     }
   }
 );
+
 router.put("/update/:id", async (req, res) => {
   const data = req.body;
   const result = await updateProduct(req.params.id, data);
@@ -87,6 +84,7 @@ router.get("/status/:status", async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
+
 router.get("/", async (req, res) => {
   const result = await loadAllProduct();
   if (result.success === false) {
@@ -94,6 +92,7 @@ router.get("/", async (req, res) => {
   }
   res.status(200).json(result);
 });
+
 router.get("/:id", async (req, res) => {
   const result = await getProductById(req.params.id);
   if (result.success === false) {
@@ -101,6 +100,7 @@ router.get("/:id", async (req, res) => {
   }
   res.status(200).json(result);
 });
+
 router.delete("/:id", async (req, res) => {
   const result = await deleteProduct(req.params.id);
   if (result.success === false) {
