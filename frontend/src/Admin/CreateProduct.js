@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Container, Row, Col, Form, Button, Card, Alert, Spinner } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  Card,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ArrowLeft, Upload, X, Save, Eye } from "lucide-react";
@@ -25,10 +34,10 @@ const CreateProduct = () => {
       weight: "",
       color: "",
       material: "",
-      warranty: ""
+      warranty: "",
     },
     features: [""],
-    image: null
+    image: null,
   });
 
   const [errors, setErrors] = useState({});
@@ -38,22 +47,22 @@ const CreateProduct = () => {
     const { name, value } = e.target;
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         [parent]: {
           ...prev[parent],
-          [child]: value
-        }
+          [child]: value,
+        },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -61,20 +70,20 @@ const CreateProduct = () => {
   const handleFeatureChange = (index, value) => {
     const newFeatures = [...formData.features];
     newFeatures[index] = value;
-    setFormData(prev => ({ ...prev, features: newFeatures }));
+    setFormData((prev) => ({ ...prev, features: newFeatures }));
   };
 
   const addFeature = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      features: [...prev.features, ""]
+      features: [...prev.features, ""],
     }));
   };
 
   const removeFeature = (index) => {
     if (formData.features.length > 1) {
       const newFeatures = formData.features.filter((_, i) => i !== index);
-      setFormData(prev => ({ ...prev, features: newFeatures }));
+      setFormData((prev) => ({ ...prev, features: newFeatures }));
     }
   };
 
@@ -83,19 +92,19 @@ const CreateProduct = () => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         setError("Please select a valid image file");
         return;
       }
-      
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setError("Image size should be less than 5MB");
         return;
       }
 
-      setFormData(prev => ({ ...prev, image: file }));
-      
+      setFormData((prev) => ({ ...prev, image: file }));
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -107,21 +116,24 @@ const CreateProduct = () => {
   };
 
   const removeImage = () => {
-    setFormData(prev => ({ ...prev, image: null }));
+    setFormData((prev) => ({ ...prev, image: null }));
     setImagePreview(null);
   };
 
   // Form validation
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) newErrors.name = "Product name is required";
     if (!formData.brand.trim()) newErrors.brand = "Brand is required";
-    if (!formData.price || formData.price <= 0) newErrors.price = "Valid price is required";
-    if (!formData.capacity || formData.capacity <= 0) newErrors.capacity = "Valid capacity is required";
+    if (!formData.price || formData.price <= 0)
+      newErrors.price = "Valid price is required";
+    if (!formData.capacity || formData.capacity <= 0)
+      newErrors.capacity = "Valid capacity is required";
     if (!formData.category.trim()) newErrors.category = "Category is required";
-    if (!formData.description.trim()) newErrors.description = "Description is required";
-    
+    if (!formData.description.trim())
+      newErrors.description = "Description is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -129,7 +141,7 @@ const CreateProduct = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       setError("Please fill in all required fields");
       return;
@@ -142,39 +154,51 @@ const CreateProduct = () => {
     try {
       // Create FormData for file upload
       const submitData = new FormData();
-      
+
       // Add all form fields
-      submitData.append('name', formData.name);
-      submitData.append('brand', formData.brand);
-      submitData.append('price', formData.price);
-      submitData.append('capacity', formData.capacity);
-      submitData.append('status', formData.status);
-      submitData.append('description', formData.description);
-      submitData.append('category', formData.category);
-      submitData.append('specifications', JSON.stringify(formData.specifications));
-      submitData.append('features', JSON.stringify(formData.features.filter(f => f.trim())));
-      
+      submitData.append("name", formData.name);
+      submitData.append("brand", formData.brand);
+      submitData.append("price", formData.price);
+      submitData.append("capacity", formData.capacity);
+      submitData.append("status", formData.status);
+      submitData.append("description", formData.description);
+      submitData.append("category", formData.category);
+      submitData.append(
+        "specifications",
+        JSON.stringify(formData.specifications)
+      );
+      submitData.append(
+        "features",
+        JSON.stringify(formData.features.filter((f) => f.trim()))
+      );
+
       if (formData.image) {
-        submitData.append('image', formData.image);
+        submitData.append("image", formData.image);
       }
 
-      const response = await axios.post("http://localhost:4000/product/create", submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await axios.post(
+        `${process.env.BACKEND_API}/product/create`,
+        submitData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      });
+      );
 
       setSuccess("Product created successfully!");
-      
+
       // Redirect after 2 seconds
       setTimeout(() => {
         navigate("/manage-products");
       }, 2000);
-
     } catch (err) {
       console.error("Create product error:", err);
-      setError(err.response?.data?.message || "Failed to create product. Please try again.");
+      setError(
+        err.response?.data?.message ||
+          "Failed to create product. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -422,7 +446,11 @@ const CreateProduct = () => {
                 <Card className="mb-4">
                   <Card.Header className="d-flex justify-content-between align-items-center">
                     <h5 className="mb-0">Features</h5>
-                    <Button variant="outline-primary" size="sm" onClick={addFeature}>
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
+                      onClick={addFeature}
+                    >
                       Add Feature
                     </Button>
                   </Card.Header>
@@ -432,7 +460,9 @@ const CreateProduct = () => {
                         <Form.Control
                           type="text"
                           value={feature}
-                          onChange={(e) => handleFeatureChange(index, e.target.value)}
+                          onChange={(e) =>
+                            handleFeatureChange(index, e.target.value)
+                          }
                           placeholder={`Feature ${index + 1}`}
                         />
                         {formData.features.length > 1 && (
@@ -467,7 +497,11 @@ const CreateProduct = () => {
                           style={{ maxHeight: "200px", borderRadius: "8px" }}
                         />
                         <div>
-                          <Button variant="outline-danger" size="sm" onClick={removeImage}>
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={removeImage}
+                          >
                             <X size={16} className="me-1" />
                             Remove
                           </Button>
@@ -513,7 +547,7 @@ const CreateProduct = () => {
                           </>
                         )}
                       </Button>
-                      
+
                       <Button
                         variant="outline-info"
                         onClick={handlePreview}
@@ -522,7 +556,7 @@ const CreateProduct = () => {
                         <Eye size={20} className="me-2" />
                         Preview
                       </Button>
-                      
+
                       <Button
                         variant="outline-secondary"
                         onClick={() => navigate("/manage-products")}

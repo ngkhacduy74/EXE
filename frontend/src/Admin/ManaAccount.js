@@ -19,7 +19,9 @@ function ManaAccount() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/user/allUser");
+        const response = await axios.get(
+          `${process.env.BACKEND_API}/user/allUser`
+        );
         let userData = [];
 
         if (response.data.success && Array.isArray(response.data.data)) {
@@ -157,7 +159,9 @@ function ManaAccount() {
                       <td>{user.fullname}</td>
                       <td>{user.email}</td>
                       <td>{user.role}</td>
-                      <td>{user.is_active === "true" ? "Active" : "Inactive"}</td>
+                      <td>
+                        {user.is_active === "true" ? "Active" : "Inactive"}
+                      </td>
                       <td>
                         <Button
                           variant="info"

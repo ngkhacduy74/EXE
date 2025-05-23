@@ -21,7 +21,7 @@ const ManagePost = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/post/");
+        const response = await axios.get(`${process.env.BACKEND_API}/post/`);
         console.log("API Response:", response.data);
 
         // Extract the post array
@@ -105,7 +105,7 @@ const ManagePost = () => {
   const handleToggleStatus = async (postId, currentStatus) => {
     try {
       const newStatus = currentStatus === "New" ? "Discontinued" : "New";
-      await axios.patch(`http://localhost:4000/post/${postId}`, {
+      await axios.patch(`${process.env.BACKEND_API}/post/${postId}`, {
         status: newStatus,
       });
       setPosts(

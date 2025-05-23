@@ -7,7 +7,6 @@ const {
 } = require("../Middleware/file.middleware");
 
 router.post("/upload-image", uploadImageMiddleware, async (req, res) => {
-  console.log("FILES:", req.files);
   const link_img = req.files?.img || [];
   res.send(link_img);
 });
