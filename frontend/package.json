@@ -26,6 +26,7 @@
     "react-router-dom": "^7.1.5",
     "react-scripts": "5.0.1",
     "redux-saga": "^0.16.2",
+    "swiper": "^11.2.8",
     "web-vitals": "^4.2.4"
   },
   "scripts": {
