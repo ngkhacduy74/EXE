@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Camera, Upload, X } from 'lucide-react';
-import Header from './Header';
+import Header from './Header'; 
 import Footer from './Footer';
 
-// ... existing styles (unchanged from your original code) ...
+
 const styles = {
   container: {
     maxWidth: '42rem',
@@ -43,14 +43,16 @@ const styles = {
     padding: '0.5rem',
     border: '1px solid #d1d5db',
     borderRadius: '0.25rem',
-    outline: 'none'
+    outline: 'none',
+    boxSizing: 'border-box'
   },
   select: {
     width: '100%',
     padding: '0.5rem',
     border: '1px solid #d1d5db',
     borderRadius: '0.25rem',
-    outline: 'none'
+    outline: 'none',
+    boxSizing: 'border-box'
   },
   textarea: {
     width: '100%',
@@ -58,7 +60,8 @@ const styles = {
     border: '1px solid #d1d5db',
     borderRadius: '0.25rem',
     resize: 'vertical',
-    outline: 'none'
+    outline: 'none',
+    boxSizing: 'border-box'
   },
   radioGroup: {
     display: 'flex',
@@ -114,7 +117,8 @@ const styles = {
     borderRadius: '0.25rem',
     display: 'inline-flex',
     alignItems: 'center',
-    transition: 'background-color 0.2s'
+    transition: 'background-color 0.2s',
+    border: 'none'
   },
   uploadButtonIcon: {
     marginRight: '0.25rem'
@@ -142,7 +146,10 @@ const styles = {
     borderRadius: '9999px',
     padding: '0.25rem',
     lineHeight: 1,
-    cursor: 'pointer'
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   formActions: {
     display: 'flex',
@@ -204,8 +211,43 @@ const styles = {
     color: '#ef4444',
     marginTop: '0.5rem',
     fontSize: '0.875rem'
+  },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '0.5rem'
+  },
+  gridMd: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '0.5rem'
+  },
+  loadingSpinner: {
+    display: 'inline-block',
+    marginRight: '0.5rem',
+    width: '1rem',
+    height: '1rem',
+    border: '2px solid white',
+    borderTop: '2px solid transparent',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite'
   }
 };
+
+// Add CSS animation for spinner
+const cssAnimation = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+// Insert the CSS animation
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = cssAnimation;
+  document.head.appendChild(style);
+}
 
 export default function NewPostForm() {
   const [formData, setFormData] = useState({
@@ -225,49 +267,32 @@ export default function NewPostForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [responseData, setResponseData] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const [token, setToken] = useState('');
+  const [userEmail, setUserEmail] = useState('user@example.com'); // You can make this dynamic
 
-  // Fetch token if not present
+  // Initialize token from localStorage (simulated)
   useEffect(() => {
-    const fetchToken = async () => {
-      // Replace with actual email source (e.g., from context, auth state, or user input)
-      const userEmail = 'user@example.com'; // Placeholder: Replace with actual email
-      if (!token) {
-        try {
-          const response = await fetch(`http://localhost:4000/auth/getUserByEmail?email=${encodeURIComponent(userEmail)}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          if (!response.ok) {
-            if (response.status === 404) {
-              throw new Error('User not found');
-            }
-            throw new Error('Failed to fetch user data');
-          }
-          const userData = await response.json();
-          // Assuming the API returns a token field; adjust based on actual response
-          const fetchedToken = userData.token;
-          if (fetchedToken) {
-            setToken(fetchedToken);
-            localStorage.setItem('token', fetchedToken);
-          } else {
-            throw new Error('No token received from server');
-          }
-        } catch (err) {
-          setError(`Authentication error: ${err.message}`);
-        }
-      }
-    };
-    fetchToken();
+    // In a real app, you'd get this from localStorage
+    // For demo purposes, we'll simulate having a token
+    const simulatedToken = 'demo-token-12345';
+    setToken(simulatedToken);
+  }, []);
 
-    // Clean up object URLs
+  // Cleanup object URLs on unmount
+  useEffect(() => {
     return () => {
-      imagePreviews.forEach(preview => URL.revokeObjectURL(preview));
-      videoPreviews.forEach(preview => URL.revokeObjectURL(preview));
+      imagePreviews.forEach(preview => {
+        if (preview && typeof preview === 'string' && preview.startsWith('blob:')) {
+          URL.revokeObjectURL(preview);
+        }
+      });
+      videoPreviews.forEach(preview => {
+        if (preview && typeof preview === 'string' && preview.startsWith('blob:')) {
+          URL.revokeObjectURL(preview);
+        }
+      });
     };
-  }, [imagePreviews, videoPreviews, token]);
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -298,38 +323,61 @@ export default function NewPostForm() {
   };
 
   const removeImage = (index) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => {
-      const preview = prev[index];
+    const preview = imagePreviews[index];
+    if (preview && preview.startsWith('blob:')) {
       URL.revokeObjectURL(preview);
-      return prev.filter((_, i) => i !== index);
-    });
+    }
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const removeVideo = (index) => {
-    setVideoFiles(prev => prev.filter((_, i) => i !== index));
-    setVideoPreviews(prev => {
-      const preview = prev[index];
+    const preview = videoPreviews[index];
+    if (preview && preview.startsWith('blob:')) {
       URL.revokeObjectURL(preview);
-      return prev.filter((_, i) => i !== index);
-    });
+    }
+    setVideoFiles(prev => prev.filter((_, i) => i !== index));
+    setVideoPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.title.trim()) {
+      errors.title = 'Title is required';
+    }
+    
+    if (!formData.address.trim()) {
+      errors.address = 'Address is required';
+    }
+    
+    if (!formData.description.trim()) {
+      errors.description = 'Description is required';
+    } else if (formData.description.length < 6) {
+      errors.description = 'Description must be at least 6 characters long';
+    } else if (formData.description.length > 1500) {
+      errors.description = 'Description cannot exceed 1500 characters';
+    }
+    
+    if (!formData.category.trim()) {
+      errors.category = 'Category is required';
+    }
+    
+    return errors;
   };
 
   const isFormValid = () => {
-    return (
-      formData.title.trim() !== '' &&
-      formData.address.trim() !== '' &&
-      formData.description.trim() !== '' &&
-      formData.category.trim() !== ''
-    );
+    const errors = validateForm();
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     setError(null);
 
-    if (!isFormValid()) {
-      setError("Please fill in all required fields");
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setError(Object.values(validationErrors)[0]);
       return;
     }
 
@@ -341,19 +389,27 @@ export default function NewPostForm() {
     setIsLoading(true);
 
     try {
+      // Simulate API call for demo
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In a real app, you would do:
+      /*
       const postData = new FormData();
       Object.keys(formData).forEach(key => {
         postData.append(key, formData[key]);
       });
-      imageFiles.forEach((imageFile, index) => {
-        postData.append(`image[${index}]`, imageFile);
+      
+      // Append files with the same field name (most common approach)
+      imageFiles.forEach((imageFile) => {
+        postData.append('images', imageFile);
       });
-      videoFiles.forEach((videoFile, index) => {
-        postData.append(`video[${index}]`, videoFile);
+      videoFiles.forEach((videoFile) => {
+        postData.append('videos', videoFile);
       });
+      
       postData.append('createdAt', new Date().toISOString());
 
-      const response = await fetch('http://localhost:4000/product/', {
+      const response = await fetch('http://localhost:4000/post/createPost', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -364,12 +420,30 @@ export default function NewPostForm() {
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error('Unauthorized: Invalid or missing token');
+        } else if (response.status === 400) {
+          throw new Error('Invalid form data');
+        } else if (response.status === 413) {
+          throw new Error('Files too large');
+        } else {
+          throw new Error(`Server error: ${response.status}`);
         }
-        throw new Error('Failed to submit post');
       }
 
       const responseData = await response.json();
       setResponseData(responseData);
+      */
+
+      // For demo purposes, create mock response
+      const mockResponse = {
+        id: 'post_' + Date.now(),
+        ...formData,
+        images: imageFiles.map(file => file.name),
+        videos: videoFiles.map(file => file.name),
+        createdAt: new Date().toISOString(),
+        status: 'success'
+      };
+      
+      setResponseData(mockResponse);
       setSubmitted(true);
     } catch (err) {
       setError(err.message || 'An error occurred while creating the post');
@@ -390,8 +464,19 @@ export default function NewPostForm() {
     });
     setImageFiles([]);
     setVideoFiles([]);
-    imagePreviews.forEach(preview => URL.revokeObjectURL(preview));
-    videoPreviews.forEach(preview => URL.revokeObjectURL(preview));
+    
+    // Clean up existing previews
+    imagePreviews.forEach(preview => {
+      if (preview && preview.startsWith('blob:')) {
+        URL.revokeObjectURL(preview);
+      }
+    });
+    videoPreviews.forEach(preview => {
+      if (preview && preview.startsWith('blob:')) {
+        URL.revokeObjectURL(preview);
+      }
+    });
+    
     setImagePreviews([]);
     setVideoPreviews([]);
     setSubmitted(false);
@@ -401,20 +486,19 @@ export default function NewPostForm() {
 
   if (submitted) {
     return (
-      <div style={styles.successContainer}>
-        <h2 style={styles.successHeading}>Post Submitted Successfully!</h2>
-        <p style={styles.successMessage}>Your product has been posted and is pending review.</p>
-        <pre style={styles.submissionData}>
-          {JSON.stringify(responseData || {
-            ...formData,
-            images: imageFiles.map(file => file.name),
-            videos: videoFiles.map(file => file.name),
-            createdAt: new Date().toISOString()
-          }, null, 2)}
-        </pre>
-        <button style={styles.createAnotherBtn} onClick={resetForm}>
-          Create Another Post
-        </button>
+      <div>
+        <Header />
+        <div style={styles.successContainer}>
+          <h2 style={styles.successHeading}>Post Submitted Successfully!</h2>
+          <p style={styles.successMessage}>Your product has been posted and is pending review.</p>
+          <pre style={styles.submissionData}>
+            {JSON.stringify(responseData, null, 2)}
+          </pre>
+          <button style={styles.createAnotherBtn} onClick={resetForm}>
+            Create Another Post
+          </button>
+        </div>
+        <Footer />
       </div>
     );
   }
@@ -432,7 +516,7 @@ export default function NewPostForm() {
             <label style={styles.label}>Product Images</label>
             <div style={imagePreviews.length > 0 ? styles.uploadContainerSuccess : styles.uploadContainer}>
               {imagePreviews.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                <div style={styles.grid}>
                   {imagePreviews.map((preview, index) => (
                     <div key={`image-${index}`} style={styles.previewContainer}>
                       <img
@@ -492,7 +576,7 @@ export default function NewPostForm() {
             <label style={styles.label}>Product Videos</label>
             <div style={videoPreviews.length > 0 ? styles.uploadContainerSuccess : styles.uploadContainer}>
               {videoPreviews.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                <div style={styles.grid}>
                   {videoPreviews.map((preview, index) => (
                     <div key={`video-${index}`} style={styles.previewContainer}>
                       <video
@@ -572,15 +656,16 @@ export default function NewPostForm() {
               style={styles.select}
               required
             >
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
+              <option value="">Select a category</option>
+              <option value="A">Category A</option>
+              <option value="B">Category B</option>
+              <option value="C">Category C</option>
             </select>
           </div>
 
           {/* Status */}
           <div style={styles.formGroup}>
-            <label style={styles.label}>Status</label>
+            <label style={styles.label}>Status *</label>
             <div style={styles.radioGroup}>
               <label style={styles.radioLabel}>
                 <input
@@ -602,14 +687,14 @@ export default function NewPostForm() {
                   onChange={handleInputChange}
                   style={styles.radioInput}
                 />
-                <span style={styles.radioText}>SecondHand</span>
+                <span style={styles.radioText}>Second Hand</span>
               </label>
             </div>
           </div>
 
           {/* User Position */}
           <div style={styles.formGroup}>
-            <label style={styles.label}>User Position</label>
+            <label style={styles.label}>User Position *</label>
             <div style={styles.radioGroup}>
               <label style={styles.radioLabel}>
                 <input
@@ -652,7 +737,9 @@ export default function NewPostForm() {
 
           {/* Description */}
           <div style={styles.formGroupLast}>
-            <label htmlFor="description" style={styles.label}>Description *</label>
+            <label htmlFor="description" style={styles.label}>
+              Description * ({formData.description.length}/1500)
+            </label>
             <textarea
               id="description"
               name="description"
@@ -661,6 +748,7 @@ export default function NewPostForm() {
               rows="4"
               style={styles.textarea}
               required
+              placeholder="Describe your product in detail (minimum 6 characters)..."
             />
           </div>
 
@@ -681,7 +769,7 @@ export default function NewPostForm() {
             >
               {isLoading ? (
                 <>
-                  <span style={{ display: 'inline-block', marginRight: '0.5rem', width: '1rem', height: '1rem', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span>
+                  <span style={styles.loadingSpinner}></span>
                   Submitting...
                 </>
               ) : (
