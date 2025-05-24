@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  Card,
-  Alert,
-  Spinner,
-} from "react-bootstrap";
+import { Container, Row, Col, Form, Button, Card, Alert, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ArrowLeft, Upload, X, Save, Eye } from "lucide-react";
@@ -30,15 +21,12 @@ const CreateProduct = () => {
     status: "New",
     description: "",
     category: "",
-    specifications: {
-      dimensions: "",
-      weight: "",
-      color: "",
-      material: "",
-      warranty: ""
-    },
-    features: [""],
-    image: null
+    size: "",
+    weight: "",
+    voltage: "",
+    features: [{ title: "", description: "" }],
+    images: [],
+    videos: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -46,22 +34,7 @@ const CreateProduct = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes(".")) {
-      const [parent, child] = name.split(".");
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-    // Clear error when user starts typing
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -70,14 +43,17 @@ const CreateProduct = () => {
   // Handle features array
   const handleFeatureChange = (index, field, value) => {
     const newFeatures = [...formData.features];
-    newFeatures[index] = value;
-    setFormData(prev => ({ ...prev, features: newFeatures }));
+    newFeatures[index] = { ...newFeatures[index], [field]: value };
+    setFormData((prev) => ({ ...prev, features: newFeatures }));
+    if (errors.features) {
+      setErrors((prev) => ({ ...prev, features: "" }));
+    }
   };
 
   const addFeature = () => {
     setFormData((prev) => ({
       ...prev,
-      features: [...prev.features, ""]
+      features: [...prev.features, { title: "", description: "" }],
     }));
   };
 
@@ -90,48 +66,88 @@ const CreateProduct = () => {
 
   // Handle multiple image upload (max 3)
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        setError("Please select a valid image file");
-        return;
-      }
-      
-      // Validate file size (max 5MB)
+    const files = Array.from(e.target.files);
+    if (formData.images.length + files.length > 3) {
+      setError("Chỉ được tải lên tối đa 3 ảnh");
+      return;
+    }
+    const validImages = files.filter((file) => file.type.startsWith("image/"));
+    if (validImages.length !== files.length) {
+      setError("Một số file không phải ảnh hợp lệ");
+      return;
+    }
+    validImages.forEach((file) => {
       if (file.size > 5 * 1024 * 1024) {
         setError("Mỗi ảnh phải nhỏ hơn 5MB");
         return;
       }
-
-      setFormData(prev => ({ ...prev, image: file }));
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-      setError("");
-    }
+    });
+    const newPreviews = validImages.map((file) => URL.createObjectURL(file));
+    setFormData((prev) => ({ ...prev, images: [...prev.images, ...validImages] }));
+    setImagePreviews((prev) => [...prev, ...newPreviews]);
+    setError("");
   };
 
-  const removeImage = () => {
-    setFormData(prev => ({ ...prev, image: null }));
-    setImagePreview(null);
+  // Handle single video upload (max 1)
+  const handleVideoChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (formData.videos.length + files.length > 1) {
+      setError("Chỉ được tải lên tối đa 1 video");
+      return;
+    }
+    const validVideos = files.filter((file) => file.type.startsWith("video/"));
+    if (validVideos.length !== files.length) {
+      setError("File không phải video hợp lệ");
+      return;
+    }
+    validVideos.forEach((file) => {
+      if (file.size > 10 * 1024 * 1024) {
+        setError("Video phải nhỏ hơn 10MB");
+        return;
+      }
+    });
+    const newPreviews = validVideos.map((file) => URL.createObjectURL(file));
+    setFormData((prev) => ({ ...prev, videos: [...prev.videos, ...validVideos] }));
+    setVideoPreviews((prev) => [...prev, ...newPreviews]);
+    setError("");
+  };
+
+  // Remove image
+  const removeImage = (index) => {
+    URL.revokeObjectURL(imagePreviews[index]);
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Remove video
+  const removeVideo = (index) => {
+    URL.revokeObjectURL(videoPreviews[index]);
+    setFormData((prev) => ({
+      ...prev,
+      videos: prev.videos.filter((_, i) => i !== index),
+    }));
+    setVideoPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Form validation
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.name.trim()) newErrors.name = "Product name is required";
-    if (!formData.brand.trim()) newErrors.brand = "Brand is required";
-    if (!formData.price || formData.price <= 0) newErrors.price = "Valid price is required";
-    if (!formData.capacity || formData.capacity <= 0) newErrors.capacity = "Valid capacity is required";
-    if (!formData.category.trim()) newErrors.category = "Category is required";
-    if (!formData.description.trim()) newErrors.description = "Description is required";
-    
+    if (!formData.name.trim()) newErrors.name = "Tên sản phẩm là bắt buộc";
+    if (!formData.brand.trim()) newErrors.brand = "Thương hiệu là bắt buộc";
+    if (!formData.price || formData.price <= 0) newErrors.price = "Giá phải lớn hơn 0";
+    if (!formData.capacity || formData.capacity <= 0) newErrors.capacity = "Dung tích phải lớn hơn 0";
+    if (!formData.category.trim()) newErrors.category = "Danh mục là bắt buộc";
+    if (!formData.description.trim()) newErrors.description = "Mô tả là bắt buộc";
+    if (!formData.size.trim()) newErrors.size = "Kích thước là bắt buộc";
+    if (!formData.weight || formData.weight <= 0) newErrors.weight = "Trọng lượng phải lớn hơn 0";
+    if (!formData.voltage.trim()) newErrors.voltage = "Điện áp là bắt buộc";
+    if (formData.features.some((f) => !f.title.trim() || !f.description.trim())) {
+      newErrors.features = "Tất cả tính năng phải có tiêu đề và mô tả";
+    }
+    if (formData.images.length === 0) newErrors.images = "Phải tải lên ít nhất 1 ảnh";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -157,38 +173,51 @@ const CreateProduct = () => {
 
     try {
       const submitData = new FormData();
-      
-      // Add all form fields
-      submitData.append('name', formData.name);
-      submitData.append('brand', formData.brand);
-      submitData.append('price', formData.price);
-      submitData.append('capacity', formData.capacity);
-      submitData.append('status', formData.status);
-      submitData.append('description', formData.description);
-      submitData.append('category', formData.category);
-      submitData.append('specifications', JSON.stringify(formData.specifications));
-      submitData.append('features', JSON.stringify(formData.features.filter(f => f.trim())));
-      
-      if (formData.image) {
-        submitData.append('image', formData.image);
-      }
+      submitData.append("name", formData.name);
+      submitData.append("brand", formData.brand);
+      submitData.append("price", formData.price);
+      submitData.append("capacity", formData.capacity);
+      submitData.append("status", formData.status);
+      submitData.append("description", formData.description);
+      submitData.append("category", formData.category);
+      submitData.append("size", formData.size);
+      submitData.append("weight", formData.weight);
+      submitData.append("voltage", formData.voltage);
+      submitData.append("features", JSON.stringify(formData.features.map((f) => ({ title: f.title, description: f.description }))));
+
+      formData.images.forEach((image) => submitData.append("images", image));
+      formData.videos.forEach((video) => submitData.append("videos", video));
 
       const response = await axios.post("http://localhost:4000/product/create", submitData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      setSuccess("Product created successfully!");
-      
-      // Redirect after 2 seconds
+      setSuccess("Tạo sản phẩm thành công!");
       setTimeout(() => {
         navigate("/manage-products");
       }, 2000);
     } catch (err) {
-      console.error("Create product error:", err);
-      setError(err.response?.data?.message || "Failed to create product. Please try again.");
+      console.error("Lỗi khi tạo sản phẩm:", err);
+      let errorMessage = "Không thể tạo sản phẩm. Vui lòng thử lại.";
+      if (err.response) {
+        switch (err.response.status) {
+          case 401:
+            errorMessage = "Không được phép: Token không hợp lệ hoặc hết hạn";
+            break;
+          case 400:
+            errorMessage = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại các trường";
+            break;
+          case 413:
+            errorMessage = "File tải lên quá lớn";
+            break;
+          default:
+            errorMessage = err.response.data?.message || errorMessage;
+        }
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -389,31 +418,40 @@ const CreateProduct = () => {
 
                 <Card className="mb-4">
                   <Card.Header className="d-flex justify-content-between align-items-center">
-                    <h5 className="mb-0">Features</h5>
+                    <h5 className="mb-0">Tính năng</h5>
                     <Button variant="outline-primary" size="sm" onClick={addFeature}>
-                      Add Feature
+                      Thêm tính năng
                     </Button>
                   </Card.Header>
                   <Card.Body>
                     {formData.features.map((feature, index) => (
-                      <div key={index} className="d-flex mb-2">
-                        <Form.Control
-                          type="text"
-                          value={feature}
-                          onChange={(e) => handleFeatureChange(index, e.target.value)}
-                          placeholder={`Feature ${index + 1}`}
-                        />
-                        {formData.features.length > 1 && (
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            className="ms-2"
-                            onClick={() => removeFeature(index)}
-                          >
-                            <X size={16} />
-                          </Button>
-                        )}
-                      </div>
+                      <Row key={index} className="mb-2">
+                        <Col md={4}>
+                          <Form.Control
+                            type="text"
+                            value={feature.title}
+                            onChange={(e) => handleFeatureChange(index, "title", e.target.value)}
+                            placeholder={`Tiêu đề tính năng ${index + 1}`}
+                            isInvalid={!!errors.features}
+                          />
+                        </Col>
+                        <Col md={6}>
+                          <Form.Control
+                            type="text"
+                            value={feature.description}
+                            onChange={(e) => handleFeatureChange(index, "description", e.target.value)}
+                            placeholder={`Mô tả tính năng ${index + 1}`}
+                            isInvalid={!!errors.features}
+                          />
+                        </Col>
+                        <Col md={2}>
+                          {formData.features.length > 1 && (
+                            <Button variant="outline-danger" size="sm" onClick={() => removeFeature(index)}>
+                              <X size={16} />
+                            </Button>
+                          )}
+                        </Col>
+                      </Row>
                     ))}
                     {errors.features && <Form.Text className="text-danger">{errors.features}</Form.Text>}
                   </Card.Body>
@@ -450,18 +488,37 @@ const CreateProduct = () => {
                       </div>
                     ) : (
                       <div className="text-center">
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          className="img-fluid mb-3"
-                          style={{ maxHeight: "200px", borderRadius: "8px" }}
-                        />
-                        <div>
-                          <Button variant="outline-danger" size="sm" onClick={removeImage}>
-                            <X size={16} className="me-1" />
-                            Remove
-                          </Button>
-                        </div>
+                        <Upload size={48} className="text-muted mb-3" />
+                        <p className="text-muted">Tải lên ít nhất 1 ảnh sản phẩm</p>
+                        <Form.Control type="file" accept="image/*" multiple onChange={handleImageChange} />
+                        <small className="text-muted">Kích thước tối đa: 5MB. Hỗ trợ: JPG, PNG, GIF</small>
+                        {errors.images && <Form.Text className="text-danger">{errors.images}</Form.Text>}
+                      </div>
+                    )}
+                  </Card.Body>
+                </Card>
+
+                <Card className="mb-4">
+                  <Card.Header>
+                    <h5 className="mb-0">Video sản phẩm (tối đa 1)</h5>
+                  </Card.Header>
+                  <Card.Body>
+                    {videoPreviews.length > 0 ? (
+                      <div>
+                        {videoPreviews.map((preview, index) => (
+                          <div key={index} className="text-center mb-3">
+                            <video
+                              src={preview}
+                              controls
+                              className="img-fluid"
+                              style={{ maxHeight: "200px", borderRadius: "8px" }}
+                            />
+                            <Button variant="outline-danger" size="sm" onClick={() => removeVideo(index)}>
+                              <X size={16} className="me-1" />
+                              Xóa
+                            </Button>
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <div className="text-center">
@@ -490,22 +547,12 @@ const CreateProduct = () => {
                           </>
                         )}
                       </Button>
-                      
-                      <Button
-                        variant="outline-info"
-                        onClick={handlePreview}
-                        disabled={loading}
-                      >
+                      <Button variant="outline-info" onClick={handlePreview} disabled={loading}>
                         <Eye size={20} className="me-2" />
                         Xem trước
                       </Button>
-                      
-                      <Button
-                        variant="outline-secondary"
-                        onClick={() => navigate("/manage-products")}
-                        disabled={loading}
-                      >
-                        Cancel
+                      <Button variant="outline-secondary" onClick={() => navigate("/manaProduct")} disabled={loading}>
+                        Hủy
                       </Button>
                     </div>
                   </Card.Body>

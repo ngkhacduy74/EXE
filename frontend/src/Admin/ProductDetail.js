@@ -10,7 +10,7 @@ const ProductDetails = ({ productId }) => {
     const fetchProduct = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_API}/product/${productId}`
+          `http://localhost:4000/product/${productId}`
         );
         setProduct(response.data);
       } catch (err) {

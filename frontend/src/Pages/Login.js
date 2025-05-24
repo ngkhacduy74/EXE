@@ -194,13 +194,10 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_API}/auth/login`,
-        {
-          email,
-          password,
-        }
-      );
+      const response = await axios.post("http://localhost:4000/auth/login", {
+        email,
+        password,
+      });
       console.log("Full login response:", response);
       console.log("Response data:", response.data);
 
@@ -337,15 +334,15 @@ function Login() {
                           <span className="text-primary"> Đăng kí tại đây</span>
                         </a>
                       </p>
-                      <a
-                        className="text-primary"
+                      <a 
+                        className="text-primary" 
                         style={{ cursor: "pointer" }}
                         onClick={() => openModal("policy")}
                       >
                         Chính sách khách hàng
                       </a>
-                      <h1> </h1>
-                      <a
+                      <h1>      </h1>
+                      <a 
                         className="text-primary"
                         style={{ cursor: "pointer" }}
                         onClick={() => openModal("terms")}
@@ -372,19 +369,17 @@ function Login() {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  {modalType === "terms"
-                    ? "Điều khoản dịch vụ"
-                    : "Chính sách khách hàng"}
+                  {modalType === "terms" ? "Điều khoản dịch vụ" : "Chính sách khách hàng"}
                 </h5>
               </div>
               <div
                 className="modal-body"
                 ref={modalContentRef}
                 onScroll={handleScroll}
-                style={{
-                  maxHeight: "60vh",
+                style={{ 
+                  maxHeight: "60vh", 
                   overflowY: "auto",
-                  padding: "20px",
+                  padding: "20px"
                 }}
               >
                 <div style={{ whiteSpace: "pre-line", lineHeight: "1.6" }}>
@@ -393,8 +388,7 @@ function Login() {
                 {!canClose && (
                   <div className="text-center mt-3">
                     <small className="text-muted">
-                      <i className="fas fa-arrow-down"></i> Vui lòng lướt xuống
-                      cuối để tiếp tục
+                      <i className="fas fa-arrow-down"></i> Vui lòng lướt xuống cuối để tiếp tục
                     </small>
                   </div>
                 )}
@@ -407,7 +401,7 @@ function Login() {
                   disabled={!canClose}
                   style={{
                     opacity: canClose ? 1 : 0.5,
-                    cursor: canClose ? "pointer" : "not-allowed",
+                    cursor: canClose ? "pointer" : "not-allowed"
                   }}
                 >
                   Tôi đã hiểu

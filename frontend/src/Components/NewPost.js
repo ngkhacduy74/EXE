@@ -1,57 +1,58 @@
 import { useState, useEffect } from 'react';
 import { Camera, Upload, X } from 'lucide-react';
-import Header from './Header';
+import Header from './Header'; 
 import Footer from './Footer';
 
 
 const styles = {
   container: {
-    maxWidth: "42rem",
-    margin: "2rem auto",
-    backgroundColor: "white",
-    borderRadius: "0.5rem",
-    boxShadow:
-      "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-    overflow: "hidden",
+    maxWidth: '42rem',
+    margin: '2rem auto',
+    backgroundColor: 'white',
+    borderRadius: '0.5rem',
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    overflow: 'hidden'
   },
   header: {
-    backgroundColor: "#2563eb",
-    padding: "1rem",
+    backgroundColor: '#2563eb',
+    padding: '1rem'
   },
   title: {
-    fontSize: "1.25rem",
-    fontWeight: "bold",
-    color: "white",
-    margin: 0,
+    fontSize: '1.25rem',
+    fontWeight: 'bold',
+    color: 'white',
+    margin: 0
   },
   body: {
-    padding: "1.5rem",
+    padding: '1.5rem'
   },
   formGroup: {
-    marginBottom: "1rem",
+    marginBottom: '1rem'
   },
   formGroupLast: {
-    marginBottom: "1.5rem",
+    marginBottom: '1.5rem'
   },
   label: {
-    display: "block",
-    color: "#374151",
+    display: 'block',
+    color: '#374151',
     fontWeight: 500,
-    marginBottom: "0.5rem",
+    marginBottom: '0.5rem'
   },
   input: {
     width: '100%',
     padding: '0.5rem',
     border: '1px solid #d1d5db',
     borderRadius: '0.25rem',
-    outline: 'none'
+    outline: 'none',
+    boxSizing: 'border-box'
   },
   select: {
     width: '100%',
     padding: '0.5rem',
     border: '1px solid #d1d5db',
     borderRadius: '0.25rem',
-    outline: 'none'
+    outline: 'none',
+    boxSizing: 'border-box'
   },
   textarea: {
     width: '100%',
@@ -59,53 +60,54 @@ const styles = {
     border: '1px solid #d1d5db',
     borderRadius: '0.25rem',
     resize: 'vertical',
-    outline: 'none'
+    outline: 'none',
+    boxSizing: 'border-box'
   },
   radioGroup: {
-    display: "flex",
-    gap: "1rem",
+    display: 'flex',
+    gap: '1rem'
   },
   radioLabel: {
-    display: "inline-flex",
-    alignItems: "center",
+    display: 'inline-flex',
+    alignItems: 'center'
   },
   radioInput: {
-    height: "1rem",
-    width: "1rem",
-    color: "#2563eb",
+    height: '1rem',
+    width: '1rem',
+    color: '#2563eb'
   },
   radioText: {
-    marginLeft: "0.5rem",
+    marginLeft: '0.5rem'
   },
   uploadContainer: {
-    border: "2px dashed #d1d5db",
-    borderRadius: "0.5rem",
-    padding: "1rem",
-    textAlign: "center",
-    transition: "border-color 0.2s",
+    border: '2px dashed #d1d5db',
+    borderRadius: '0.5rem',
+    padding: '1rem',
+    textAlign: 'center',
+    transition: 'border-color 0.2s'
   },
   uploadContainerSuccess: {
-    border: "2px dashed #34d399",
-    borderRadius: "0.5rem",
-    padding: "1rem",
-    textAlign: "center",
+    border: '2px dashed #34d399',
+    borderRadius: '0.5rem',
+    padding: '1rem',
+    textAlign: 'center'
   },
   uploadPlaceholder: {
-    padding: "2rem 1rem",
+    padding: '2rem 1rem'
   },
   uploadIcon: {
-    display: "flex",
-    justifyContent: "center",
-    marginBottom: "0.5rem",
-    color: "#4b5563",
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: '0.5rem',
+    color: '#4b5563'
   },
   uploadText: {
-    color: "#374151",
-    marginBottom: "0.5rem",
+    color: '#374151',
+    marginBottom: '0.5rem'
   },
   uploadButtonContainer: {
-    display: "flex",
-    justifyContent: "center",
+    display: 'flex',
+    justifyContent: 'center'
   },
   uploadButton: {
     cursor: 'pointer',
@@ -115,97 +117,120 @@ const styles = {
     borderRadius: '0.25rem',
     display: 'inline-flex',
     alignItems: 'center',
-    transition: 'background-color 0.2s'
+    transition: 'background-color 0.2s',
+    border: 'none'
   },
   uploadButtonIcon: {
-    marginRight: "0.25rem",
+    marginRight: '0.25rem'
   },
   hiddenInput: {
-    display: "none",
+    display: 'none'
   },
   previewContainer: {
-    position: "relative",
+    position: 'relative'
   },
   previewImage: {
-    height: "8rem",
-    margin: "0 auto",
-    borderRadius: "0.25rem",
-    objectFit: "cover",
-    width: "100%",
+    height: '8rem',
+    margin: '0 auto',
+    borderRadius: '0.25rem',
+    objectFit: 'cover',
+    width: '100%'
   },
   removeImageBtn: {
-    position: "absolute",
-    top: "0.5rem",
-    right: "0.5rem",
-    backgroundColor: "#ef4444",
-    color: "white",
-    border: "none",
-    borderRadius: "9999px",
-    padding: "0.25rem",
+    position: 'absolute',
+    top: '0.5rem',
+    right: '0.5rem',
+    backgroundColor: '#ef4444',
+    color: 'white',
+    border: 'none',
+    borderRadius: '9999px',
+    padding: '0.25rem',
     lineHeight: 1,
-    cursor: 'pointer'
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   formActions: {
-    display: "flex",
-    justifyContent: "flex-end",
+    display: 'flex',
+    justifyContent: 'flex-end'
   },
   submitButton: {
-    padding: "0.5rem 1.5rem",
-    backgroundColor: "#2563eb",
-    color: "white",
-    border: "none",
-    borderRadius: "0.25rem",
-    cursor: "pointer",
-    transition: "background-color 0.2s",
+    padding: '0.5rem 1.5rem',
+    backgroundColor: '#2563eb',
+    color: 'white',
+    border: 'none',
+    borderRadius: '0.25rem',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s'
   },
   submitButtonDisabled: {
-    padding: "0.5rem 1.5rem",
-    backgroundColor: "#93c5fd",
-    color: "white",
-    border: "none",
-    borderRadius: "0.25rem",
-    cursor: "not-allowed",
+    padding: '0.5rem 1.5rem',
+    backgroundColor: '#93c5fd',
+    color: 'white',
+    border: 'none',
+    borderRadius: '0.25rem',
+    cursor: 'not-allowed'
   },
   successContainer: {
-    maxWidth: "42rem",
-    margin: "2rem auto",
-    padding: "1.5rem",
-    backgroundColor: "white",
-    borderRadius: "0.5rem",
-    boxShadow:
-      "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+    maxWidth: '42rem',
+    margin: '2rem auto',
+    padding: '1.5rem',
+    backgroundColor: 'white',
+    borderRadius: '0.5rem',
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
   },
   successHeading: {
-    fontSize: "1.5rem",
-    fontWeight: "bold",
-    color: "#059669",
-    marginBottom: "1rem",
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    color: '#059669',
+    marginBottom: '1rem'
   },
   successMessage: {
-    marginBottom: "1rem",
+    marginBottom: '1rem'
   },
   submissionData: {
-    backgroundColor: "#f3f4f6",
-    padding: "1rem",
-    borderRadius: "0.25rem",
-    overflow: "auto",
-    maxHeight: "15rem",
-    fontSize: "0.875rem",
+    backgroundColor: '#f3f4f6',
+    padding: '1rem',
+    borderRadius: '0.25rem',
+    overflow: 'auto',
+    maxHeight: '15rem',
+    fontSize: '0.875rem'
   },
   createAnotherBtn: {
-    marginTop: "1rem",
-    padding: "0.5rem 1.5rem",
-    backgroundColor: "#2563eb",
-    color: "white",
-    border: "none",
-    borderRadius: "0.25rem",
-    cursor: "pointer",
-    transition: "background-color 0.2s",
+    marginTop: '1rem',
+    padding: '0.5rem 1.5rem',
+    backgroundColor: '#2563eb',
+    color: 'white',
+    border: 'none',
+    borderRadius: '0.25rem',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s'
   },
   errorMessage: {
     color: '#ef4444',
     marginTop: '0.5rem',
     fontSize: '0.875rem'
+  },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '0.5rem'
+  },
+  gridMd: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '0.5rem'
+  },
+  loadingSpinner: {
+    display: 'inline-block',
+    marginRight: '0.5rem',
+    width: '1rem',
+    height: '1rem',
+    border: '2px solid white',
+    borderTop: '2px solid transparent',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite'
   }
 };
 
@@ -226,13 +251,13 @@ if (typeof document !== 'undefined') {
 
 export default function NewPostForm() {
   const [formData, setFormData] = useState({
-    title: "",
-    category: "A",
-    status: "New",
-    address: "",
-    description: "",
-    condition: "Pending",
-    user_position: "Newbie",
+    title: '',
+    category: 'A',
+    status: 'New',
+    address: '',
+    description: '',
+    condition: 'Pending',
+    user_position: 'Newbie'
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [videoFiles, setVideoFiles] = useState([]);
@@ -242,47 +267,30 @@ export default function NewPostForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [responseData, setResponseData] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const [token, setToken] = useState('');
+  const [userEmail, setUserEmail] = useState('user@example.com'); // You can make this dynamic
 
-  // Fetch token if not present
+  // Initialize token from localStorage (simulated)
   useEffect(() => {
-    const fetchToken = async () => {
-      // Replace with actual email source (e.g., from context, auth state, or user input)
-      const userEmail = 'user@example.com'; // Placeholder: Replace with actual email
-      if (!token) {
-        try {
-          const response = await fetch(`http://localhost:4000/auth/getUserByEmail?email=${encodeURIComponent(userEmail)}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          if (!response.ok) {
-            if (response.status === 404) {
-              throw new Error('User not found');
-            }
-            throw new Error('Failed to fetch user data');
-          }
-          const userData = await response.json();
-          // Assuming the API returns a token field; adjust based on actual response
-          const fetchedToken = userData.token;
-          if (fetchedToken) {
-            setToken(fetchedToken);
-            localStorage.setItem('token', fetchedToken);
-          } else {
-            throw new Error('No token received from server');
-          }
-        } catch (err) {
-          setError(`Authentication error: ${err.message}`);
-        }
-      }
-    };
-    fetchToken();
+    // In a real app, you'd get this from localStorage
+    // For demo purposes, we'll simulate having a token
+    const simulatedToken = 'demo-token-12345';
+    setToken(simulatedToken);
+  }, []);
 
-    // Clean up object URLs
+  // Cleanup object URLs on unmount
+  useEffect(() => {
     return () => {
-      imagePreviews.forEach(preview => URL.revokeObjectURL(preview));
-      videoPreviews.forEach(preview => URL.revokeObjectURL(preview));
+      imagePreviews.forEach(preview => {
+        if (preview && typeof preview === 'string' && preview.startsWith('blob:')) {
+          URL.revokeObjectURL(preview);
+        }
+      });
+      videoPreviews.forEach(preview => {
+        if (preview && typeof preview === 'string' && preview.startsWith('blob:')) {
+          URL.revokeObjectURL(preview);
+        }
+      });
     };
   }, []);
 
@@ -290,59 +298,77 @@ export default function NewPostForm() {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: value
     });
   };
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      const imageFiles = files.filter((file) => file.type.startsWith("image/"));
-      const newImagePreviews = imageFiles.map((file) =>
-        URL.createObjectURL(file)
-      );
-      setImageFiles((prev) => [...prev, ...imageFiles]);
-      setImagePreviews((prev) => [...prev, ...newImagePreviews]);
+      const imageFiles = files.filter(file => file.type.startsWith('image/'));
+      const newImagePreviews = imageFiles.map(file => URL.createObjectURL(file));
+      setImageFiles(prev => [...prev, ...imageFiles]);
+      setImagePreviews(prev => [...prev, ...newImagePreviews]);
     }
   };
 
   const handleVideoChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      const videoFiles = files.filter((file) => file.type.startsWith("video/"));
-      const newVideoPreviews = videoFiles.map((file) =>
-        URL.createObjectURL(file)
-      );
-      setVideoFiles((prev) => [...prev, ...videoFiles]);
-      setVideoPreviews((prev) => [...prev, ...newVideoPreviews]);
+      const videoFiles = files.filter(file => file.type.startsWith('video/'));
+      const newVideoPreviews = videoFiles.map(file => URL.createObjectURL(file));
+      setVideoFiles(prev => [...prev, ...videoFiles]);
+      setVideoPreviews(prev => [...prev, ...newVideoPreviews]);
     }
   };
 
   const removeImage = (index) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => {
-      const preview = prev[index];
+    const preview = imagePreviews[index];
+    if (preview && preview.startsWith('blob:')) {
       URL.revokeObjectURL(preview);
-      return prev.filter((_, i) => i !== index);
-    });
+    }
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const removeVideo = (index) => {
-    setVideoFiles(prev => prev.filter((_, i) => i !== index));
-    setVideoPreviews(prev => {
-      const preview = prev[index];
+    const preview = videoPreviews[index];
+    if (preview && preview.startsWith('blob:')) {
       URL.revokeObjectURL(preview);
-      return prev.filter((_, i) => i !== index);
-    });
+    }
+    setVideoFiles(prev => prev.filter((_, i) => i !== index));
+    setVideoPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.title.trim()) {
+      errors.title = 'Title is required';
+    }
+    
+    if (!formData.address.trim()) {
+      errors.address = 'Address is required';
+    }
+    
+    if (!formData.description.trim()) {
+      errors.description = 'Description is required';
+    } else if (formData.description.length < 6) {
+      errors.description = 'Description must be at least 6 characters long';
+    } else if (formData.description.length > 1500) {
+      errors.description = 'Description cannot exceed 1500 characters';
+    }
+    
+    if (!formData.category.trim()) {
+      errors.category = 'Category is required';
+    }
+    
+    return errors;
   };
 
   const isFormValid = () => {
-    return (
-      formData.title.trim() !== '' &&
-      formData.address.trim() !== '' &&
-      formData.description.trim() !== '' &&
-      formData.category.trim() !== ''
-    );
+    const errors = validateForm();
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
@@ -369,7 +395,7 @@ export default function NewPostForm() {
       // In a real app, you would do:
       /*
       const postData = new FormData();
-      Object.keys(formData).forEach((key) => {
+      Object.keys(formData).forEach(key => {
         postData.append(key, formData[key]);
       });
       
@@ -380,12 +406,13 @@ export default function NewPostForm() {
       videoFiles.forEach((videoFile) => {
         postData.append('videos', videoFile);
       });
+      
       postData.append('createdAt', new Date().toISOString());
 
-      const response = await fetch('http://localhost:4000/product/', {
+      const response = await fetch('http://localhost:4000/post/createPost', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: postData,
       });
@@ -393,8 +420,13 @@ export default function NewPostForm() {
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error('Unauthorized: Invalid or missing token');
+        } else if (response.status === 400) {
+          throw new Error('Invalid form data');
+        } else if (response.status === 413) {
+          throw new Error('Files too large');
+        } else {
+          throw new Error(`Server error: ${response.status}`);
         }
-        throw new Error('Failed to submit post');
       }
 
       const responseData = await response.json();
@@ -414,7 +446,7 @@ export default function NewPostForm() {
       setResponseData(mockResponse);
       setSubmitted(true);
     } catch (err) {
-      setError(err.message || "An error occurred while creating the post");
+      setError(err.message || 'An error occurred while creating the post');
     } finally {
       setIsLoading(false);
     }
@@ -422,18 +454,29 @@ export default function NewPostForm() {
 
   const resetForm = () => {
     setFormData({
-      title: "",
-      category: "A",
-      status: "New",
-      address: "",
-      description: "",
-      condition: "Pending",
-      user_position: "Newbie",
+      title: '',
+      category: 'A',
+      status: 'New',
+      address: '',
+      description: '',
+      condition: 'Pending',
+      user_position: 'Newbie'
     });
     setImageFiles([]);
     setVideoFiles([]);
-    imagePreviews.forEach(preview => URL.revokeObjectURL(preview));
-    videoPreviews.forEach(preview => URL.revokeObjectURL(preview));
+    
+    // Clean up existing previews
+    imagePreviews.forEach(preview => {
+      if (preview && preview.startsWith('blob:')) {
+        URL.revokeObjectURL(preview);
+      }
+    });
+    videoPreviews.forEach(preview => {
+      if (preview && preview.startsWith('blob:')) {
+        URL.revokeObjectURL(preview);
+      }
+    });
+    
     setImagePreviews([]);
     setVideoPreviews([]);
     setSubmitted(false);
@@ -443,20 +486,19 @@ export default function NewPostForm() {
 
   if (submitted) {
     return (
-      <div style={styles.successContainer}>
-        <h2 style={styles.successHeading}>Post Submitted Successfully!</h2>
-        <p style={styles.successMessage}>Your product has been posted and is pending review.</p>
-        <pre style={styles.submissionData}>
-          {JSON.stringify(responseData || {
-            ...formData,
-            images: imageFiles.map(file => file.name),
-            videos: videoFiles.map(file => file.name),
-            createdAt: new Date().toISOString()
-          }, null, 2)}
-        </pre>
-        <button style={styles.createAnotherBtn} onClick={resetForm}>
-          Create Another Post
-        </button>
+      <div>
+        <Header />
+        <div style={styles.successContainer}>
+          <h2 style={styles.successHeading}>Post Submitted Successfully!</h2>
+          <p style={styles.successMessage}>Your product has been posted and is pending review.</p>
+          <pre style={styles.submissionData}>
+            {JSON.stringify(responseData, null, 2)}
+          </pre>
+          <button style={styles.createAnotherBtn} onClick={resetForm}>
+            Create Another Post
+          </button>
+        </div>
+        <Footer />
       </div>
     );
   }
@@ -472,13 +514,7 @@ export default function NewPostForm() {
           {/* Image Upload */}
           <div style={styles.formGroup}>
             <label style={styles.label}>Product Images</label>
-            <div
-              style={
-                imagePreviews.length > 0
-                  ? styles.uploadContainerSuccess
-                  : styles.uploadContainer
-              }
-            >
+            <div style={imagePreviews.length > 0 ? styles.uploadContainerSuccess : styles.uploadContainer}>
               {imagePreviews.length > 0 ? (
                 <div style={styles.grid}>
                   {imagePreviews.map((preview, index) => (
@@ -497,12 +533,7 @@ export default function NewPostForm() {
                       </button>
                     </div>
                   ))}
-                  <div
-                    style={{
-                      ...styles.uploadPlaceholder,
-                      ...styles.uploadContainer,
-                    }}
-                  >
+                  <div style={{ ...styles.uploadPlaceholder, ...styles.uploadContainer }}>
                     <label style={styles.uploadButton}>
                       <Upload size={16} style={styles.uploadButtonIcon} />
                       Add More
@@ -521,9 +552,7 @@ export default function NewPostForm() {
                   <div style={styles.uploadIcon}>
                     <Camera size={48} />
                   </div>
-                  <p style={styles.uploadText}>
-                    Drag and drop your images here or click to browse
-                  </p>
+                  <p style={styles.uploadText}>Drag and drop your images here or click to browse</p>
                   <div style={styles.uploadButtonContainer}>
                     <label style={styles.uploadButton}>
                       <Upload size={16} style={styles.uploadButtonIcon} />
@@ -545,13 +574,7 @@ export default function NewPostForm() {
           {/* Video Upload */}
           <div style={styles.formGroup}>
             <label style={styles.label}>Product Videos</label>
-            <div
-              style={
-                videoPreviews.length > 0
-                  ? styles.uploadContainerSuccess
-                  : styles.uploadContainer
-              }
-            >
+            <div style={videoPreviews.length > 0 ? styles.uploadContainerSuccess : styles.uploadContainer}>
               {videoPreviews.length > 0 ? (
                 <div style={styles.grid}>
                   {videoPreviews.map((preview, index) => (
@@ -570,12 +593,7 @@ export default function NewPostForm() {
                       </button>
                     </div>
                   ))}
-                  <div
-                    style={{
-                      ...styles.uploadPlaceholder,
-                      ...styles.uploadContainer,
-                    }}
-                  >
+                  <div style={{ ...styles.uploadPlaceholder, ...styles.uploadContainer }}>
                     <label style={styles.uploadButton}>
                       <Upload size={16} style={styles.uploadButtonIcon} />
                       Add More
@@ -594,9 +612,7 @@ export default function NewPostForm() {
                   <div style={styles.uploadIcon}>
                     <Camera size={48} />
                   </div>
-                  <p style={styles.uploadText}>
-                    Drag and drop your videos here or click to browse
-                  </p>
+                  <p style={styles.uploadText}>Drag and drop your videos here or click to browse</p>
                   <div style={styles.uploadButtonContainer}>
                     <label style={styles.uploadButton}>
                       <Upload size={16} style={styles.uploadButtonIcon} />
@@ -617,9 +633,7 @@ export default function NewPostForm() {
 
           {/* Title */}
           <div style={styles.formGroup}>
-            <label htmlFor="title" style={styles.label}>
-              Title *
-            </label>
+            <label htmlFor="title" style={styles.label}>Title *</label>
             <input
               type="text"
               id="title"
@@ -633,9 +647,7 @@ export default function NewPostForm() {
 
           {/* Category */}
           <div style={styles.formGroup}>
-            <label htmlFor="category" style={styles.label}>
-              Category *
-            </label>
+            <label htmlFor="category" style={styles.label}>Category *</label>
             <select
               id="category"
               name="category"
@@ -711,9 +723,7 @@ export default function NewPostForm() {
 
           {/* Address */}
           <div style={styles.formGroup}>
-            <label htmlFor="address" style={styles.label}>
-              Address *
-            </label>
+            <label htmlFor="address" style={styles.label}>Address *</label>
             <input
               type="text"
               id="address"
@@ -727,7 +737,9 @@ export default function NewPostForm() {
 
           {/* Description */}
           <div style={styles.formGroupLast}>
-            <label htmlFor="description" style={styles.label}>Description *</label>
+            <label htmlFor="description" style={styles.label}>
+              Description * ({formData.description.length}/1500)
+            </label>
             <textarea
               id="description"
               name="description"
@@ -741,7 +753,11 @@ export default function NewPostForm() {
           </div>
 
           {/* Error message */}
-          {error && <div style={styles.errorMessage}>{error}</div>}
+          {error && (
+            <div style={styles.errorMessage}>
+              {error}
+            </div>
+          )}
 
           {/* Submit Button */}
           <div style={styles.formActions}>
@@ -749,19 +765,15 @@ export default function NewPostForm() {
               type="button"
               onClick={handleSubmit}
               disabled={isLoading || !isFormValid()}
-              style={
-                isLoading || !isFormValid()
-                  ? styles.submitButtonDisabled
-                  : styles.submitButton
-              }
+              style={isLoading || !isFormValid() ? styles.submitButtonDisabled : styles.submitButton}
             >
               {isLoading ? (
                 <>
-                  <span style={{ display: 'inline-block', marginRight: '0.5rem', width: '1rem', height: '1rem', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span>
+                  <span style={styles.loadingSpinner}></span>
                   Submitting...
                 </>
               ) : (
-                "Submit Post"
+                'Submit Post'
               )}
             </button>
           </div>
