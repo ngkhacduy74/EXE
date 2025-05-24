@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { notification } from "antd";
 
-
 function HeaderAdmin() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +42,7 @@ function HeaderAdmin() {
         if (parsedUser?.email) {
           try {
             const response = await axios.get(
-              `http://localhost:4000/auth/getUserByEmail?email=${parsedUser.email}`
+              `${process.env.REACT_APP_BACKEND_API}/auth/getUserByEmail?email=${parsedUser.email}`
             );
 
             if (response.data && response.data.user) {
@@ -112,7 +111,6 @@ function HeaderAdmin() {
     navigate("/", { replace: true });
     return null;
   }
-
 
   return (
     <Row

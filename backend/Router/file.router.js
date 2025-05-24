@@ -1,25 +1,30 @@
 const express = require("express");
 const router = express.Router();
-// const configs = require("./Config/index");
-const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const { cloudinary, configCloudinary } = require("../Config/index");
-configCloudinary();
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  folder: "image_gymshop",
-  allowedFormats: ["jpg", "png", "jpeg"],
-  transformation: [{ width: 500, height: 500, crop: "limit" }],
+
+const {
+  uploadVideoMiddleware,
+  uploadImageMiddleware,
+} = require("../Middleware/file.middleware");
+
+router.post("/upload-image", uploadImageMiddleware, async (req, res) => {
+  const link_img = req.files?.img || [];
+  res.send(link_img);
 });
-const upload = multer({
-  storage: storage,
-});
-router.post(
-  "/upload-file",
-  upload.fields([{ name: "img", maxCount: 1 }]),
-  async (req, res) => {
-    const link_img = req.files["img"][0];
-    res.send(link_img);
+
+router.post("/upload-video", uploadVideoMiddleware, async (req, res) => {
+  try {
+    if (!req.files || !req.files["video"]) {
+      return res.status(400).send({ message: "No video file uploaded" });
+    }
+    const link_video = req.files["video"][0];
+    res.send(link_video);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Upload failed",
+      error: error.message || error.toString(),
+    });
   }
-);
+});
+
 module.exports = router;

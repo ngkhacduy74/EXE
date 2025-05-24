@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Edit, LogOut, LogIn } from 'lucide-react';
-import axios from 'axios';
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Edit, LogOut, LogIn } from "lucide-react";
+import axios from "axios";
 
 function Header() {
   const [user, setUser] = React.useState(null);
@@ -17,7 +17,7 @@ function Header() {
       }
 
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
 
         // if (!token) {
         //   setLoading(false);
@@ -25,7 +25,7 @@ function Header() {
         //   return;
         // }
 
-        const userData = localStorage.getItem('user');
+        const userData = localStorage.getItem("user");
         let parsedUser = null;
 
         try {
@@ -34,30 +34,34 @@ function Header() {
             setUser(parsedUser);
           }
         } catch (e) {
-          console.error('Error parsing user data:', e);
+          console.error("Error parsing user data:", e);
         }
 
         if (parsedUser?.email) {
           try {
             const response = await axios.get(
-              `http://localhost:4000/auth/getUserByEmail?email=${encodeURIComponent(parsedUser.email)}`
+              `${
+                process.env.REACT_APP_BACKEND_API
+              }/auth/getUserByEmail?email=${encodeURIComponent(
+                parsedUser.email
+              )}`
             );
 
             if (response.data && response.data.user) {
               setUser(response.data.user);
-              localStorage.setItem('user', JSON.stringify(response.data.user));
+              localStorage.setItem("user", JSON.stringify(response.data.user));
             } else {
               handleLogout();
             }
           } catch (err) {
-            console.error('Failed to fetch user by email:', err);
+            console.error("Failed to fetch user by email:", err);
             if (err.response?.status === 401) {
               handleLogout();
             }
           }
         }
       } catch (err) {
-        console.error('Authentication check failed:', err);
+        console.error("Authentication check failed:", err);
       } finally {
         setLoading(false);
       }
@@ -68,10 +72,10 @@ function Header() {
 
   const handleLogout = () => {
     setIsLoggingOut(true);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
-    navigate('/login', { replace: true });
+    navigate("/login", { replace: true });
   };
 
   if (loading) {
@@ -85,7 +89,11 @@ function Header() {
           <div className="col-sm-4 col-lg-3 text-center text-sm-start">
             <div className="main-logo">
               <a href="/">
-                <img src="/styles/images/logo.png" alt="logo" className="img-fluid" />
+                <img
+                  src="/styles/images/logo.png"
+                  alt="logo"
+                  className="img-fluid"
+                />
               </a>
             </div>
           </div>
@@ -101,7 +109,11 @@ function Header() {
                 </select>
               </div>
               <div className="col-11 col-md-7">
-                <form id="search-form" className="text-center" onSubmit={(e) => e.preventDefault()}>
+                <form
+                  id="search-form"
+                  className="text-center"
+                  onSubmit={(e) => e.preventDefault()}
+                >
                   <input
                     type="text"
                     className="form-control border-0 bg-transparent"
@@ -110,7 +122,12 @@ function Header() {
                 </form>
               </div>
               <div className="col-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     fill="currentColor"
                     d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z"
@@ -131,14 +148,24 @@ function Header() {
               </li>
               {user && (
                 <li>
-                  <a href="/newPost" className="rounded-circle bg-light p-2 mx-1">
+                  <a
+                    href="/newPost"
+                    className="rounded-circle bg-light p-2 mx-1"
+                  >
                     <Edit width={24} height={24} />
                   </a>
                 </li>
               )}
-              <li onClick={user ? handleLogout : () => navigate('/login')} style={{ cursor: 'pointer' }}>
+              <li
+                onClick={user ? handleLogout : () => navigate("/login")}
+                style={{ cursor: "pointer" }}
+              >
                 <a className="rounded-circle bg-light p-2 mx-1">
-                  {user ? <LogOut width={24} height={24} /> : <LogIn width={24} height={24} />}
+                  {user ? (
+                    <LogOut width={24} height={24} />
+                  ) : (
+                    <LogIn width={24} height={24} />
+                  )}
                 </a>
               </li>
               <li className="d-lg-none">
@@ -173,7 +200,6 @@ function Header() {
       </div>
 
       <div className="container-fluid">
-
         <div className="d-flex justify-content-sm-between align-items-center">
           <nav className="main-menu d-flex navbar navbar-expand-lg">
             <button
@@ -200,12 +226,9 @@ function Header() {
                   aria-label="Close"
                 ></button>
               </div>
-
-
             </div>
           </nav>
         </div>
-
       </div>
     </header>
   );
