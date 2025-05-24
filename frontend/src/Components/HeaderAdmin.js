@@ -42,7 +42,7 @@ function HeaderAdmin() {
         if (parsedUser?.email) {
           try {
             const response = await axios.get(
-              `${process.env.BACKEND_API}/auth/getUserByEmail?email=${parsedUser.email}`
+              `${process.env.REACT_APP_BACKEND_API}/auth/getUserByEmail?email=${parsedUser.email}`
             );
 
             if (response.data && response.data.user) {

@@ -238,7 +238,7 @@ export default function NewPostForm() {
         try {
           const response = await fetch(
             `${
-              process.env.BACKEND_API
+              process.env.REACT_APP_BACKEND_API
             }/auth/getUserByEmail?email=${encodeURIComponent(userEmail)}`,
             {
               method: "GET",
@@ -364,7 +364,7 @@ export default function NewPostForm() {
       });
       postData.append("createdAt", new Date().toISOString());
 
-      const response = await fetch(`${process.env.BACKEND_API}/product/`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_API}/product/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

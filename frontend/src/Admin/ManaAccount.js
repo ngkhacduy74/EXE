@@ -20,7 +20,7 @@ function ManaAccount() {
     const fetchUsers = async () => {
       try {
         const response = await axios.get(
-          `${process.env.BACKEND_API}/user/allUser`
+          `${process.env.REACT_APP_BACKEND_API}/user/allUser`
         );
         let userData = [];
 

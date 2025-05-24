@@ -23,7 +23,7 @@ function Register() {
 
     try {
       const res = await axios.post(
-        `${process.env.BACKEND_API}/file/upload-file`,
+        `${process.env.REACT_APP_BACKEND_API}/file/upload-file`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -83,7 +83,7 @@ function Register() {
         ava_img_url: imageUrl,
       };
 
-      await axios.post(`${process.env.BACKEND_API}/auth/register`, user);
+      await axios.post(`${process.env.REACT_APP_BACKEND_API}/auth/register`, user);
 
       alert("Đăng ký thành công!");
       navigate("/login");

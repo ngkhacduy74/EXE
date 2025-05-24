@@ -41,7 +41,7 @@ function Header() {
           try {
             const response = await axios.get(
               `${
-                process.env.BACKEND_API
+                process.env.REACT_APP_BACKEND_API
               }/auth/getUserByEmail?email=${encodeURIComponent(
                 parsedUser.email
               )}`

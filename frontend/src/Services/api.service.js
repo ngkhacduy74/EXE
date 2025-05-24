@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const verifyOTPApi = (email, otp) => {
-  const URL_BACKEND = `${process.env.BACKEND_API}/otp/verifyOTP`;
+  const URL_BACKEND = `${process.env.REACT_APP_BACKEND_API}/otp/verifyOTP`;
 
   const data = {
     email: email,

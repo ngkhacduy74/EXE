@@ -177,7 +177,7 @@ const CreateProduct = () => {
       }
 
       const response = await axios.post(
-        `${process.env.BACKEND_API}/product/create`,
+        `${process.env.REACT_APP_BACKEND_API}/product/create`,
         submitData,
         {
           headers: {

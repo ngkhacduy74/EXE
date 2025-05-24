@@ -24,7 +24,7 @@ const ManageProduct = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${process.env.BACKEND_API}/product/`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_API}/product/`);
         console.log("API Response:", response.data);
 
         const productData = Array.isArray(response.data.data)

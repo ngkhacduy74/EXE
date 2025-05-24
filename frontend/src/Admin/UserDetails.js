@@ -32,7 +32,7 @@ export default function UserDetails() {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${process.env.BACKEND_API}/user/${userId}`
+          `${process.env.REACT_APP_BACKEND_API}/user/${userId}`
         );
 
         // Handle different response structures
