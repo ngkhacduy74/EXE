@@ -23,15 +23,24 @@ import ErrorPage from "./Components/ErrorPage";
 import NewPostForm from "./Components/NewPost";
 import CreateProduct from "./Admin/CreateProduct";
 
+
 const App = () => {
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    fetch("/api/test")
+      .then((response) => response.json())
+      .then((data) => setMessage(data.message))
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
 
   return (
     <Router>
       <div>
         <Routes>
+
           {/* UI USER */}
-          <Route path="/" element={<Home />} />
+          <Route path='/' element={<Home/>}/>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/otp" element={<OTP />} />
@@ -39,7 +48,7 @@ const App = () => {
           {/* UI ADMIN */}
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/manaAccount" element={<ManaAccount />} />
-          <Route path="/user/:userId" element={<UserDetails />} />
+         <Route path="/user/:userId" element={<UserDetails />} />
           <Route path="/user/:userId" element={<UserDetails />} />
           <Route path="/manaProduct" element={<ManaProduct />} />
           <Route path="/manaPost" element={<ManaPost />} />
@@ -47,6 +56,10 @@ const App = () => {
           <Route path="/product/:productId" element={<ProductDetail />} />
           <Route path="/create-product" element={<CreateProduct />} />
           {/* 404 Error Page */}
+
+
+
+
         </Routes>
       </div>
     </Router>

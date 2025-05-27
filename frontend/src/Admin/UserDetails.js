@@ -1,15 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Nav,
-  Tab,
-  Button,
-  Form,
-} from "react-bootstrap";
+import { Container, Row, Col, Card, Nav, Tab, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import Sidebar from "../Components/Sidebar";
 import "./styles/UserDetails.css";
@@ -31,13 +22,10 @@ export default function UserDetails() {
 
       try {
         setLoading(true);
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_API}/user/${userId}`
-        );
-
+        const response = await axios.get(`http://localhost:4000/user/${userId}`);
+        
         // Handle different response structures
-        const userData =
-          response.data?.user?.[0] || response.data?.user || response.data;
+        const userData = response.data?.user?.[0] || response.data?.user || response.data;
         setUser(userData);
         setError(null);
       } catch (err) {
@@ -61,11 +49,7 @@ export default function UserDetails() {
 
   if (loading) {
     return (
-      <Container
-        fluid
-        className="bg-light d-flex justify-content-center align-items-center"
-        style={{ minHeight: "100vh" }}
-      >
+      <Container fluid className="bg-light d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
         <div className="text-center">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -78,11 +62,7 @@ export default function UserDetails() {
 
   if (error) {
     return (
-      <Container
-        fluid
-        className="bg-light d-flex justify-content-center align-items-center"
-        style={{ minHeight: "100vh" }}
-      >
+      <Container fluid className="bg-light d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
         <Card className="text-center">
           <Card.Body>
             <Card.Title className="text-danger">Error</Card.Title>
@@ -98,11 +78,7 @@ export default function UserDetails() {
 
   if (!user) {
     return (
-      <Container
-        fluid
-        className="bg-light d-flex justify-content-center align-items-center"
-        style={{ minHeight: "100vh" }}
-      >
+      <Container fluid className="bg-light d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
         <Card className="text-center">
           <Card.Body>
             <Card.Title>User Not Found</Card.Title>
@@ -127,7 +103,7 @@ export default function UserDetails() {
         >
           <Sidebar />
         </Col>
-
+        
         <Col className="py-4">
           <div className="container emp-profile">
             <Card className="shadow-sm">
@@ -137,17 +113,10 @@ export default function UserDetails() {
                   <Col md={4} className="text-center">
                     <div className="profile-img mb-3">
                       <img
-                        src={
-                          user.profileImage ||
-                          "https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg"
-                        }
+                        src={user.profileImage || "https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg"}
                         alt="Profile"
                         className="rounded-circle"
-                        style={{
-                          width: "150px",
-                          height: "150px",
-                          objectFit: "cover",
-                        }}
+                        style={{ width: "150px", height: "150px", objectFit: "cover" }}
                       />
                     </div>
                     <Form.Group>
@@ -166,12 +135,8 @@ export default function UserDetails() {
                   {/* Profile Header */}
                   <Col md={6}>
                     <div className="profile-head">
-                      <h3 className="mb-3">
-                        {user.fullname || user.name || "User Name"}
-                      </h3>
-                      <p className="text-muted mb-3">
-                        {user.profession || "Web Developer and Designer"}
-                      </p>
+                      <h3 className="mb-3">{user.fullname || user.name || "User Name"}</h3>
+                      <p className="text-muted mb-3">{user.profession || "Web Developer and Designer"}</p>
                     </div>
                   </Col>
 
@@ -194,26 +159,17 @@ export default function UserDetails() {
                         </Card.Header>
                         <Card.Body>
                           <div className="mb-2">
-                            <a
-                              href={user.website || "#"}
-                              className="text-decoration-none"
-                            >
+                            <a href={user.website || "#"} className="text-decoration-none">
                               Website Link
                             </a>
                           </div>
                           <div className="mb-2">
-                            <a
-                              href={user.portfolio || "#"}
-                              className="text-decoration-none"
-                            >
+                            <a href={user.portfolio || "#"} className="text-decoration-none">
                               Portfolio
                             </a>
                           </div>
                           <div>
-                            <a
-                              href={user.linkedin || "#"}
-                              className="text-decoration-none"
-                            >
+                            <a href={user.linkedin || "#"} className="text-decoration-none">
                               LinkedIn Profile
                             </a>
                           </div>
@@ -227,30 +183,17 @@ export default function UserDetails() {
                         <Card.Body>
                           {user.skills ? (
                             user.skills.map((skill, index) => (
-                              <span
-                                key={index}
-                                className="badge bg-secondary me-1 mb-1"
-                              >
+                              <span key={index} className="badge bg-secondary me-1 mb-1">
                                 {skill}
                               </span>
                             ))
                           ) : (
                             <>
-                              <span className="badge bg-secondary me-1 mb-1">
-                                Web Designer
-                              </span>
-                              <span className="badge bg-secondary me-1 mb-1">
-                                Web Developer
-                              </span>
-                              <span className="badge bg-secondary me-1 mb-1">
-                                WordPress
-                              </span>
-                              <span className="badge bg-secondary me-1 mb-1">
-                                React
-                              </span>
-                              <span className="badge bg-secondary me-1 mb-1">
-                                PHP
-                              </span>
+                              <span className="badge bg-secondary me-1 mb-1">Web Designer</span>
+                              <span className="badge bg-secondary me-1 mb-1">Web Developer</span>
+                              <span className="badge bg-secondary me-1 mb-1">WordPress</span>
+                              <span className="badge bg-secondary me-1 mb-1">React</span>
+                              <span className="badge bg-secondary me-1 mb-1">PHP</span>
                             </>
                           )}
                         </Card.Body>
@@ -274,9 +217,7 @@ export default function UserDetails() {
                               <strong>Full Name:</strong>
                             </Col>
                             <Col md={9}>
-                              <p className="mb-0">
-                                {user.fullname || user.name || "Not provided"}
-                              </p>
+                              <p className="mb-0">{user.fullname || user.name || "Not provided"}</p>
                             </Col>
                           </Row>
 
@@ -285,9 +226,7 @@ export default function UserDetails() {
                               <strong>Email:</strong>
                             </Col>
                             <Col md={9}>
-                              <p className="mb-0">
-                                {user.email || "Not provided"}
-                              </p>
+                              <p className="mb-0">{user.email || "Not provided"}</p>
                             </Col>
                           </Row>
 
@@ -296,9 +235,7 @@ export default function UserDetails() {
                               <strong>Phone:</strong>
                             </Col>
                             <Col md={9}>
-                              <p className="mb-0">
-                                {user.phone || "Not provided"}
-                              </p>
+                              <p className="mb-0">{user.phone || "Not provided"}</p>
                             </Col>
                           </Row>
 
@@ -307,9 +244,7 @@ export default function UserDetails() {
                               <strong>Address:</strong>
                             </Col>
                             <Col md={9}>
-                              <p className="mb-0">
-                                {user.address || "Not provided"}
-                              </p>
+                              <p className="mb-0">{user.address || "Not provided"}</p>
                             </Col>
                           </Row>
 
@@ -318,10 +253,7 @@ export default function UserDetails() {
                               <strong>Profession:</strong>
                             </Col>
                             <Col md={9}>
-                              <p className="mb-0">
-                                {user.profession ||
-                                  "Web Developer and Designer"}
-                              </p>
+                              <p className="mb-0">{user.profession || "Web Developer and Designer"}</p>
                             </Col>
                           </Row>
 
@@ -330,9 +262,7 @@ export default function UserDetails() {
                               <strong>Bio:</strong>
                             </Col>
                             <Col md={9}>
-                              <p className="mb-0">
-                                {user.bio || "No bio available"}
-                              </p>
+                              <p className="mb-0">{user.bio || "No bio available"}</p>
                             </Col>
                           </Row>
                         </Tab.Pane>
@@ -343,9 +273,7 @@ export default function UserDetails() {
                               <strong>Experience:</strong>
                             </Col>
                             <Col md={8}>
-                              <p className="mb-0">
-                                {user.experience || "Expert"}
-                              </p>
+                              <p className="mb-0">{user.experience || "Expert"}</p>
                             </Col>
                           </Row>
 
@@ -354,9 +282,7 @@ export default function UserDetails() {
                               <strong>Hourly Rate:</strong>
                             </Col>
                             <Col md={8}>
-                              <p className="mb-0">
-                                {user.hourlyRate || "$10/hr"}
-                              </p>
+                              <p className="mb-0">{user.hourlyRate || "$10/hr"}</p>
                             </Col>
                           </Row>
 
@@ -365,9 +291,7 @@ export default function UserDetails() {
                               <strong>Total Projects:</strong>
                             </Col>
                             <Col md={8}>
-                              <p className="mb-0">
-                                {user.totalProjects || "230"}
-                              </p>
+                              <p className="mb-0">{user.totalProjects || "230"}</p>
                             </Col>
                           </Row>
 
@@ -376,9 +300,7 @@ export default function UserDetails() {
                               <strong>English Level:</strong>
                             </Col>
                             <Col md={8}>
-                              <p className="mb-0">
-                                {user.englishLevel || "Expert"}
-                              </p>
+                              <p className="mb-0">{user.englishLevel || "Expert"}</p>
                             </Col>
                           </Row>
 
@@ -387,19 +309,14 @@ export default function UserDetails() {
                               <strong>Availability:</strong>
                             </Col>
                             <Col md={8}>
-                              <p className="mb-0">
-                                {user.availability || "6 months"}
-                              </p>
+                              <p className="mb-0">{user.availability || "6 months"}</p>
                             </Col>
                           </Row>
 
                           <Row className="mb-3">
                             <Col md={12}>
                               <strong>Professional Summary:</strong>
-                              <p className="mt-2">
-                                {user.summary ||
-                                  "Experienced web developer with expertise in modern technologies and frameworks."}
-                              </p>
+                              <p className="mt-2">{user.summary || "Experienced web developer with expertise in modern technologies and frameworks."}</p>
                             </Col>
                           </Row>
                         </Tab.Pane>

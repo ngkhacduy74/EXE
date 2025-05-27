@@ -24,7 +24,7 @@ const ManageProduct = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_API}/product/`);
+        const response = await axios.get("http://localhost:4000/product/");
         console.log("API Response:", response.data);
 
         const productData = Array.isArray(response.data.data)
@@ -35,9 +35,7 @@ const ManageProduct = () => {
         setFilteredProducts(productData);
 
         // Extract unique brands
-        const uniqueBrands = [
-          ...new Set(productData.map((p) => p.brand).filter(Boolean)),
-        ];
+        const uniqueBrands = [...new Set(productData.map((p) => p.brand).filter(Boolean))];
         setBrands(uniqueBrands);
       } catch (err) {
         console.error("Fetch Error:", err);
@@ -69,9 +67,7 @@ const ManageProduct = () => {
 
     // Filter by brands
     if (selectedBrands.length > 0) {
-      result = result.filter((product) =>
-        selectedBrands.includes(product.brand)
-      );
+      result = result.filter((product) => selectedBrands.includes(product.brand));
     }
 
     // Filter by price range
@@ -100,7 +96,9 @@ const ManageProduct = () => {
   // Handle brand checkbox change
   const handleBrandChange = (brand) => {
     setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
+      prev.includes(brand)
+        ? prev.filter((b) => b !== brand)
+        : [...prev, brand]
     );
   };
 
@@ -136,7 +134,7 @@ const ManageProduct = () => {
   const handleToggleStatus = async (productId, currentStatus) => {
     const newStatus = currentStatus === "New" ? "Second Hand" : "New";
     try {
-      await axios.put(`${process.env.BACKEND_API}/product/${productId}`, {
+      await axios.put(`http://localhost:4000/product/${productId}`, {
         status: newStatus,
       });
       setProducts(
@@ -177,8 +175,8 @@ const ManageProduct = () => {
             {/* Header with title and Create button */}
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h3 className="mb-0">Manage Products</h3>
-              <Button
-                variant="success"
+              <Button 
+                variant="success" 
                 size="lg"
                 onClick={handleCreateProduct}
                 className="d-flex align-items-center"
@@ -204,10 +202,7 @@ const ManageProduct = () => {
               <Col md={2}>
                 <Form.Group>
                   <Form.Label>Filter by Status</Form.Label>
-                  <Form.Select
-                    value={statusFilter}
-                    onChange={handleStatusChange}
-                  >
+                  <Form.Select value={statusFilter} onChange={handleStatusChange}>
                     <option value="All">All</option>
                     <option value="New">New</option>
                     <option value="Second Hand">Second Hand</option>
@@ -276,8 +271,8 @@ const ManageProduct = () => {
                 <Package size={48} className="text-muted mb-3" />
                 <p className="text-muted">No products found.</p>
                 {products.length === 0 && (
-                  <Button
-                    variant="primary"
+                  <Button 
+                    variant="primary" 
                     onClick={handleCreateProduct}
                     className="mt-2"
                   >
@@ -312,20 +307,14 @@ const ManageProduct = () => {
                       <td>{product.brand || "N/A"}</td>
                       <td>
                         {product.price
-                          ? `${parseFloat(product.price).toLocaleString(
-                              "vi-VN"
-                            )} VND`
+                          ? `${parseFloat(product.price).toLocaleString("vi-VN")} VND`
                           : "N/A"}
                       </td>
+                      <td>{product.capacity ? `${product.capacity} kg` : "N/A"}</td>
                       <td>
-                        {product.capacity ? `${product.capacity} kg` : "N/A"}
-                      </td>
-                      <td>
-                        <span
+                        <span 
                           className={`badge ${
-                            product.status === "New"
-                              ? "bg-success"
-                              : "bg-warning"
+                            product.status === "New" ? "bg-success" : "bg-warning"
                           }`}
                         >
                           {product.status || "N/A"}
@@ -342,24 +331,12 @@ const ManageProduct = () => {
                             <Eye size={16} />
                           </Button>
                           <Button
-                            variant={
-                              product.status === "New" ? "danger" : "success"
-                            }
+                            variant={product.status === "New" ? "danger" : "success"}
                             size="sm"
-                            onClick={() =>
-                              handleToggleStatus(product.id, product.status)
-                            }
-                            title={
-                              product.status === "New"
-                                ? "Hide Product"
-                                : "Set as New"
-                            }
+                            onClick={() => handleToggleStatus(product.id, product.status)}
+                            title={product.status === "New" ? "Hide Product" : "Set as New"}
                           >
-                            {product.status === "New" ? (
-                              <EyeOff size={16} />
-                            ) : (
-                              <Check size={16} />
-                            )}
+                            {product.status === "New" ? <EyeOff size={16} /> : <Check size={16} />}
                           </Button>
                         </div>
                       </td>

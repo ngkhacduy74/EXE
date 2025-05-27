@@ -1,8 +1,6 @@
 const userSchema = require("../Validator/user.validator");
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
-
-// Validate user input using Joi
+const env = require("dotenv");
 const validateUser = (req, res, next) => {
   const { error } = userSchema.validate(req.body, { abortEarly: false });
   if (error) {
@@ -62,7 +60,6 @@ const verifyAdmin = (req, res, next) => {
     });
   }
 };
-
 module.exports = {
   validateUser,
   verifyAdmin,
