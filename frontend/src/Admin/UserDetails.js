@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Nav, Tab, Button, Form } from "react-bootstrap";
 import axios from "axios";
 import Sidebar from "../Components/Sidebar";
+import Header from "../Components/HeaderAdmin";
 import "./styles/UserDetails.css";
 
 export default function UserDetails() {
@@ -91,6 +92,7 @@ export default function UserDetails() {
 
   return (
     <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+      <Header />
       <Row className="h-100">
         <Col
           md="auto"

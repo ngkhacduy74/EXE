@@ -122,7 +122,7 @@ const ManageProduct = () => {
 
   // Handle view details
   const handleViewDetails = (productId) => {
-    navigate(`/products/${productId}`);
+    navigate(`/product/${productId}`);
   };
 
   // Handle create product
