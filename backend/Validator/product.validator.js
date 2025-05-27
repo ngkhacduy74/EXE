@@ -1,7 +1,13 @@
 const Joi = require("joi");
 
-const ProductSchema = Joi.object({
+const creator = Joi.object({
   id: Joi.string().required(),
+  fullname: Joi.string().optional(),
+  phone: Joi.string().optional(),
+  email: Joi.string().optional(),
+});
+const ProductSchema = Joi.object({
+  id: Joi.string().optional(),
 
   image: Joi.array()
     .items(
@@ -71,6 +77,7 @@ const ProductSchema = Joi.object({
       })
     )
     .optional(),
+  creator: creator,
 });
 
 module.exports = ProductSchema;

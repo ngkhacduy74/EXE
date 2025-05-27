@@ -14,7 +14,7 @@ router.post(
   productMiddleware.productMiddleware,
   verifyAdmin,
   async (req, res) => {
-    const result = await createProduct(req.body);
+    const result = await createProduct(req.body, req.user);
     if (result.success === false) {
       return res.status(500).json(result);
     }
