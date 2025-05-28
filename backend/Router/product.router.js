@@ -7,6 +7,7 @@ const {
   deleteProduct,
   loadProductStatus,
   loadAllProduct,
+  getProductById,
 } = require("../Controller/product.controller");
 const { verifyAdmin } = require("../Middleware/auth.middleware");
 router.post(
@@ -43,6 +44,13 @@ router.get("/status/:status", verifyAdmin, async (req, res) => {
 });
 router.get("/", async (req, res) => {
   const result = await loadAllProduct();
+  if (result.success === false) {
+    return res.status(500).json(result);
+  }
+  res.status(200).json(result);
+});
+router.get("/:id", async (req, res) => {
+  const result = await getProductById(req.params.id);
   if (result.success === false) {
     return res.status(500).json(result);
   }
