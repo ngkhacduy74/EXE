@@ -2,7 +2,7 @@ const Product = require("../Model/product.model");
 const mongoose = require("mongoose");
 const { v1 } = require("uuid");
 
-const createProduct = async (data, user) => {
+const createProduct = async (data) => {
   const {
     image,
     video,
@@ -19,7 +19,6 @@ const createProduct = async (data, user) => {
     features,
     quantity,
   } = data;
-  console.log("kajshdasd", user);
   const newProduct = new Product({
     id: v1(),
     image: image,
@@ -48,7 +47,6 @@ const createProduct = async (data, user) => {
     return {
       success: true,
       message: "Save successfully",
-      product: newProduct,
     };
   } catch (err) {
     return {

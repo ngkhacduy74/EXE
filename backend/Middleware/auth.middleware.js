@@ -8,48 +8,28 @@ const validateUser = (req, res, next) => {
   }
   next();
 };
-
-const verifyUser = (req, res, next) => {
-  const token = req.headers.token;
-  if (!token) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Thiếu token hoặc định dạng sai" });
-  }
+const verifyAdmin = (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if (decoded.user.role !== "User") {
-      return res.status(403).json({
-        success: false,
-        message: "Bạn không có quyền thực hiện chức năng này",
-      });
+    if (!req.user || req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Bạn không có quyền truy cập!" });
     }
-    req.user = decoded;
     next();
-  } catch (err) {
-    return res.status(403).json({
-      success: false,
-      message: "Token không hợp lệ hoặc đã hết hạn",
-      error: err.message,
-    });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi kiểm tra quyền truy cập!" });
   }
 };
+const token = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  console.log("87qweh", authHeader);
 
-const verifyAdmin = (req, res, next) => {
-  const token = req.headers.token;
-  if (!token) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Thiếu token hoặc định dạng sai" });
-  }
+  const token = authHeader.split(" ")[1];
+
   try {
+    console.log("123");
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if (decoded.user.role !== "Admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Bạn không có quyền thực hiện chức năng này",
-      });
-    }
+    console.log("1ieuhaiohds", decoded);
     req.user = decoded;
     next();
   } catch (err) {
@@ -63,5 +43,5 @@ const verifyAdmin = (req, res, next) => {
 module.exports = {
   validateUser,
   verifyAdmin,
-  verifyUser,
+  token,
 };
