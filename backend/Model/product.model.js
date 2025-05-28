@@ -5,15 +5,7 @@ const Other_features = new mongoose.Schema({
   title: { type: String, require: true },
   description: { type: String, require: true },
 });
-const creator = new mongoose.Schema(
-  {
-    id: { type: String, require: true },
-    fullname: { type: String, require: false },
-    phone: { type: String, require: false },
-    email: { type: String, require: false },
-  },
-  { _id: false }
-);
+
 const ProductSchema = new mongoose.Schema(
   {
     id: { type: String, require: true },
@@ -29,7 +21,6 @@ const ProductSchema = new mongoose.Schema(
     warranty_period: { type: Number, require: true },
     capacity: { type: Number, require: true },
     voltage: { type: String, require: true },
-    creator: { type: creator, require: true },
     features: [{ type: Other_features, require: false }],
   },
   {
