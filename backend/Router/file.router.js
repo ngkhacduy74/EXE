@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
-// const configs = require("./Config/index");
+
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const { cloudinary, configCloudinary } = require("../Config/index");
+const { uploadVideoMiddleware } = require("../Middleware/file.middleware");
 configCloudinary();
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
@@ -15,11 +16,14 @@ const upload = multer({
   storage: storage,
 });
 router.post(
-  "/upload-file",
+  "/upload-image",
   upload.fields([{ name: "img", maxCount: 1 }]),
   async (req, res) => {
     const link_img = req.files["img"][0];
     res.send(link_img);
   }
 );
+router.post("/upload-video", uploadVideoMiddleware, (req, res) => {
+  res.json({ files: req.files });
+});
 module.exports = router;

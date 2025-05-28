@@ -1,5 +1,23 @@
 const Joi = require("joi");
 
+const creator = Joi.object({
+  id: Joi.string().required().messages({
+    "string.base": "ID của creator phải là chuỗi",
+    "any.required": "Vui lòng nhập ID của creator",
+  }),
+  fullname: Joi.string().optional().allow(null, "").messages({
+    "string.base": "Họ tên phải là chuỗi",
+  }),
+  phone: Joi.string().optional().allow(null, "").messages({
+    "string.base": "Số điện thoại phải là chuỗi",
+  }),
+  email: Joi.string().email().optional().allow(null, "").messages({
+    "string.email": "Email không hợp lệ",
+  }),
+});
+
+module.exports = creator;
+
 const ProductSchema = Joi.object({
   id: Joi.string().required(),
 

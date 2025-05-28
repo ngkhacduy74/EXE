@@ -10,38 +10,58 @@ const validateUser = (req, res, next) => {
 };
 const verifyAdmin = (req, res, next) => {
   try {
-    if (!req.user || req.user.role !== "admin") {
+    const token = req.headers.token;
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: Token không được cung cấp" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    if (!decoded || decoded.role !== "Admin") {
       return res
         .status(403)
-        .json({ message: "Forbidden: Bạn không có quyền truy cập!" });
+        .json({ message: "Forbidden: Bạn không có quyền truy cập" });
     }
-    next();
-  } catch (error) {
-    res.status(500).json({ message: "Lỗi kiểm tra quyền truy cập!" });
-  }
-};
-const token = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  console.log("87qweh", authHeader);
 
-  const token = authHeader.split(" ")[1];
-
-  try {
-    console.log("123");
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    console.log("1ieuhaiohds", decoded);
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch (error) {
     return res.status(403).json({
-      success: false,
       message: "Token không hợp lệ hoặc đã hết hạn",
-      error: err.message,
+      error: error.message,
+    });
+  }
+};
+const verifyUser = (req, res, next) => {
+  try {
+    const token = req.headers.token;
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: Token không được cung cấp" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    if (!decoded || decoded.role !== "User") {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Bạn không có quyền truy cập" });
+    }
+
+    req.user = decoded; // gán user info cho req để các middleware/controller sau dùng
+    next();
+  } catch (error) {
+    return res.status(403).json({
+      message: "Token không hợp lệ hoặc đã hết hạn",
+      error: error.message,
     });
   }
 };
 module.exports = {
   validateUser,
   verifyAdmin,
-  token,
+  verifyUser,
 };

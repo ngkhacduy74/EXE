@@ -8,6 +8,7 @@ const {
   loadProductStatus,
   loadAllProduct,
 } = require("../Controller/product.controller");
+const { verifyAdmin } = require("../Middleware/auth.middleware");
 router.post(
   "/createProduct",
   productMiddleware.productMiddleware,
