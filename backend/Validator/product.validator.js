@@ -77,7 +77,13 @@ const ProductSchema = Joi.object({
       })
     )
     .optional(),
-  creator: creator,
+  creator: creator.optional(),
+  quantity: Joi.number().min(0).max(1000).required().messages({
+    "number.base": "Số lượng phải là số",
+    "number.min": "Số lượng không được nhỏ hơn 0",
+    "number.max": "Số lượng không được lớn hơn 1000",
+    "any.required": "Vui lòng nhập số lượng sản phẩm",
+  }),
 });
 
 module.exports = ProductSchema;

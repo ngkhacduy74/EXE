@@ -17,6 +17,7 @@ const createProduct = async (data, user) => {
     capacity,
     voltage,
     features,
+    quantity,
   } = data;
   console.log("kajshdasd", user);
   const newProduct = new Product({
@@ -36,7 +37,11 @@ const createProduct = async (data, user) => {
     features: features,
     creator: {
       id: user.id,
+      fullname: user.fullname,
+      phone: user.phone,
+      email: user.email,
     },
+    quantity: quantity,
   });
   try {
     await newProduct.save();

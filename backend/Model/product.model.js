@@ -31,6 +31,7 @@ const ProductSchema = new mongoose.Schema(
     voltage: { type: String, require: true },
     creator: { type: creator, require: true },
     features: [{ type: Other_features, require: false }],
+    quantity: { type: Number, require: true, min: 0 },
   },
   {
     timestamps: true,

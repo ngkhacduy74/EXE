@@ -54,7 +54,7 @@ async function verifyOTP(req, res) {
         user,
       },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: "1d" }
+      { expiresIn: "30m" }
     );
 
     return res.status(200).json({
