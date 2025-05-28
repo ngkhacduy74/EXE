@@ -7,7 +7,6 @@ const {
   deleteProduct,
   loadProductStatus,
   loadAllProduct,
-  getProductById,
 } = require("../Controller/product.controller");
 router.post(
   "/createProduct",
@@ -47,7 +46,7 @@ router.get("/", async (req, res) => {
   }
   res.status(200).json(result);
 });
-router.delete("/:id", verifyAdmin, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   const result = await deleteProduct(req.params.id);
   if (result.success === false) {
     return res.status(500).json(result);
