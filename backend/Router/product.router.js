@@ -12,16 +12,17 @@ const {
 const { verifyAdmin } = require("../Middleware/auth.middleware");
 router.post(
   "/createProduct",
+  verifyAdmin,
   productMiddleware.productMiddleware,
   async (req, res) => {
-    const result = await createProduct(req.body);
+    const result = await createProduct(req.body, req.user);
     if (result.success === false) {
       return res.status(500).json(result);
     }
     res.status(200).json(result);
   }
 );
-router.put("/update/:id", async (req, res) => {
+router.put("/update/:id", verifyAdmin, async (req, res) => {
   const data = req.body;
   const result = await updateProduct(req.params.id, data);
   if (result.success === false) {

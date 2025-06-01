@@ -19,7 +19,7 @@ const creator = Joi.object({
 module.exports = creator;
 
 const ProductSchema = Joi.object({
-  id: Joi.string().required(),
+  id: Joi.string().optional(),
 
   image: Joi.array()
     .items(

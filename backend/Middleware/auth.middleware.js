@@ -52,7 +52,7 @@ const verifyUser = (req, res, next) => {
         .json({ message: "Forbidden: Bạn không có quyền truy cập" });
     }
 
-    req.user = decoded; // gán user info cho req để các middleware/controller sau dùng
+    req.user = decoded; 
     next();
   } catch (error) {
     return res.status(403).json({

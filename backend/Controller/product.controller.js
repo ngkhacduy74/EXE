@@ -2,7 +2,7 @@ const Product = require("../Model/product.model");
 const mongoose = require("mongoose");
 const { v1 } = require("uuid");
 
-const createProduct = async (data) => {
+const createProduct = async (data, user) => {
   const {
     image,
     video,
