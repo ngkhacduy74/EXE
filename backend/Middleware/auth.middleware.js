@@ -11,6 +11,7 @@ const validateUser = (req, res, next) => {
 const verifyAdmin = (req, res, next) => {
   try {
     const token = req.headers.token;
+    console.log("lạklsdas", token);
     if (!token) {
       return res
         .status(401)
@@ -19,7 +20,7 @@ const verifyAdmin = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-    if (!decoded || decoded.role !== "Admin") {
+    if (!decoded || decoded.user.role !== "Admin") {
       return res
         .status(403)
         .json({ message: "Forbidden: Bạn không có quyền truy cập" });
@@ -45,7 +46,7 @@ const verifyUser = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-    if (!decoded || decoded.role !== "User") {
+    if (!decoded || decoded.user.role !== "User") {
       return res
         .status(403)
         .json({ message: "Forbidden: Bạn không có quyền truy cập" });
