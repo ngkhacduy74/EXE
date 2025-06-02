@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit, LogOut, LogIn } from 'lucide-react';
 import axios from 'axios';
 
 function Header() {
-  const [user, setUser] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,6 +75,27 @@ function Header() {
     navigate('/login', { replace: true });
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    // Navigate to product browser with search query
+    if (searchTerm.trim()) {
+      navigate(`/product-browser?search=${encodeURIComponent(searchTerm.trim())}`);
+    } else {
+      // If no search term, just go to product browser
+      navigate('/product-browser');
+    }
+  };
+
+  const handleSearchIconClick = () => {
+    // Same logic as form submit
+    if (searchTerm.trim()) {
+      navigate(`/product-browser?search=${encodeURIComponent(searchTerm.trim())}`);
+    } else {
+      navigate('/product-browser');
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -85,9 +107,14 @@ function Header() {
           <div className="col-sm-4 col-lg-3 text-center text-sm-start">
             <div className="main-logo">
               <a href="/">
-                <img src="/styles/images/logo.png" alt="logo" className="img-fluid" />
+                <img
+                  src="../images/Logo.jpg"
+                  alt="logo"
+                  style={{ width: '50px', height: 'auto' }}
+                />
               </a>
             </div>
+
           </div>
 
           <div className="col-sm-6 offset-sm-2 offset-md-0 col-lg-5 d-none d-lg-block">
@@ -101,21 +128,30 @@ function Header() {
                 </select>
               </div>
               <div className="col-11 col-md-7">
-                <form id="search-form" className="text-center" onSubmit={(e) => e.preventDefault()}>
+                <form id="search-form" className="text-center" onSubmit={handleSearch}>
                   <input
                     type="text"
                     className="form-control border-0 bg-transparent"
                     placeholder="Search for more than 20,000 products"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </form>
               </div>
               <div className="col-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z"
-                  />
-                </svg>
+                <button
+                  type="button"
+                  className="btn p-0 border-0 bg-transparent"
+                  onClick={handleSearchIconClick}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -173,7 +209,6 @@ function Header() {
       </div>
 
       <div className="container-fluid">
-
         <div className="d-flex justify-content-sm-between align-items-center">
           <nav className="main-menu d-flex navbar navbar-expand-lg">
             <button
@@ -200,12 +235,9 @@ function Header() {
                   aria-label="Close"
                 ></button>
               </div>
-
-
             </div>
           </nav>
         </div>
-
       </div>
     </header>
   );

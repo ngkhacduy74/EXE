@@ -6,7 +6,8 @@ import { Plus, Eye, EyeOff, Check, Package } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
-
+const token = localStorage.getItem("token");
+ console.log("Token saved to localStorage Mana:", token);
 const ManageProduct = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -19,7 +20,8 @@ const ManageProduct = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const navigate = useNavigate();
-
+const token = localStorage.getItem("token");
+ console.log("Token saved to localStorage:", token);
   // Fetch product data and extract unique brands
   useEffect(() => {
     const fetchProducts = async () => {

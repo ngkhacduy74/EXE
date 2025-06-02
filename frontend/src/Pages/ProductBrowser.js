@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import './styles/style.css';
 import './styles/vendor.css';
@@ -10,6 +11,7 @@ import { Filter, Grid, List, ChevronDown, ChevronUp, X, Package, Star } from 'lu
 import axios from 'axios';
 
 const ProductBrowse = () => {
+  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +44,16 @@ const ProductBrowse = () => {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(12);
+
+  // Handle URL search parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const searchParam = urlParams.get('search');
+    
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+  }, [location.search]);
 
   // Fetch products from API
   useEffect(() => {
@@ -115,9 +127,9 @@ const ProductBrowse = () => {
       result = result.filter((product) => (product.rating || 0) >= rating);
     }
 
-    // Filter by stock status
+    // Filter by stock status (using quantity)
     if (inStock) {
-      result = result.filter((product) => product.stock > 0);
+      result = result.filter((product) => product.quantity > 0);
     }
 
     // Apply sorting
@@ -328,45 +340,6 @@ const ProductBrowse = () => {
           )}
         </div>
 
-        {/* Rating Filter */}
-        <div className="filter-group mb-4">
-          <div 
-            className="filter-header d-flex justify-content-between align-items-center cursor-pointer"
-            onClick={() => toggleFilterExpand('rating')}
-          >
-            <h6 className="mb-0">Minimum Rating</h6>
-            {expandedFilters.rating ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </div>
-          {expandedFilters.rating && (
-            <div className="filter-content mt-2">
-              {[4, 3, 2, 1].map(ratingValue => (
-                <div key={ratingValue} className="form-check mb-2">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    name="rating"
-                    id={`rating-${ratingValue}`}
-                    checked={rating === ratingValue}
-                    onChange={() => setRating(ratingValue)}
-                  />
-                  <label className="form-check-label d-flex align-items-center" htmlFor={`rating-${ratingValue}`}>
-                    <span className="text-warning me-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={14} 
-                          fill={i < ratingValue ? 'currentColor' : 'none'}
-                        />
-                      ))}
-                    </span>
-                    <span>& Up</span>
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* Stock Filter */}
         <div className="filter-group mb-4">
           <div className="form-check">
@@ -405,7 +378,7 @@ const ProductBrowse = () => {
               -{product.discount}%
             </span>
           )}
-          {product.stock <= 0 && (
+          {product.quantity <= 0 && (
             <span className="badge bg-secondary position-absolute top-0 end-0 m-2">
               Out of Stock
             </span>
@@ -457,10 +430,10 @@ const ProductBrowse = () => {
           
           <div className="mt-auto">
             <button 
-              className={`btn btn-sm w-100 ${product.stock > 0 ? 'btn-outline-primary' : 'btn-secondary'}`}
-              disabled={product.stock <= 0}
+              className={`btn btn-sm w-100 ${product.quantity > 0 ? 'btn-outline-primary' : 'btn-secondary'}`}
+              disabled={product.quantity <= 0}
             >
-              {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+              {product.quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
             </button>
           </div>
         </div>

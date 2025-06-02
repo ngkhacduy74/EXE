@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Send, User, Bot, MessageCircle, X, LogIn } from 'lucide-react';
 
-// Inline styles (unchanged)
 const styles = {
   container: {
     position: 'fixed',
@@ -27,15 +26,26 @@ const styles = {
     position: 'absolute',
     bottom: '60px',
     right: '0',
-    width: '320px',
-    height: '400px',
+    width: 'min(500px, calc(100vw - 48px))',
+    height: 'min(700px, calc(100vh - 120px))',
     borderRadius: '8px',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: 'white',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-    border: '1px solid #e5e7eb'
+    border: '1px solid #e5e7eb',
+    // Mobile full screen
+    '@media (max-width: 768px)': {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      right: '0',
+      bottom: '0',
+      width: '100vw',
+      height: '100vh',
+      borderRadius: '0'
+    }
   },
   header: {
     backgroundColor: '#2563eb',
@@ -76,10 +86,12 @@ const styles = {
   messageBubble: {
     display: 'flex',
     alignItems: 'flex-start',
-    padding: '8px 12px',
-    maxWidth: '80%',
-    borderRadius: '8px',
-    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+    padding: '12px 16px',  // Tăng padding
+    maxWidth: '85%',       // Tăng từ 80% lên 85%
+    borderRadius: '12px',  // Bo góc hơi lớn hơn
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+    fontSize: '14px',      // Có thể tăng font size
+    lineHeight: '1.5'      // Tăng line height cho dễ đọc
   },
   userBubble: {
     backgroundColor: '#2563eb',
@@ -147,97 +159,142 @@ const styles = {
 
 export default function ChatWidget() {
   const [messages, setMessages] = useState([]);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState('');
+  const [token, setToken] = useState(null);
+  const [isBotTyping, setIsBotTyping] = useState(false);
+  const messagesContainerRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
-      // Check if user is logged in
-      const userData = localStorage.getItem("user");
+      // Kiểm tra cả token và user data
+      const savedToken = localStorage.getItem("token");
+      const userData = localStorage.getItem('user');
       
-      if (userData) {
+      if (savedToken && userData) {
         try {
           const user = JSON.parse(userData);
           const name = user.fullname || user.username || user.email || null;
           
           if (name) {
+            setToken(savedToken);
             setIsLoggedIn(true);
             setUsername(name);
-            
-            // Set initial bot message with personalized greeting
             setMessages([
               {
                 id: 1,
-                text: `Hi, ${name}! How can I help you today?`,
-                sender: "bot"
-              }
+                text: `Chào ${name}! Tôi có thể giúp gì cho bạn hôm nay?`,
+                sender: 'bot',
+              },
             ]);
           } else {
-            setIsLoggedIn(false);
-            setMessages([
-              {
-                id: 1,
-                text: "You must login to use chat box",
-                sender: "bot"
-              }
-            ]);
+            throw new Error('Không tìm thấy tên người dùng hợp lệ');
           }
         } catch (error) {
-          // Handle JSON parse error
-          setIsLoggedIn(false);
-          setMessages([
-            {
-              id: 1,
-              text: "You must login to use chat box",
-              sender: "bot"
-            }
-          ]);
+          console.error('Lỗi phân tích dữ liệu người dùng:', error);
+          handleAuthError();
         }
       } else {
-        // No user data found
-        setIsLoggedIn(false);
-        setMessages([
-          {
-            id: 1,
-            text: "You must login to use chat box",
-            sender: "bot"
-          }
-        ]);
+        handleAuthError();
       }
     } else {
-      // Clear messages when chat closes
       setMessages([]);
     }
   }, [isOpen]);
 
-  const handleSendMessage = () => {
-    if (inputValue.trim() === "" || !isLoggedIn) return;
+  const handleAuthError = () => {
+    setIsLoggedIn(false);
+    setToken(null);
+    setMessages([
+      {
+        id: 1,
+        text: 'Bạn phải đăng nhập để sử dụng hộp trò chuyện',
+        sender: 'bot',
+      },
+    ]);
+  };
 
-    // Add user message
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  }, [messages, isBotTyping]);
+
+  const handleSendMessage = async () => {
+    if (inputValue.trim() === '' || !isLoggedIn || !token) return;
+
     const newUserMessage = {
       id: messages.length + 1,
       text: inputValue,
-      sender: "user"
+      sender: 'user',
     };
 
     setMessages([...messages, newUserMessage]);
-    setInputValue("");
+    setInputValue('');
+    setIsBotTyping(true);
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:4000/chat/ask/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Chỉ thêm Authorization nếu có token
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ prompt: inputValue }),
+      });
+
+      if (response.status === 401) {
+        // Token hết hạn hoặc không hợp lệ
+        handleTokenExpired();
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Lỗi HTTP! Mã trạng thái: ${response.status}`);
+      }
+
+      const data = await response.json();
       const botResponse = {
         id: messages.length + 2,
-        text: "Thanks for your message! This is a demo response.",
-        sender: "bot"
+        text: data.answer || data.response || 'Xin lỗi, tôi không hiểu bạn nói gì.',
+        sender: 'bot',
       };
-      setMessages(prevMessages => [...prevMessages, botResponse]);
-    }, 1000);
+
+      setMessages((prevMessages) => [...prevMessages, botResponse]);
+    } catch (error) {
+      console.error('Lỗi khi lấy phản hồi từ bot:', error);
+      const errorResponse = {
+        id: messages.length + 2,
+        text: 'Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại.',
+        sender: 'bot',
+      };
+      setMessages((prevMessages) => [...prevMessages, errorResponse]);
+    } finally {
+      setIsBotTyping(false);
+    }
+  };
+
+  const handleTokenExpired = () => {
+    // Xóa token và user data khi hết hạn
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    setToken(null);
+    setIsLoggedIn(false);
+    setMessages([
+      {
+        id: 1,
+        text: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+        sender: 'bot',
+      },
+    ]);
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handleSendMessage();
     }
   };
@@ -247,66 +304,70 @@ export default function ChatWidget() {
   };
 
   const redirectToLogin = () => {
-    // Redirect to login page - replace with your actual login URL
-    window.location.href = "/login";
+    window.location.href = '/login';
   };
 
   return (
     <div style={styles.container}>
-      {/* Chat Icon Button */}
-      <button 
+      <button
         style={styles.iconButton}
         onClick={toggleChat}
+        aria-label={isOpen ? 'Đóng trò chuyện' : 'Mở trò chuyện'}
       >
-        {isOpen ? (
-          <X size={24} />
-        ) : (
-          <MessageCircle size={24} />
-        )}
+        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
       </button>
-      
-      {/* Chat Widget */}
+
       {isOpen && (
         <div style={styles.chatContainer}>
-          {/* Header */}
           <div style={styles.header}>
-            <h2 style={styles.headerTitle}>Chat Support</h2>
-            <button onClick={toggleChat} style={styles.closeButton}>
+            <h2 style={styles.headerTitle}>Hỗ trợ trò chuyện</h2>
+            <button
+              onClick={toggleChat}
+              style={styles.closeButton}
+              aria-label="Đóng trò chuyện"
+            >
               <X size={18} />
             </button>
           </div>
-          
+
           {isLoggedIn ? (
             <>
-              {/* Messages Container */}
-              <div style={styles.messagesContainer}>
+              <div style={styles.messagesContainer} ref={messagesContainerRef}>
                 {messages.map((message) => (
-                  <div 
-                    key={message.id} 
+                  <div
+                    key={message.id}
                     style={{
                       ...styles.messageRow,
-                      ...(message.sender === "user" ? styles.userRow : styles.botRow)
+                      ...(message.sender === 'user' ? styles.userRow : styles.botRow),
                     }}
                   >
-                    <div 
+                    <div
                       style={{
                         ...styles.messageBubble,
-                        ...(message.sender === "user" ? styles.userBubble : styles.botBubble)
+                        ...(message.sender === 'user' ? styles.userBubble : styles.botBubble),
                       }}
                     >
                       <div style={styles.iconContainer}>
-                        {message.sender === "user" ? 
-                          <User size={16} /> : 
-                          <Bot size={16} />
-                        }
+                        {message.sender === 'user' ? <User size={16} /> : <Bot size={16} />}
                       </div>
-                      <p>{message.text}</p>
+                      <div style={{ whiteSpace: 'pre-wrap' }}>
+                        {message.text}
+                      </div>
                     </div>
                   </div>
                 ))}
+                {isBotTyping && (
+                  <div style={styles.messageRow}>
+                    <div style={{ ...styles.messageBubble, ...styles.botBubble }}>
+                      <div style={styles.iconContainer}>
+                        <Bot size={16} />
+                      </div>
+                      <p>Đang trả lời...</p>
+                    </div>
+                  </div>
+                )}
               </div>
-              
-              {/* Input Area */}
+
               <div style={styles.inputArea}>
                 <div style={styles.inputContainer}>
                   <input
@@ -314,12 +375,14 @@ export default function ChatWidget() {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Type a message..."
+                    placeholder="Nhập tin nhắn..."
                     style={styles.input}
+                    aria-label="Nhập tin nhắn trò chuyện"
                   />
-                  <button 
+                  <button
                     onClick={handleSendMessage}
                     style={styles.sendButton}
+                    aria-label="Gửi tin nhắn"
                   >
                     <Send size={18} />
                   </button>
@@ -327,16 +390,19 @@ export default function ChatWidget() {
               </div>
             </>
           ) : (
-            /* Login Required Message */
             <div style={styles.loginMessage}>
               <Bot size={48} color="#2563eb" />
-              <h3 style={{ marginTop: '16px', color: '#1f2937' }}>Please login to chat</h3>
+              <h3 style={{ marginTop: '16px', color: '#1f2937' }}>Vui lòng đăng nhập để trò chuyện</h3>
               <p style={{ color: '#6b7280', margin: '8px 0' }}>
-                You must login to use the chat box. Please sign in to continue.
+                Bạn cần đăng nhập để sử dụng hộp trò chuyện. Hãy đăng nhập để tiếp tục.
               </p>
-              <button style={styles.loginButton} onClick={redirectToLogin}>
+              <button
+                style={styles.loginButton}
+                onClick={redirectToLogin}
+                aria-label="Đăng nhập để tiếp tục"
+              >
                 <LogIn size={18} />
-                Login Now
+                Đăng nhập ngay
               </button>
             </div>
           )}

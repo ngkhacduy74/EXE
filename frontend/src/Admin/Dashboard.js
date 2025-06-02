@@ -18,7 +18,8 @@ function AdminDashboard() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [availableYears, setAvailableYears] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
+const token = localStorage.getItem("token");
+ console.log("Token saved to localStorage:", token);
   const sampleData = {
     summary: { totalUsers: 1200, totalCategories: 15, totalPosts: 450, totalComments: 2300 },
     postsByYear: {

@@ -46,30 +46,30 @@ const App = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
-  const token = location.state?.token; // Access token from state
   const [otp, setOTP] = useState("");
   const [loading, setLoading] = useState(false);
   const { styles } = useStyle();
-
-  // Log token to verify reception
-  console.log("OTP Page - Email:", email);
-  console.log("OTP Page - Token from state:", token);
-  console.log("OTP Page - Token from localStorage:", localStorage.getItem("token"));
 
   const handleClick = async () => {
     setLoading(true);
     try {
       const res = await verifyOTPApi(email, otp);
-      console.log("OTP verification response:", res.data); // Log response
+      console.log("OTP verification response:", res.data);
 
       if (res && res.data.success) {
+        const token = res.data.token;
+        if (token) {
+          localStorage.setItem("token", token); // ✅ Save token
+          console.log("Token saved to localStorage:", token);
+        }
+
         notification.success({
           message: "OTP Successfully",
           description: "Đăng nhập thành công!",
         });
 
         const userRes = await getUserByEmail(email);
-        console.log("User response:", userRes.data); // Log user response
+        console.log("User response:", userRes.data);
 
         localStorage.setItem("user", JSON.stringify(userRes.data.user));
         navigate(userRes.data.user.role === "Admin" ? "/admin" : "/");
@@ -85,16 +85,13 @@ const App = () => {
         description: "Lỗi hệ thống. Vui lòng thử lại sau.",
       });
       console.error("❌ OTP error:", err);
-      console.error("Error response:", err.response?.data); // Log error details
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}
-    >
+    <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
       <video
         autoPlay
         muted
@@ -114,11 +111,7 @@ const App = () => {
         Trình duyệt của bạn không hỗ trợ video nền.
       </video>
 
-      <Flex
-        justify="center"
-        align="center"
-        style={{ minHeight: "100vh", padding: 16 }}
-      >
+      <Flex justify="center" align="center" style={{ minHeight: "100vh", padding: 16 }}>
         <Card
           style={{
             width: 400,
