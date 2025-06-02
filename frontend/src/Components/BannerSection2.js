@@ -9,9 +9,9 @@ const bannerContainerStyle = {
 const BannerSection2 = () => (
   <div style={bannerContainerStyle}>
     <img
-      src="../images/Banner.jpg"
+      src="../images/Banner.png"
       alt="logo"
-      style={{ width: '200px', height: 'auto', marginBottom: '16px' }} // Increased width
+      style={{ width: '1500px', height: 'auto', marginBottom: '16px' }} // Increased width
     />
   </div>
 );
