@@ -19,14 +19,11 @@ const verifyAdmin = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    console.log("lấd", decoded);
-    // if (decoded.type !== "access") {
-    //   return res
-    //     .status(403)
-    //     .json({ message: "Bạn không có quyền truy cập. Vui lòng login!!!!" });
-    // }
+
     if (!decoded || decoded.user.role !== "Admin") {
-      return res.status(403).json({ message: "Bạn không có quyền truy cập" });
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Bạn không có quyền truy cập" });
     }
 
     req.user = decoded;
@@ -48,18 +45,14 @@ const verifyUser = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if (decoded.type !== "access") {
-      return res
-        .status(403)
-        .json({ message: "Bạn không có quyền truy cập. Vui lòng login!!!!" });
-    }
+
     if (!decoded || decoded.user.role !== "User") {
       return res
         .status(403)
         .json({ message: "Forbidden: Bạn không có quyền truy cập" });
     }
 
-    req.user = decoded;
+    req.user = decoded; 
     next();
   } catch (error) {
     return res.status(403).json({

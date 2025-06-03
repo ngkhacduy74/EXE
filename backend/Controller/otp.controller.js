@@ -52,24 +52,15 @@ async function verifyOTP(req, res) {
     const token = jwt.sign(
       {
         user,
-        type: "access",
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: "30m" }
-    );
-    const refresh_token = jwt.sign(
-      { user, type: "refresh" },
-      process.env.REFRESH_TOKEN,
-      {
-        expiresIn: "30d",
-      }
     );
 
     return res.status(200).json({
       success: true,
       message: "Xác minh OTP thành công",
-      token: token,
-      refresh_token: refresh_token,
+      token,
     });
   } catch (error) {
     console.error("Lỗi xác minh OTP:", error);
