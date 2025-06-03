@@ -32,7 +32,7 @@ async function Login(params) {
   } else {
     throw new Error("không thể gửi OTP. Vui lòng thử lại sau.");
   }
-  // cần xác minh được otp đã rồi mới đẩy token lên web
+
   return { success: true, email: params.email };
 }
 
