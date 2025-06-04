@@ -64,9 +64,51 @@ async function Register(params) {
 
   return { success: true, message: "Đăng kí thành công", newUser };
 }
+async function Refresh_Token(token) {
+  console.log("1111111", token);
+  try {
+    const decoded = jwt.verify(token.refresh_token, process.env.REFRESH_TOKEN);
+    console.log("adlajkd", decoded);
+    if (decoded.type !== "refresh") {
+      return {
+        success: false,
+        error: "Refresh token không hợp lệ, có thể bạn đang gửi access token",
+      };
+    }
 
+    const newAccessToken = jwt.sign(
+      {
+        decoded,
+        type: "access",
+      },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "30m" }
+    );
+
+    const newRefreshToken = jwt.sign(
+      {
+        decoded,
+        type: "refresh",
+      },
+      process.env.REFRESH_TOKEN,
+      { expiresIn: "30d" }
+    );
+
+    return {
+      success: true,
+      token: newAccessToken,
+      refresh_token: newRefreshToken,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: "Refresh token không hợp lệ hoặc đã hết hạn",
+    };
+  }
+}
 module.exports = {
   Login,
   Register,
   getUserByEmail,
+  Refresh_Token,
 };
