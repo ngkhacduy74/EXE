@@ -1,11 +1,42 @@
 const express = require("express");
-const ChatGpt = require("../Controller/chatgpt.controller");
+const searchLinks = require("../Config/searchLink");
+const crawlWebsite = require("../Config/crawl");
+const getChatResponse = require("../Config/openAI");
 const router = express.Router();
+
 router.post("/ask", async (req, res) => {
-  const result = await ChatGpt(req.body);
-  if (result.success === false) {
-    return res.status(500).json(result);
+  const { prompt } = req.body;
+  console.log("kahsdad", req.body);
+  if (!prompt) {
+    return res
+      .status(400)
+      .json({ success: false, error: "Thiếu prompt đầu vào" });
   }
-  res.status(200).json(result);
+
+  try {
+    const links = await searchLinks(prompt);
+
+    if (!links.length) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Không tìm thấy nguồn phù hợp" });
+    }
+
+    const contents = await Promise.all(links.map(crawlWebsite));
+    const mergedText = contents.join("\n---\n").slice(0, 8000);
+
+    const fullPrompt = `Tóm tắt và phân tích dữ liệu dưới đây về: "${prompt}"\n\n${mergedText}`;
+    const answer = await getChatResponse(fullPrompt);
+
+    res.json({
+      success: true,
+      answer,
+      sources: links,
+    });
+  } catch (err) {
+    console.error("Lỗi /ask:", err.message);
+    res.status(500).json({ success: false, error: "Lỗi server hoặc AI" });
+  }
 });
+
 module.exports = router;
