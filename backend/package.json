@@ -8,6 +8,7 @@
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "google-it": "^1.6.4",
+    "google-search-results-nodejs": "^2.1.0",
     "http-proxy-middleware": "^3.0.5",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
