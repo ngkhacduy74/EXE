@@ -56,11 +56,19 @@ async function verifyOTP(req, res) {
       process.env.JWT_SECRET_KEY,
       { expiresIn: "30m" }
     );
+    const refresh_token = jwt.sign(
+      {
+        user,
+      },
+      process.env.REFRESH_TOKEN,
+      { expiresIn: "30d" }
+    );
 
     return res.status(200).json({
       success: true,
       message: "Xác minh OTP thành công",
       token,
+      refresh_token: refresh_token,
     });
   } catch (error) {
     console.error("Lỗi xác minh OTP:", error);
