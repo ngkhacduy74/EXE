@@ -52,6 +52,7 @@ async function verifyOTP(req, res) {
     const token = jwt.sign(
       {
         user,
+        type: "access",
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: "30m" }
@@ -59,6 +60,7 @@ async function verifyOTP(req, res) {
     const refresh_token = jwt.sign(
       {
         user,
+        type: "refresh",
       },
       process.env.REFRESH_TOKEN,
       { expiresIn: "30d" }
