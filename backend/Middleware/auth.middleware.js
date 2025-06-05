@@ -20,11 +20,10 @@ const verifyToken = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-
+    console.log("822222222", decoded);
     if (
       !decoded ||
-      decoded.user.role !== "Admin" ||
-      decoded.user.role !== "User"
+      (decoded.user.role !== "Admin" && decoded.user.role !== "User")
     ) {
       return res
         .status(403)
