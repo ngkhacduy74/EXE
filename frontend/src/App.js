@@ -23,6 +23,7 @@ import ErrorPage from "./Components/ErrorPage";
 import NewPostForm from "./Components/NewPost";
 import CreateProduct from "./Admin/CreateProduct";
 import ProductBrowser  from "./Pages/ProductBrowser";
+import CompareProduct from "./Pages/CompareProduct";
 
 
 const App = () => {
@@ -57,6 +58,7 @@ const App = () => {
           {/* <Route path="/product/:productId" element={<ProductDetail />} /> */}
           <Route path="/create-product" element={<CreateProduct />} />
           <Route path="/product-browser" element={<ProductBrowser />} />
+          <Route path="/compare-product" element={<CompareProduct />} />
           {/* 404 Error Page */}
 
 

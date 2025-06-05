@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit, LogOut, LogIn } from 'lucide-react';
+import { Edit, LogOut, LogIn, Copy } from 'lucide-react';
 import axios from 'axios';
 
 function Header() {
@@ -19,12 +19,6 @@ function Header() {
 
       try {
         const token = localStorage.getItem('token');
-
-        // if (!token) {
-        //   setLoading(false);
-        //   navigate('/login', { replace: true });
-        //   return;
-        // }
 
         const userData = localStorage.getItem('user');
         let parsedUser = null;
@@ -77,18 +71,14 @@ function Header() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-
-    // Navigate to product browser with search query
     if (searchTerm.trim()) {
       navigate(`/product-browser?search=${encodeURIComponent(searchTerm.trim())}`);
     } else {
-      // If no search term, just go to product browser
       navigate('/product-browser');
     }
   };
 
   const handleSearchIconClick = () => {
-    // Same logic as form submit
     if (searchTerm.trim()) {
       navigate(`/product-browser?search=${encodeURIComponent(searchTerm.trim())}`);
     } else {
@@ -114,7 +104,6 @@ function Header() {
                 />
               </a>
             </div>
-
           </div>
 
           <div className="col-sm-6 offset-sm-2 offset-md-0 col-lg-5 d-none d-lg-block">
@@ -169,6 +158,13 @@ function Header() {
                 <li>
                   <a href="/newPost" className="rounded-circle bg-light p-2 mx-1">
                     <Edit width={24} height={24} />
+                  </a>
+                </li>
+              )}
+              {user && (
+                <li>
+                  <a href="/compare-product" className="rounded-circle bg-light p-2 mx-1">
+                    <Copy width={24} height={24} />
                   </a>
                 </li>
               )}

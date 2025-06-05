@@ -1,14 +1,48 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Table, Button, Form } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { Plus, Eye, EyeOff, Check, Package } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
-const token = localStorage.getItem("token");
- console.log("Token saved to localStorage Mana:", token);
+
+const api = axios.create({
+  baseURL: 'http://localhost:4000',
+  timeout: 5000,
+});
+
 const ManageProduct = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Token state management - similar to AdminDashboard
+  const [tokens, setTokens] = useState(() => {
+    // First try to get from location state
+    const locationToken = location.state?.token;
+    const locationRefreshToken = location.state?.refresh_token;
+    
+    if (locationToken && locationRefreshToken) {
+      return {
+        accessToken: locationToken,
+        refreshToken: locationRefreshToken
+      };
+    }
+    
+    // Fallback to localStorage
+    try {
+      const accessToken = localStorage.getItem("token");
+      const refreshToken = localStorage.getItem("refreshToken") || localStorage.getItem("refresh_token");
+      return {
+        accessToken: accessToken || null,
+        refreshToken: refreshToken || null
+      };
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
+      return { accessToken: null, refreshToken: null };
+    }
+  });
+
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,14 +53,136 @@ const ManageProduct = () => {
   const [brands, setBrands] = useState([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const navigate = useNavigate();
-const token = localStorage.getItem("token");
- console.log("Token saved to localStorage:", token);
+
+  console.log("Access token found:", tokens.accessToken ? "Yes" : "No");
+  console.log("Refresh token found:", tokens.refreshToken ? "Yes" : "No");
+
+  // Effect to update tokens when location state changes
+  useEffect(() => {
+    const locationToken = location.state?.token;
+    const locationRefreshToken = location.state?.refresh_token;
+    
+    if (locationToken && locationRefreshToken) {
+      console.log("✅ Token from location:", locationToken.substring(0, 15) + "...");
+      console.log("🔄 Refresh Token from location:", locationRefreshToken.substring(0, 15) + "...");
+      
+      setTokens({
+        accessToken: locationToken,
+        refreshToken: locationRefreshToken
+      });
+      
+      // Optionally save to localStorage for persistence
+      try {
+        localStorage.setItem("token", locationToken);
+        localStorage.setItem("refreshToken", locationRefreshToken);
+      } catch (error) {
+        console.error("Error saving tokens to localStorage:", error);
+      }
+    } else if (!tokens.accessToken || !tokens.refreshToken) {
+      console.warn("⚠️ No token data passed via location state");
+    }
+  }, [location.state]);
+
+  // Token refresh function
+  const refreshAccessToken = async () => {
+    if (!tokens.refreshToken) {
+      console.error('No refresh token available');
+      throw new Error('No refresh token available');
+    }
+
+    try {
+      console.log('Attempting to refresh token...');
+
+      const response = await api.post('/auth/refresh-token', {
+        refresh_token: tokens.refreshToken,
+      });
+
+      const { token, refresh_token } = response.data;
+      if (!token || !refresh_token) {
+        throw new Error('Invalid refresh token response');
+      }
+
+      const newTokens = {
+        accessToken: token,
+        refreshToken: refresh_token
+      };
+
+      // Update localStorage
+      try {
+        localStorage.setItem('token', token);
+        localStorage.setItem('refreshToken', refresh_token);
+      } catch (error) {
+        console.error("Error saving refreshed tokens:", error);
+      }
+
+      setTokens(newTokens);
+      console.log('✅ Tokens refreshed successfully');
+      return token;
+    } catch (err) {
+      console.error('Error refreshing token:', err);
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('refresh_token'); // Clean up old key too
+      window.location.href = '/login';
+      throw err;
+    }
+  };
+
+  // API call with token refresh logic
+  const makeAuthenticatedRequest = async (config, retryCount = 0) => {
+    try {
+      if (!tokens.accessToken) {
+        throw new Error('No access token available');
+      }
+
+      const requestConfig = {
+        ...config,
+        headers: {
+          ...config.headers,
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+      };
+
+      const response = await api.request(requestConfig);
+      return response;
+    } catch (err) {
+      if (err.response?.status === 401 && retryCount === 0 && tokens.refreshToken) {
+        console.warn('Access token expired. Attempting to refresh...');
+        try {
+          await refreshAccessToken();
+          return makeAuthenticatedRequest(config, 1); // Retry once
+        } catch (refreshErr) {
+          throw new Error('Session expired. Please log in again.');
+        }
+      } else if (err.response?.status === 429) {
+        throw new Error('Too many requests. Please try again later.');
+      } else if (!err.response) {
+        throw new Error('Server connection error. Please check your connection.');
+      }
+      throw err;
+    }
+  };
+
   // Fetch product data and extract unique brands
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/product/");
+        setLoading(true);
+        setError(null);
+        
+        // Check if we have tokens
+        if (!tokens.accessToken) {
+          console.log("No access token available");
+          setError("No access token available. Please log in again.");
+          setLoading(false);
+          return;
+        }
+        
+        const response = await makeAuthenticatedRequest({
+          method: 'GET',
+          url: '/product/',
+        });
+
         console.log("API Response:", response.data);
 
         const productData = Array.isArray(response.data.data)
@@ -41,15 +197,19 @@ const token = localStorage.getItem("token");
         setBrands(uniqueBrands);
       } catch (err) {
         console.error("Fetch Error:", err);
-        setError("Failed to fetch products. Please try again later.");
+        setError(err.message || "Failed to fetch products. Please try again later.");
         setProducts([]);
         setFilteredProducts([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchProducts();
-  }, []);
+    
+    // Only fetch if we have access token
+    if (tokens.accessToken) {
+      fetchProducts();
+    }
+  }, [tokens.accessToken]); // Add tokens.accessToken as dependency
 
   // Apply filters whenever searchTerm, statusFilter, selectedBrands, minPrice, or maxPrice change
   useEffect(() => {
@@ -132,29 +292,50 @@ const token = localStorage.getItem("token");
     navigate("/create-product");
   };
 
-  // Handle toggle status
+  // Handle toggle status with authentication
   const handleToggleStatus = async (productId, currentStatus) => {
     const newStatus = currentStatus === "New" ? "Second Hand" : "New";
     try {
-      await axios.put(`http://localhost:4000/product/${productId}`, {
-        status: newStatus,
+      await makeAuthenticatedRequest({
+        method: 'PUT',
+        url: `/product/${productId}`,
+        data: {
+          status: newStatus,
+        },
       });
+
+      // Update local state
       setProducts(
         products.map((product) =>
           product.id === productId ? { ...product, status: newStatus } : product
         )
       );
+      
+      console.log(`Product ${productId} status updated to ${newStatus}`);
     } catch (err) {
-      setError("Failed to update product status.");
+      console.error("Error updating product status:", err);
+      setError(err.message || "Failed to update product status.");
     }
   };
 
-  if (error) {
+  if (error && error.includes("Session expired")) {
     return <ErrorPage message={error} />;
   }
 
   if (loading) {
-    return <p>Loading products...</p>;
+    return (
+      <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+        <HeaderAdmin />
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
+          <div className="text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-2">Loading products...</p>
+          </div>
+        </div>
+      </Container>
+    );
   }
 
   return (
@@ -173,7 +354,55 @@ const token = localStorage.getItem("token");
           <Sidebar />
         </Col>
         <Col style={{ marginLeft: "10px" }} className="p-4">
+          {/* Token Status Display - Similar to AdminDashboard */}
+          <div className="mb-3">
+            <div className={`alert alert-${tokens.accessToken && tokens.refreshToken ? 'success' : 'warning'} py-2`}>
+              <Row>
+                <Col md={6}>
+                  <small className={`text-${tokens.accessToken ? 'success' : 'danger'}`}>
+                    {tokens.accessToken ? '✅' : '❌'} Access Token: {tokens.accessToken ? `${tokens.accessToken.substring(0, 15)}...` : 'Not found'}
+                  </small>
+                </Col>
+                <Col md={6}>
+                  <small className={`text-${tokens.refreshToken ? 'success' : 'danger'}`}>
+                    {tokens.refreshToken ? '✅' : '❌'} Refresh Token: {tokens.refreshToken ? `${tokens.refreshToken.substring(0, 15)}...` : 'Not found'}
+                  </small>
+                </Col>
+              </Row>
+              {tokens.accessToken && tokens.refreshToken && (
+                <div className="mt-2">
+                  <button 
+                    className="btn btn-sm btn-outline-primary"
+                    onClick={refreshAccessToken}
+                  >
+                    Refresh Access Token
+                  </button>
+                </div>
+              )}
+              {location.state?.token && (
+                <div className="mt-2">
+                  <small className="text-info">
+                    📍 Tokens loaded from navigation state
+                  </small>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div id="manage-products" className="mb-5">
+            {/* Error Alert */}
+            {error && !error.includes("Session expired") && (
+              <div className="alert alert-warning mb-3" role="alert">
+                <strong>Warning:</strong> {error}
+                <button 
+                  className="btn btn-link btn-sm ms-2" 
+                  onClick={() => window.location.reload()}
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
             {/* Header with title and Create button */}
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h3 className="mb-0">Manage Products</h3>
@@ -237,7 +466,7 @@ const token = localStorage.getItem("token");
               <Col md={3}>
                 <Form.Group>
                   <Form.Label>Filter by Brand</Form.Label>
-                  <div>
+                  <div style={{ maxHeight: "120px", overflowY: "auto" }}>
                     {brands.length > 0 ? (
                       brands.map((brand) => (
                         <Form.Check
@@ -249,7 +478,7 @@ const token = localStorage.getItem("token");
                         />
                       ))
                     ) : (
-                      <p>No brands available.</p>
+                      <p className="text-muted small">No brands available.</p>
                     )}
                   </div>
                 </Form.Group>
@@ -272,7 +501,7 @@ const token = localStorage.getItem("token");
               <div className="text-center py-5">
                 <Package size={48} className="text-muted mb-3" />
                 <p className="text-muted">No products found.</p>
-                {products.length === 0 && (
+                {products.length === 0 && !error && (
                   <Button 
                     variant="primary" 
                     onClick={handleCreateProduct}
@@ -336,7 +565,7 @@ const token = localStorage.getItem("token");
                             variant={product.status === "New" ? "danger" : "success"}
                             size="sm"
                             onClick={() => handleToggleStatus(product.id, product.status)}
-                            title={product.status === "New" ? "Hide Product" : "Set as New"}
+                            title={product.status === "New" ? "Mark as Second Hand" : "Mark as New"}
                           >
                             {product.status === "New" ? <EyeOff size={16} /> : <Check size={16} />}
                           </Button>

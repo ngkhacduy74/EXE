@@ -3,6 +3,14 @@ import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
+import { 
+  Smartphone, 
+  Laptop, 
+  Headphones, 
+  Monitor, 
+  Camera, 
+  Watch
+} from 'lucide-react';
 
 const CategoryCarousel = () => {
   useEffect(() => {
@@ -53,88 +61,52 @@ const CategoryCarousel = () => {
             <div className="category-carousel swiper">
               <div className="swiper-wrapper">
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-vegetables-broccoli.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Fruits & Veges</h3>
+                  <Smartphone size={48} />
+                  <h3 className="category-title">Điện Thoại</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-bread-baguette.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Breads & Sweets</h3>
+                  <Laptop size={48} />
+                  <h3 className="category-title">Laptop</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-soft-drinks-bottle.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Soft Drinks</h3>
+                  <Headphones size={48} />
+                  <h3 className="category-title">Tai Nghe</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-wine-glass-bottle.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Wines</h3>
+                  <Monitor size={48} />
+                  <h3 className="category-title">Màn Hình</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-animal-products-drumsticks.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Meat Products</h3>
+                  <Camera size={48} />
+                  <h3 className="category-title">Máy Ảnh</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-bread-herb-flour.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Baking Ingredients</h3>
+                  <Watch size={48} />
+                  <h3 className="category-title">Đồng Hồ Thông Minh</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-vegetables-broccoli.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Fruits & Veges</h3>
+                  <Smartphone size={48} />
+                  <h3 className="category-title">Điện Thoại</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-vegetables-broccoli.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Fruits & Veges</h3>
+                  <Laptop size={48} />
+                  <h3 className="category-title">Laptop</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-vegetables-broccoli.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Fruits & Veges</h3>
+                  <Headphones size={48} />
+                  <h3 className="category-title">Tai Nghe</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-vegetables-broccoli.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Fruits & Veges</h3>
+                  <Monitor size={48} />
+                  <h3 className="category-title">Màn Hình</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-vegetables-broccoli.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Fruits & Veges</h3>
+                  <Camera size={48} />
+                  <h3 className="category-title">Máy Ảnh</h3>
                 </a>
                 <a href="/" className="nav-link category-item swiper-slide">
-                  <img
-                    src="/images/icon-vegetables-broccoli.png"
-                    alt="Category Thumbnail"
-                  />
-                  <h3 className="category-title">Fruits & Veges</h3>
+                  <Watch size={48} />
+                  <h3 className="category-title">Đồng Hồ Thông Minh</h3>
                 </a>
               </div>
             </div>

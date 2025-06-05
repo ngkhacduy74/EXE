@@ -1,273 +1,644 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { Container, Card, Button, Spinner, Alert } from "react-bootstrap";
-import HeaderAdmin from "../Components/HeaderAdmin";
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import PropTypes from 'prop-types';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Card, Badge, Button, Alert, Spinner } from 'react-bootstrap';
+import { ArrowLeft, Package, ShoppingCart, Heart, Share2, Star, MapPin, Clock, Shield } from 'lucide-react';
+import axios from 'axios';
+import Sidebar from '../Components/Sidebar';
+import HeaderAdmin from '../Components/HeaderAdmin';
 
-const ProductDetails = () => {
-  const { productId } = useParams();
+// Create axios instance outside component to avoid recreation
+const api = axios.create({
+  baseURL: 'http://localhost:4000',
+  timeout: 5000,
+});
+
+// Custom hook for token management
+const useTokenManager = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const [product, setProduct] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  // Get token from localStorage
-  const getAuthToken = useCallback(() => {
+  
+  const [tokens, setTokens] = useState(() => {
+    // Initialize tokens from location state or localStorage
+    const locationToken = location.state?.token;
+    const locationRefreshToken = location.state?.refresh_token;
+    
+    if (locationToken && locationRefreshToken) {
+      return {
+        accessToken: locationToken,
+        refreshToken: locationRefreshToken
+      };
+    }
+    
     try {
-      const token = localStorage.getItem("token");
-      console.log("Token retrieved:", token);
+      const accessToken = localStorage.getItem("token");
+      const refreshToken = localStorage.getItem("refreshToken") || localStorage.getItem("refresh_token");
+      return {
+        accessToken: accessToken || null,
+        refreshToken: refreshToken || null
+      };
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
+      return { accessToken: null, refreshToken: null };
+    }
+  });
+
+  // Update tokens when location state changes
+  useEffect(() => {
+    const locationToken = location.state?.token;
+    const locationRefreshToken = location.state?.refresh_token;
+    
+    if (locationToken && locationRefreshToken) {
+      console.log("✅ Updating tokens from location state");
+      
+      setTokens({
+        accessToken: locationToken,
+        refreshToken: locationRefreshToken
+      });
+      
+      // Save to localStorage for persistence
+      try {
+        localStorage.setItem("token", locationToken);
+        localStorage.setItem("refreshToken", locationRefreshToken);
+      } catch (error) {
+        console.error("Error saving tokens to localStorage:", error);
+      }
+    }
+  }, [location.state]);
+
+  const refreshAccessToken = useCallback(async () => {
+    if (!tokens.refreshToken) {
+      throw new Error("No refresh token available");
+    }
+    
+    try {
+      console.log("Refreshing access token...");
+      const response = await api.post("/auth/refresh-token", {
+        refresh_token: tokens.refreshToken,
+      });
+      
+      const { token, refresh_token } = response.data;
+      if (!token || !refresh_token) {
+        throw new Error("Invalid refresh token response");
+      }
+      
+      const newTokens = {
+        accessToken: token,
+        refreshToken: refresh_token,
+      };
+      
+      // Update state and localStorage
+      setTokens(newTokens);
+      localStorage.setItem("token", token);
+      localStorage.setItem("refresh_token", refresh_token);
+      
       return token;
     } catch (err) {
-      console.warn("localStorage not available:", err);
-      return null;
+      console.error("Refresh token error:", err.response?.data);
+      
+      if (err.response?.status === 401 || err.response?.status === 400) {
+        // Clear tokens and redirect to login
+        localStorage.removeItem("token");
+        localStorage.removeItem("refresh_token");
+        setTokens({ accessToken: null, refreshToken: null });
+        navigate("/login", { replace: true });
+      }
+      throw err;
     }
-  }, []);
+  }, [tokens.refreshToken, navigate]);
 
-  const fetchProduct = useCallback(async () => {
-    if (!productId) {
-      setError("Product ID is missing");
-      return;
+  const makeAuthenticatedRequest = useCallback(async (config, retryCount = 0) => {
+    if (!tokens.accessToken) {
+      throw new Error('No access token available');
     }
+
+    const requestConfig = {
+      ...config,
+      headers: {
+        ...config.headers,
+        token: tokens.accessToken,
+      },
+    };
 
     try {
-      setLoading(true);
-      setError(null);
-      
-      const token = getAuthToken();
-      
-      // Setup axios config with headers
-      const config = {
-        timeout: 10000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      };
-
-      // Add Authorization header only if token exists
-      if (token) {
-        config.headers['Authorization'] = `Bearer ${token}`;
-        // OR if your API expects just 'token' as key:
-        // config.headers['token'] = token;
-      }
-
-      console.log("Request config:", config);
-
-      const response = await axios.get(
-        `http://localhost:4000/product/${productId}`,
-        config
-      );
-
-      console.log("API Response:", response.data);
-
-      // Handle different response structures
-      let productData;
-      if (response.data?.product && Array.isArray(response.data.product)) {
-        productData = response.data.product[0];
-      } else if (response.data?.product) {
-        productData = response.data.product;
-      } else {
-        productData = response.data;
-      }
-      
-      if (!productData) {
-        throw new Error("No product data found");
-      }
-      
-      setProduct(productData);
+      return await api.request(requestConfig);
     } catch (err) {
-      console.error("Error fetching product:", err);
-      
-      if (err.code === 'ECONNABORTED') {
-        setError("Request timed out. Please try again.");
-      } else if (err.response?.status === 401) {
-        setError("Unauthorized access. Please log in again.");
-        // Optionally redirect to login
-        // navigate('/login');
-      } else if (err.response?.status === 404) {
-        setError("Product not found.");
-      } else {
-        setError(err.response?.data?.message || err.message || "Failed to fetch product details");
+      // Handle 401 with token refresh
+      if (err.response?.status === 401 && retryCount === 0 && tokens.refreshToken) {
+        console.warn('Access token expired. Attempting to refresh...');
+        try {
+          await refreshAccessToken();
+          return makeAuthenticatedRequest(config, 1); // Retry once
+        } catch (refreshErr) {
+          throw new Error('Session expired. Please log in again.');
+        }
       }
-    } finally {
-      setLoading(false);
+      
+      // Handle other errors
+      if (err.response?.status === 429) {
+        throw new Error('Too many requests. Please try again later.');
+      }
+      
+      if (!err.response) {
+        throw new Error('Server connection error. Please check your connection.');
+      }
+      
+      throw err;
     }
-  }, [productId, getAuthToken]);
+  }, [tokens.accessToken, tokens.refreshToken, refreshAccessToken]);
 
-  useEffect(() => {
-    fetchProduct();
-  }, [fetchProduct]);
+  return {
+    tokens,
+    refreshAccessToken,
+    makeAuthenticatedRequest,
+    hasValidTokens: Boolean(tokens.accessToken && tokens.refreshToken)
+  };
+};
 
+// Enhanced Loading Component with Animation
+const LoadingSpinner = () => (
+  <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+    <HeaderAdmin />
+    <Row>
+      <Col md="auto" style={{ width: "250px", background: "#2c3e50", color: "white", padding: 0 }}>
+        <Sidebar />
+      </Col>
+      <Col className="p-4 d-flex justify-content-center align-items-center" style={{ minHeight: "70vh" }}>
+        <div className="text-center">
+          <div className="mb-4">
+            <Spinner animation="border" variant="primary" style={{ width: '3rem', height: '3rem' }} />
+          </div>
+          <h4 className="text-muted mb-2">Loading Product Details</h4>
+          <p className="text-muted">Please wait while we fetch the product information...</p>
+        </div>
+      </Col>
+    </Row>
+  </Container>
+);
+
+// Enhanced Error Component
+const ErrorAlert = ({ error, onRetry, onLogin, onGoBack }) => (
+  <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+    <HeaderAdmin />
+    <Row>
+      <Col md="auto" style={{ width: "250px", background: "#2c3e50", color: "white", padding: 0 }}>
+        <Sidebar />
+      </Col>
+      <Col className="p-4">
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
+          <Card className="shadow-lg border-0" style={{ maxWidth: '600px', width: '100%' }}>
+            <Card.Body className="p-5 text-center">
+              <div className="mb-4">
+                <Package size={64} className="text-danger mb-3" />
+                <h2 className="text-danger mb-3">Oops! Something went wrong</h2>
+                <p className="text-muted mb-4">{error}</p>
+              </div>
+              
+              <div className="d-flex justify-content-center gap-3 flex-wrap">
+                {error.includes("Session expired") ? (
+                  <Button variant="primary" size="lg" onClick={onLogin}>
+                    <ArrowLeft size={18} className="me-2" />
+                    Go to Login
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="outline-secondary" onClick={onRetry}>
+                      <Package size={18} className="me-2" />
+                      Try Again
+                    </Button>
+                    <Button variant="primary" onClick={onGoBack}>
+                      <ArrowLeft size={18} className="me-2" />
+                      Go Back
+                    </Button>
+                  </>
+                )}
+              </div>
+            </Card.Body>
+          </Card>
+        </div>
+      </Col>
+    </Row>
+  </Container>
+);
+
+// Enhanced Product Card with Premium Styling
+const ProductCard = ({ product, onGoBack }) => {
+  const formattedPrice = useMemo(() => {
+    return parseFloat(product.price).toLocaleString("vi-VN", {
+      style: 'currency',
+      currency: 'VND'
+    });
+  }, [product.price]);
+
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: product.name,
+        text: `Check out this ${product.name} - ${formattedPrice}`,
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      // You could add a toast notification here
+    }
+  };
+
+  return (
+    <div className="mb-4">
+      {/* Breadcrumb Navigation */}
+      <nav aria-label="breadcrumb" className="mb-4">
+        <ol className="breadcrumb bg-transparent p-0">
+          <li className="breadcrumb-item">
+            <Button variant="link" className="text-decoration-none p-0" onClick={onGoBack}>
+              <ArrowLeft size={16} className="me-1" />
+              Products
+            </Button>
+          </li>
+          <li className="breadcrumb-item active" aria-current="page">
+            {product.name}
+          </li>
+        </ol>
+      </nav>
+
+      {/* Main Product Card */}
+      <Card className="shadow-lg border-0 overflow-hidden">
+        <Row className="g-0">
+          {/* Product Image Section */}
+          <Col lg={6}>
+            <div className="position-relative" style={{ height: '500px' }}>
+              <img
+                src={imageError ? 'https://via.placeholder.com/500x500?text=No+Image+Available' : (product.imageUrl || 'https://via.placeholder.com/500x500?text=Product+Image')}
+                alt={product.name}
+                className="img-fluid w-100 h-100 object-fit-cover"
+                onError={() => setImageError(true)}
+                style={{ objectPosition: 'center' }}
+              />
+              
+              {/* Image Overlay with Actions */}
+              <div className="position-absolute top-0 end-0 p-3">
+                <div className="d-flex flex-column gap-2">
+                  <Button
+                    variant={isWishlisted ? "danger" : "light"}
+                    size="sm"
+                    className="rounded-circle p-2 shadow-sm"
+                    onClick={() => setIsWishlisted(!isWishlisted)}
+                    style={{ width: '40px', height: '40px' }}
+                  >
+                    <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} />
+                  </Button>
+                  <Button
+                    variant="light"
+                    size="sm"
+                    className="rounded-circle p-2 shadow-sm"
+                    onClick={handleShare}
+                    style={{ width: '40px', height: '40px' }}
+                  >
+                    <Share2 size={16} />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Status Badge */}
+              {product.status && (
+                <div className="position-absolute bottom-0 start-0 p-3">
+                  <Badge 
+                    bg={product.status === 'New' ? 'success' : 'warning'} 
+                    className="px-3 py-2 fs-6 shadow-sm"
+                  >
+                    <Shield size={14} className="me-1" />
+                    {product.status}
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </Col>
+
+          {/* Product Information Section */}
+          <Col lg={6}>
+            <Card.Body className="p-5 h-100 d-flex flex-column">
+              {/* Product Header */}
+              <div className="mb-4">
+                <h1 className="display-6 fw-bold text-dark mb-3">{product.name}</h1>
+                
+                {/* Rating (Placeholder) */}
+                <div className="d-flex align-items-center mb-3">
+                  <div className="d-flex text-warning me-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={16} fill={i < 4 ? "currentColor" : "none"} />
+                    ))}
+                  </div>
+                  <small className="text-muted">(4.0) • 24 reviews</small>
+                </div>
+                
+                {/* Price */}
+                <div className="mb-4">
+                  <h2 className="text-primary mb-0 display-5 fw-bold">{formattedPrice}</h2>
+                  <small className="text-muted">Price includes VAT</small>
+                </div>
+              </div>
+
+              {/* Product Details Grid */}
+              <div className="mb-4">
+                <Row className="g-3">
+                  {product.brand && (
+                    <Col sm={6}>
+                      <div className="p-3 bg-light rounded-3">
+                        <small className="text-muted d-block">Brand</small>
+                        <strong className="text-dark">{product.brand}</strong>
+                      </div>
+                    </Col>
+                  )}
+                  
+                  {product.capacity && (
+                    <Col sm={6}>
+                      <div className="p-3 bg-light rounded-3">
+                        <small className="text-muted d-block">Capacity</small>
+                        <strong className="text-dark">{product.capacity} kg</strong>
+                      </div>
+                    </Col>
+                  )}
+                  
+                  <Col sm={6}>
+                    <div className="p-3 bg-light rounded-3">
+                      <small className="text-muted d-block">Availability</small>
+                      <span className="text-success fw-semibold">
+                        <Package size={14} className="me-1" />
+                        In Stock
+                      </span>
+                    </div>
+                  </Col>
+                  
+                  <Col sm={6}>
+                    <div className="p-3 bg-light rounded-3">
+                      <small className="text-muted d-block">Delivery</small>
+                      <span className="text-info fw-semibold">
+                        <Clock size={14} className="me-1" />
+                        2-3 days
+                      </span>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Description */}
+              {product.description && (
+                <div className="mb-4">
+                  <h3 className="h5 mb-3 text-dark">Description</h3>
+                  <p className="text-muted lh-lg">{product.description}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="mt-auto">
+                <Row className="g-3">
+                  <Col>
+                    <Button variant="primary" size="lg" className="w-100 py-3">
+                      <ShoppingCart size={20} className="me-2" />
+                      Add to Cart
+                    </Button>
+                  </Col>
+                  <Col>
+                    <Button variant="success" size="lg" className="w-100 py-3">
+                      Buy Now
+                    </Button>
+                  </Col>
+                </Row>
+                
+                <div className="mt-3 text-center">
+                  <small className="text-muted">
+                    <MapPin size={14} className="me-1" />
+                    Free shipping within Hanoi • 30-day return policy
+                  </small>
+                </div>
+              </div>
+            </Card.Body>
+          </Col>
+        </Row>
+      </Card>
+
+      {/* Additional Information Tabs */}
+      <Card className="mt-4 shadow-sm border-0">
+        <Card.Header className="bg-white border-0 py-3">
+          <h4 className="mb-0">Additional Information</h4>
+        </Card.Header>
+        <Card.Body className="p-4">
+          <Row>
+            <Col md={6}>
+              <h5 className="text-dark mb-3">Specifications</h5>
+              <ul className="list-unstyled">
+                {product.brand && <li className="mb-2"><strong>Brand:</strong> {product.brand}</li>}
+                {product.capacity && <li className="mb-2"><strong>Capacity:</strong> {product.capacity} kg</li>}
+                <li className="mb-2"><strong>Condition:</strong> {product.status || 'N/A'}</li>
+                <li className="mb-2"><strong>Warranty:</strong> 1 Year Manufacturer Warranty</li>
+              </ul>
+            </Col>
+            <Col md={6}>
+              <h5 className="text-dark mb-3">Delivery & Returns</h5>
+              <ul className="list-unstyled">
+                <li className="mb-2">✅ Free shipping on orders over 500,000 VND</li>
+                <li className="mb-2">✅ 2-3 business days delivery</li>
+                <li className="mb-2">✅ 30-day return policy</li>
+                <li className="mb-2">✅ Professional installation available</li>
+              </ul>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+    </div>
+  );
+};
+
+// Token Status Component (Development Only)
+const TokenStatus = ({ tokens, onRefresh, fromLocationState }) => (
+  <Alert variant={tokens.accessToken && tokens.refreshToken ? 'success' : 'warning'} className="mb-4">
+    <Row className="g-2">
+      <Col md={6}>
+        <small className={`text-${tokens.accessToken ? 'success' : 'danger'}`}>
+          {tokens.accessToken ? '✅' : '❌'} Access Token: {
+            tokens.accessToken ? `${tokens.accessToken.substring(0, 15)}...` : 'Not found'
+          }
+        </small>
+      </Col>
+      <Col md={6}>
+        <small className={`text-${tokens.refreshToken ? 'success' : 'danger'}`}>
+          {tokens.refreshToken ? '✅' : '❌'} Refresh Token: {
+            tokens.refreshToken ? `${tokens.refreshToken.substring(0, 15)}...` : 'Not found'
+          }
+        </small>
+      </Col>
+    </Row>
+    
+    {tokens.accessToken && tokens.refreshToken && (
+      <div className="mt-2">
+        <Button size="sm" variant="outline-primary" onClick={onRefresh}>
+          Refresh Token
+        </Button>
+      </div>
+    )}
+    
+    {fromLocationState && (
+      <div className="mt-2">
+        <small className="text-info">📍 Tokens loaded from navigation state</small>
+      </div>
+    )}
+  </Alert>
+);
+
+// Main Component
+function ProductDetail({ productId }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { tokens, refreshAccessToken, makeAuthenticatedRequest, hasValidTokens } = useTokenManager();
+  
+  const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Memoized handlers
   const handleRetry = useCallback(() => {
-    fetchProduct();
-  }, [fetchProduct]);
+    window.location.reload();
+  }, []);
+
+  const handleLogin = useCallback(() => {
+    navigate('/login', { replace: true });
+  }, [navigate]);
 
   const handleGoBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
 
-  const handleEdit = useCallback(() => {
-    navigate(`/admin/products/edit/${productId}`);
-  }, [navigate, productId]);
+  const handleRefreshToken = useCallback(async () => {
+    try {
+      await refreshAccessToken();
+    } catch (err) {
+      console.error('Manual token refresh failed:', err);
+    }
+  }, [refreshAccessToken]);
 
-  const handleDelete = useCallback(async () => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
+  // Fetch product data
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!hasValidTokens) {
+        setError("Please log in to view product details.");
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const token = getAuthToken();
-        const config = {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        };
+        setIsLoading(true);
+        setError(null);
 
-        if (token) {
-          config.headers['Authorization'] = `Bearer ${token}`;
+        console.log('Fetching product with ID:', productId);
+        
+        const response = await makeAuthenticatedRequest({
+          method: 'GET',
+          url: `/product/${productId}`,
+        });
+
+        // Handle different response structures
+        let productData;
+        if (response.data.product && Array.isArray(response.data.product)) {
+          productData = response.data.product[0];
+        } else if (response.data.data) {
+          productData = response.data.data;
+        } else {
+          productData = response.data;
         }
 
-        await axios.delete(`http://localhost:4000/product/${productId}`, config);
-        navigate('/admin/products');
-      } catch (err) {
-        console.error("Error deleting product:", err);
-        setError("Failed to delete product");
-      }
-    }
-  }, [productId, getAuthToken, navigate]);
+        // Validate required fields
+        if (!productData || !productData.name || productData.price === undefined) {
+          throw new Error('Invalid product data received from server');
+        }
 
-  if (loading) {
-    return (
-      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
-        <div className="text-center" role="status" aria-live="polite">
-          <Spinner animation="border" role="status" aria-hidden="true" />
-          <div className="mt-2">Loading product details...</div>
-        </div>
-      </Container>
-    );
+        setProduct(productData);
+        console.log('Product loaded successfully:', productData.name);
+
+      } catch (err) {
+        console.error('Error loading product:', err);
+        setError(err.message || 'Failed to load product. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId, hasValidTokens, makeAuthenticatedRequest]);
+
+  // Loading state
+  if (isLoading) {
+    return <LoadingSpinner />;
   }
 
+  // Error state
   if (error) {
     return (
-      <Container className="py-4">
-        <HeaderAdmin />
-        <Alert variant="danger" className="text-center">
-          <Alert.Heading>Error Loading Product</Alert.Heading>
-          <p>{error}</p>
-          <div className="d-flex gap-2 justify-content-center">
-            <Button variant="outline-danger" onClick={handleRetry}>
-              Try Again
-            </Button>
-            <Button variant="secondary" onClick={handleGoBack}>
-              Go Back
-            </Button>
-          </div>
-        </Alert>
-      </Container>
+      <ErrorAlert 
+        error={error} 
+        onRetry={handleRetry}
+        onLogin={handleLogin}
+        onGoBack={handleGoBack}
+      />
     );
   }
 
+  // No product found
   if (!product) {
     return (
-      <Container className="py-4">
+      <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
         <HeaderAdmin />
-        <Alert variant="warning" className="text-center">
-          <Alert.Heading>Product Not Found</Alert.Heading>
-          <p>The requested product could not be found.</p>
-          <Button variant="secondary" onClick={handleGoBack}>
-            Go Back
-          </Button>
-        </Alert>
+        <Row>
+          <Col md="auto" style={{ width: "250px", background: "#2c3e50", color: "white", padding: 0 }}>
+            <Sidebar />
+          </Col>
+          <Col className="p-4">
+            <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
+              <Card className="shadow-lg border-0 text-center p-5">
+                <Package size={64} className="text-muted mb-3 mx-auto" />
+                <h3 className="text-muted mb-3">Product Not Found</h3>
+                <p className="text-muted mb-4">The requested product could not be found.</p>
+                <Button variant="primary" onClick={handleGoBack}>
+                  <ArrowLeft size={18} className="me-2" />
+                  Go Back
+                </Button>
+              </Card>
+            </div>
+          </Col>
+        </Row>
       </Container>
     );
   }
 
+  // Success state
   return (
-    <Container className="py-4">
+    <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
       <HeaderAdmin />
-      
-      {/* Back button */}
-      <div className="mb-3">
-        <Button variant="outline-secondary" onClick={handleGoBack} className="mb-3">
-          ← Back to Products
-        </Button>
-      </div>
-
-      <Card className="shadow-sm">
-        <Card.Body>
-          <Card.Title as="h1">{product.name}</Card.Title>
-          
-          <div className="row">
-            <div className="col-md-8">
-              <Card.Text>
-                <strong>Description:</strong>{" "}
-                {product.description || "No description available"}
-              </Card.Text>
-              
-              {product.category && (
-                <Card.Text>
-                  <strong>Category:</strong> {product.category}
-                </Card.Text>
-              )}
-              
-              {product.sku && (
-                <Card.Text>
-                  <strong>SKU:</strong> {product.sku}
-                </Card.Text>
-              )}
-
-              {product.id && (
-                <Card.Text>
-                  <strong>Product ID:</strong> {product.id}
-                </Card.Text>
-              )}
-            </div>
-            
-            <div className="col-md-4">
-              <Card className="bg-light">
-                <Card.Body>
-                  <Card.Title as="h3" className="h4">Price</Card.Title>
-                  <Card.Text className="h2 text-primary">
-                    ${typeof product.price === 'number' ? product.price.toFixed(2) : product.price || '0.00'}
-                  </Card.Text>
-                  
-                  {product.stock !== undefined && (
-                    <Card.Text>
-                      <strong>Stock:</strong>{" "}
-                      <span className={product.stock > 0 ? "text-success" : "text-danger"}>
-                        {product.stock > 0 ? `${product.stock} available` : "Out of stock"}
-                      </span>
-                    </Card.Text>
-                  )}
-                </Card.Body>
-              </Card>
-            </div>
-          </div>
-          
-          {/* Product image if available */}
-          {product.image && (
-            <div className="mt-3">
-              <img 
-                src={product.image} 
-                alt={product.name || "Product image"}
-                className="img-fluid rounded"
-                style={{ maxHeight: "400px" }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
-            </div>
+      <Row>
+        <Col md="auto" style={{ width: "250px", background: "#2c3e50", color: "white", padding: 0 }}>
+          <Sidebar />
+        </Col>
+        <Col className="p-4">
+          {/* Development: Token Status Display */}
+          {process.env.NODE_ENV === 'development' && (
+            <TokenStatus 
+              tokens={tokens}
+              onRefresh={handleRefreshToken}
+              fromLocationState={Boolean(location.state?.token)}
+            />
           )}
-          
-          {/* Action buttons */}
-          <div className="mt-4 d-flex gap-2">
-            <Button variant="primary" onClick={handleEdit}>
-              Edit Product
-            </Button>
-            <Button variant="outline-danger" onClick={handleDelete}>
-              Delete Product
-            </Button>
-          </div>
-        </Card.Body>
-      </Card>
+
+          {/* Product Details */}
+          <ProductCard product={product} onGoBack={handleGoBack} />
+        </Col>
+      </Row>
     </Container>
   );
+}
+
+ProductDetail.propTypes = {
+  productId: PropTypes.string.isRequired,
 };
 
-export default ProductDetails;
+export default ProductDetail;
