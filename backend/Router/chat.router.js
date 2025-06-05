@@ -2,9 +2,10 @@ const express = require("express");
 const searchLinks = require("../Config/searchLink");
 const crawlWebsite = require("../Config/crawl");
 const getChatResponse = require("../Config/openAI");
+const { verifyToken } = require("../Middleware/auth.middleware");
 const router = express.Router();
 
-router.post("/ask", async (req, res) => {
+router.post("/ask", verifyToken, async (req, res) => {
   const { prompt } = req.body;
   console.log("kahsdad", req.body);
   if (!prompt) {
