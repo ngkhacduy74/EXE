@@ -285,6 +285,7 @@ const ManageProduct = () => {
   // Handle view details
   const handleViewDetails = (productId) => {
     navigate(`/product/${productId}`);
+    console.log(`Navigating to product details for ID: ${productId}`);
   };
 
   // Handle create product

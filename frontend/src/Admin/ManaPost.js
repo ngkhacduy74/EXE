@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Table, Button, Form } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { Plus, Eye, EyeOff, Check, FileText } from "lucide-react";
+import { Plus, Eye, FileText } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
@@ -53,6 +53,7 @@ const ManagePost = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [conditions, setConditions] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [toggleLoading, setToggleLoading] = useState({}); // Track loading state for individual posts
 
   console.log("Access token found:", tokens.accessToken ? "Yes" : "No");
   console.log("Refresh token found:", tokens.refreshToken ? "Yes" : "No");
@@ -286,29 +287,55 @@ const ManagePost = () => {
     navigate("/create-post");
   };
 
-  // Handle toggle status with authentication
-  const handleToggleStatus = async (postId, currentStatus) => {
-    const newStatus = currentStatus === "New" ? "Denied" : "New";
+  // Handle toggle condition status with checkbox
+  const handleToggleCondition = async (postId, currentCondition) => {
+    // Set loading state for this specific post
+    setToggleLoading(prev => ({ ...prev, [postId]: true }));
+    
+    // Determine new condition (toggle between Active and Inactive)
+    const newCondition = currentCondition === "Active" ? "Inactive" : "Active";
+    
     try {
-      await makeAuthenticatedRequest({
-        method: 'PATCH',
-        url: `/post/${postId}`,
-        data: {
-          status: newStatus,
-        },
+      // Use the new API endpoint format
+      const response = await makeAuthenticatedRequest({
+        method: 'PUT', // or POST, depending on your API
+        url: `/post/change-condition/${newCondition}/${postId}`,
       });
 
+      console.log(`API Response for condition change:`, response.data);
+
       // Update local state
-      setPosts(
-        posts.map((post) =>
-          post._id === postId ? { ...post, status: newStatus } : post
+      setPosts(prevPosts =>
+        prevPosts.map((post) =>
+          post._id === postId ? { ...post, condition: newCondition } : post
         )
       );
       
-      console.log(`Post ${postId} status updated to ${newStatus}`);
+      console.log(`Post ${postId} condition updated to ${newCondition}`);
     } catch (err) {
-      console.error("Error updating post status:", err);
-      setError(err.message || "Failed to update post status.");
+      console.error("Error updating post condition:", err);
+      
+      // Show more specific error message
+      let errorMessage = "Failed to update post condition.";
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+      
+      // Clear error after 5 seconds
+      setTimeout(() => {
+        setError(null);
+      }, 5000);
+    } finally {
+      // Remove loading state for this post
+      setToggleLoading(prev => {
+        const newState = { ...prev };
+        delete newState[postId];
+        return newState;
+      });
     }
   };
 
@@ -390,26 +417,15 @@ const ManagePost = () => {
                 <strong>Warning:</strong> {error}
                 <button 
                   className="btn btn-link btn-sm ms-2" 
-                  onClick={() => window.location.reload()}
+                  onClick={() => setError(null)}
                 >
-                  Retry
+                  Dismiss
                 </button>
               </div>
             )}
 
             {/* Header with title and Create button */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <h3 className="mb-0">Manage Posts</h3>
-              <Button 
-                variant="success" 
-                size="lg"
-                onClick={handleCreatePost}
-                className="d-flex align-items-center"
-              >
-                <Plus size={20} className="me-2" />
-                Create Post
-              </Button>
-            </div>
+          
 
             {/* Filter Controls */}
             <Row className="mb-4">
@@ -510,6 +526,7 @@ const ManagePost = () => {
                     <th>Category</th>
                     <th>Status</th>
                     <th>Condition</th>
+                    <th>Active</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -528,7 +545,29 @@ const ManagePost = () => {
                           {post.status || "N/A"}
                         </span>
                       </td>
-                      <td>{post.condition || "N/A"}</td>
+                      <td>
+                        <span 
+                          className={`badge ${
+                            post.condition === "Active" ? "bg-success" : "bg-secondary"
+                          }`}
+                        >
+                          {post.condition || "N/A"}
+                        </span>
+                      </td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          checked={post.condition === "Active"}
+                          onChange={() => handleToggleCondition(post._id, post.condition)}
+                          disabled={toggleLoading[post._id]}
+                          title={`Toggle to ${post.condition === "Active" ? "Inactive" : "Active"}`}
+                        />
+                        {toggleLoading[post._id] && (
+                          <div className="spinner-border spinner-border-sm ms-2" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        )}
+                      </td>
                       <td>
                         <div className="d-flex gap-2">
                           <Button
@@ -538,14 +577,6 @@ const ManagePost = () => {
                             title="View Details"
                           >
                             <Eye size={16} />
-                          </Button>
-                          <Button
-                            variant={post.status === "New" ? "danger" : "success"}
-                            size="sm"
-                            onClick={() => handleToggleStatus(post._id, post.status)}
-                            title={post.status === "New" ? "Mark as Denied" : "Mark as New"}
-                          >
-                            {post.status === "New" ? <EyeOff size={16} /> : <Check size={16} />}
                           </Button>
                         </div>
                       </td>

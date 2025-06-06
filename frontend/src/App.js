@@ -56,6 +56,7 @@ const App = () => {
           <Route path="/manaPost" element={<ManaPost />} />
           <Route path="/product/:productId" element={<ProductDetails />} />
           {/* <Route path="/product/:productId" element={<ProductDetail />} /> */}
+          
           <Route path="/create-product" element={<CreateProduct />} />
           <Route path="/product-browser" element={<ProductBrowser />} />
           <Route path="/compare-product" element={<CompareProduct />} />

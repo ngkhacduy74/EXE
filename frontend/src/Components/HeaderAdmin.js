@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Row, Col } from "react-bootstrap";
 import { FaUserCircle, FaBell, FaHome, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { notification } from "antd";
-
 
 function HeaderAdmin() {
   const [user, setUser] = useState(null);
@@ -13,64 +11,32 @@ function HeaderAdmin() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuthentication = async () => {
+    const checkAuthentication = () => {
       if (isLoggingOut) {
         setLoading(false);
         return;
       }
 
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setLoading(false);
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      const userData = localStorage.getItem("user");
+
       try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          setLoading(false);
-          navigate("/login", { replace: true });
-          return;
-        }
-
-        const userData = localStorage.getItem("user");
-        let parsedUser = null;
-
-        try {
-          if (userData) {
-            parsedUser = JSON.parse(userData);
-            setUser(parsedUser);
-          }
-        } catch (e) {
-          console.error("Error parsing user data:", e);
-        }
-
-        if (parsedUser?.email) {
-          try {
-            const response = await axios.get(
-              `http://localhost:4000/auth/getUserByEmail?email=${parsedUser.email}`
-            );
-
-            if (response.data && response.data.user) {
-              setUser(response.data.user);
-              localStorage.setItem("user", JSON.stringify(response.data.user));
-            } else {
-              handleLogout();
-            }
-          } catch (err) {
-            console.error("Failed to fetch user by email:", err);
-            if (err.response && err.response.status === 401) {
-              handleLogout();
-            }
-          }
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
         } else {
           handleLogout();
         }
-      } catch (err) {
-        console.error("Authentication check failed:", err);
-        navigate("/error", {
-          state: {
-            message: "Authentication error",
-            code: 500,
-            actionText: "Go to Login",
-            redirectTo: "/login",
-          },
-        });
+      } catch (e) {
+        console.error("Error parsing user data:", e);
+        handleLogout();
       } finally {
         setLoading(false);
       }
@@ -100,7 +66,7 @@ function HeaderAdmin() {
   }
 
   if (isLoggingOut || !user) {
-    return null; // Prevent rendering if logging out or user is null
+    return null;
   }
 
   const isAdmin = user?.role === "Admin";
@@ -112,7 +78,6 @@ function HeaderAdmin() {
     navigate("/", { replace: true });
     return null;
   }
-
 
   return (
     <Row
