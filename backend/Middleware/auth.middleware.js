@@ -39,10 +39,12 @@ const verifyToken = (req, res, next) => {
     });
   }
 };
+
+//CẦN CHÚ Ý CHỖ NÀY
 const verifyAdmin = (req, res, next) => {
   try {
     const token = req.headers.token;
-    console.log("lạklsdas", token);
+    console.log("mmmmmmm123", token);
     if (!token) {
       return res
         .status(401)
