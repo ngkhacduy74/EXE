@@ -45,9 +45,9 @@ function Sidebar() {
                 </Nav.Link>
                 <Nav.Link
                     className="text-white d-flex align-items-center"
-                    onClick={() => navigate('/manaComment')}
+                    onClick={() => navigate('/multiProductViewer')}
                 >
-                    <FaCommentDots className="me-2" /> Manage Comments
+                    <FaCommentDots className="me-2" />Top 5 products
                 </Nav.Link>
 
                 <Nav.Link

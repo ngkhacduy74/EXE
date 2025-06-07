@@ -11,8 +11,16 @@ const CreateProduct = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [imagePreviews, setImagePreviews] = useState([]);
-  const [videoPreviews, setVideoPreviews] = useState([]);
+  
+  // Fixed image URLs for testing
+  const fixedImageUrls = [
+    "https://via.placeholder.com/300x200/007bff/ffffff?text=Product+Image+1",
+    "https://via.placeholder.com/300x200/28a745/ffffff?text=Product+Image+2"
+  ];
+  
+  const [imagePreviews] = useState(fixedImageUrls);
+  const [videoPreviews] = useState([]);
+  
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -24,12 +32,16 @@ const CreateProduct = () => {
     size: "",
     weight: "",
     voltage: "",
+    warranty_period: 12,
+    quantity: 1,
     features: [{ title: "", description: "" }],
-    images: [],
+    images: fixedImageUrls, // Use fixed URLs instead of empty array
     videos: [],
   });
 
   const [errors, setErrors] = useState({});
+
+
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -64,72 +76,23 @@ const CreateProduct = () => {
     }
   };
 
-  // Handle multiple image upload (max 3)
+  // Dummy handlers for image/video (since we're using fixed images)
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (formData.images.length + files.length > 3) {
-      setError("Chỉ được tải lên tối đa 3 ảnh");
-      return;
-    }
-    const validImages = files.filter((file) => file.type.startsWith("image/"));
-    if (validImages.length !== files.length) {
-      setError("Một số file không phải ảnh hợp lệ");
-      return;
-    }
-    validImages.forEach((file) => {
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Mỗi ảnh phải nhỏ hơn 5MB");
-        return;
-      }
-    });
-    const newPreviews = validImages.map((file) => URL.createObjectURL(file));
-    setFormData((prev) => ({ ...prev, images: [...prev.images, ...validImages] }));
-    setImagePreviews((prev) => [...prev, ...newPreviews]);
+    // Do nothing - images are fixed
     setError("");
   };
 
-  // Handle single video upload (max 1)
   const handleVideoChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (formData.videos.length + files.length > 1) {
-      setError("Chỉ được tải lên tối đa 1 video");
-      return;
-    }
-    const validVideos = files.filter((file) => file.type.startsWith("video/"));
-    if (validVideos.length !== files.length) {
-      setError("File không phải video hợp lệ");
-      return;
-    }
-    validVideos.forEach((file) => {
-      if (file.size > 10 * 1024 * 1024) {
-        setError("Video phải nhỏ hơn 10MB");
-        return;
-      }
-    });
-    const newPreviews = validVideos.map((file) => URL.createObjectURL(file));
-    setFormData((prev) => ({ ...prev, videos: [...prev.videos, ...validVideos] }));
-    setVideoPreviews((prev) => [...prev, ...newPreviews]);
+    // Do nothing - no video for testing
     setError("");
   };
 
-  // Remove image
   const removeImage = (index) => {
-    URL.revokeObjectURL(imagePreviews[index]);
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    // Do nothing - images are fixed
   };
 
-  // Remove video
   const removeVideo = (index) => {
-    URL.revokeObjectURL(videoPreviews[index]);
-    setFormData((prev) => ({
-      ...prev,
-      videos: prev.videos.filter((_, i) => i !== index),
-    }));
-    setVideoPreviews((prev) => prev.filter((_, i) => i !== index));
+    // Do nothing - no video
   };
 
   // Form validation
@@ -147,7 +110,6 @@ const CreateProduct = () => {
     if (formData.features.some((f) => !f.title.trim() || !f.description.trim())) {
       newErrors.features = "Tất cả tính năng phải có tiêu đề và mô tả";
     }
-    if (formData.images.length === 0) newErrors.images = "Phải tải lên ít nhất 1 ảnh";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -157,11 +119,12 @@ const CreateProduct = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      setError("Vui lòng điền đầy đủ các trường bắt buộc và tải lên ít nhất 1 ảnh");
+      setError("Vui lòng điền đầy đủ các trường bắt buộc");
       return;
     }
 
     const token = localStorage.getItem("token");
+    console.log("Token:", token);
     if (!token) {
       setError("Vui lòng đăng nhập để tạo sản phẩm");
       return;
@@ -185,13 +148,27 @@ const CreateProduct = () => {
       submitData.append("voltage", formData.voltage);
       submitData.append("features", JSON.stringify(formData.features.map((f) => ({ title: f.title, description: f.description }))));
 
-      formData.images.forEach((image) => submitData.append("images", image));
-      formData.videos.forEach((video) => submitData.append("videos", video));
+      // Send images as strings (URLs) instead of binary files
+      formData.images.forEach((imageUrl, index) => {
+        submitData.append("image", imageUrl);
+      });
+      
+      // If no videos, can still append empty or skip
+      if (formData.videos && formData.videos.length > 0) {
+        formData.videos.forEach((videoUrl) => {
+          submitData.append("video", videoUrl);
+        });
+      }
 
-      const response = await axios.post("http://localhost:4000/product/create", submitData, {
+      console.log("FormData contents:");
+      for (let [key, value] of submitData.entries()) {
+        console.log(key, value);
+      }
+
+      const response = await axios.post("http://localhost:4000/product/createProduct", submitData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
+          token: token,
         },
       });
 
@@ -239,7 +216,7 @@ const CreateProduct = () => {
             <Button variant="outline-secondary" onClick={() => navigate("/manaProduct")} className="me-3">
               <ArrowLeft size={20} />
             </Button>
-            <h3 className="mb-0">Tạo sản phẩm mới</h3>
+            <h3 className="mb-0">Tạo sản phẩm mới (Test Mode)</h3>
           </div>
 
           {error && <Alert variant="danger">{error}</Alert>}
@@ -461,73 +438,38 @@ const CreateProduct = () => {
               <Col md={4}>
                 <Card className="mb-4">
                   <Card.Header>
-                    <h5 className="mb-0">Hình ảnh sản phẩm (tối đa 3) *</h5>
+                    <h5 className="mb-0">Hình ảnh sản phẩm (Fixed for Testing)</h5>
                   </Card.Header>
                   <Card.Body>
-                    {imagePreviews.length > 0 ? (
-                      <div>
-                        {imagePreviews.map((preview, index) => (
-                          <div key={index} className="text-center mb-3">
-                            <img
-                              src={preview}
-                              alt={`Preview ${index + 1}`}
-                              className="img-fluid"
-                              style={{ maxHeight: "200px", borderRadius: "8px" }}
-                            />
-                            <Button variant="outline-danger" size="sm" onClick={() => removeImage(index)}>
-                              <X size={16} className="me-1" />
-                              Xóa
-                            </Button>
-                          </div>
-                        ))}
-                        {imagePreviews.length < 3 && (
-                          <Form.Control type="file" accept="image/*" multiple onChange={handleImageChange} />
-                        )}
-                        <small className="text-muted">Kích thước tối đa: 5MB. Hỗ trợ: JPG, PNG, GIF</small>
-                        {errors.images && <Form.Text className="text-danger">{errors.images}</Form.Text>}
+                    <div className="alert alert-info">
+                      <small>🔧 Test Mode: Hình ảnh đã được fix cứng để test dữ liệu</small>
+                    </div>
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="text-center mb-3">
+                        <img
+                          src={preview}
+                          alt={`Test Image ${index + 1}`}
+                          className="img-fluid"
+                          style={{ maxHeight: "200px", borderRadius: "8px" }}
+                        />
+                        <div className="mt-2">
+                          <small className="text-muted">Test Image {index + 1}</small>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="text-center">
-                        <Upload size={48} className="text-muted mb-3" />
-                        <p className="text-muted">Tải lên ít nhất 1 ảnh sản phẩm</p>
-                        <Form.Control type="file" accept="image/*" multiple onChange={handleImageChange} />
-                        <small className="text-muted">Kích thước tối đa: 5MB. Hỗ trợ: JPG, PNG, GIF</small>
-                        {errors.images && <Form.Text className="text-danger">{errors.images}</Form.Text>}
-                      </div>
-                    )}
+                    ))}
                   </Card.Body>
                 </Card>
 
                 <Card className="mb-4">
                   <Card.Header>
-                    <h5 className="mb-0">Video sản phẩm (tối đa 1)</h5>
+                    <h5 className="mb-0">Video sản phẩm (Disabled for Testing)</h5>
                   </Card.Header>
                   <Card.Body>
-                    {videoPreviews.length > 0 ? (
-                      <div>
-                        {videoPreviews.map((preview, index) => (
-                          <div key={index} className="text-center mb-3">
-                            <video
-                              src={preview}
-                              controls
-                              className="img-fluid"
-                              style={{ maxHeight: "200px", borderRadius: "8px" }}
-                            />
-                            <Button variant="outline-danger" size="sm" onClick={() => removeVideo(index)}>
-                              <X size={16} className="me-1" />
-                              Xóa
-                            </Button>
-                          </div>
-                        ))}
+                    <div className="text-center">
+                      <div className="alert alert-secondary">
+                        <small>Video upload disabled in test mode</small>
                       </div>
-                    ) : (
-                      <div className="text-center">
-                        <Upload size={48} className="text-muted mb-3" />
-                        <p className="text-muted">Tải lên video sản phẩm (tùy chọn)</p>
-                        <Form.Control type="file" accept="video/*" onChange={handleVideoChange} />
-                        <small className="text-muted">Kích thước tối đa: 10MB. Hỗ trợ: MP4, AVI</small>
-                      </div>
-                    )}
+                    </div>
                   </Card.Body>
                 </Card>
 
@@ -543,7 +485,7 @@ const CreateProduct = () => {
                         ) : (
                           <>
                             <Save size={20} className="me-2" />
-                            Tạo sản phẩm
+                            Tạo sản phẩm (Test)
                           </>
                         )}
                       </Button>

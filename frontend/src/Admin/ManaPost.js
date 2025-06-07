@@ -140,7 +140,7 @@ const ManagePost = () => {
         ...config,
         headers: {
           ...config.headers,
-          Authorization: `Bearer ${tokens.accessToken}`,
+         token : tokens.token,
         },
       };
 
@@ -299,7 +299,7 @@ const ManagePost = () => {
       // Use the new API endpoint format
       const response = await makeAuthenticatedRequest({
         method: 'PUT', // or POST, depending on your API
-        url: `/post/change-condition/${newCondition}/${postId}`,
+        url: `/post/change-condition/Active/${postId}`,
       });
 
       console.log(`API Response for condition change:`, response.data);

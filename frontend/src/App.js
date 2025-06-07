@@ -24,6 +24,7 @@ import NewPostForm from "./Components/NewPost";
 import CreateProduct from "./Admin/CreateProduct";
 import ProductBrowser  from "./Pages/ProductBrowser";
 import CompareProduct from "./Pages/CompareProduct";
+import MultiProductViewer from "./Admin/MultiProductViewer";
 
 
 const App = () => {
@@ -54,6 +55,9 @@ const App = () => {
           <Route path="/user/:userId" element={<UserDetails />} />
           <Route path="/manaProduct" element={<ManaProduct />} />
           <Route path="/manaPost" element={<ManaPost />} />
+          <Route path="/multiProductViewer" element={<MultiProductViewer />} />
+          
+          {/* Error Page */}
           <Route path="/product/:productId" element={<ProductDetails />} />
           {/* <Route path="/product/:productId" element={<ProductDetail />} /> */}
           

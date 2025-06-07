@@ -46,8 +46,7 @@ const ProductDetail = () => {
 
         const response = await api.get(`/product/${productId}`, {
           headers: {
-            // Authorization: `Bearer ${token}`,
-            token: token,
+            token,
             'Content-Type': 'application/json',
           },
         });
@@ -211,28 +210,49 @@ const ProductDetail = () => {
               {/* Images Carousel */}
               {product.image && product.image.length > 0 && (
                 <Card className="shadow-sm mb-4">
-                  <Card.Header className="bg-white border-bottom">
+                  <Card.Header className="bg-white border-bottom d-flex justify-content-between align-items-center">
                     <h6 className="mb-0">
                       <i className="fas fa-images text-primary me-2"></i>
                       Product Images
                     </h6>
+                    <small className="text-muted">
+                      {Math.min(product.image.length, 3)} of {product.image.length} images
+                    </small>
                   </Card.Header>
                   <Card.Body className="p-0">
-                    <Carousel>
-                      {product.image.map((img, index) => (
+                    <Carousel 
+                      indicators={Math.min(product.image.length, 3) > 1}
+                      controls={Math.min(product.image.length, 3) > 1}
+                      interval={4000}
+                      pause="hover"
+                    >
+                      {/* {product.image.slice(0, 3).map((img, index) => (
                         <Carousel.Item key={index}>
-                          <img
-                            className="d-block w-100"
-                            src={img}
-                            alt={`${product.name} - Image ${index + 1}`}
-                            style={{ height: "300px", objectFit: "cover" }}
-                            onError={(e) => {
-                              e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
-                            }}
-                          />
+                          <div className="position-relative">
+                            <img
+                              className="d-block w-100"
+                              src={img}
+                              alt={`${product.name} - Image ${index + 1}`}
+                              style={{ height: "350px", objectFit: "cover" }}
+                              onError={(e) => {
+                                e.target.src = "https://via.placeholder.com/400x350?text=Image+Not+Found";
+                              }}
+                            />
+                            <div className="position-absolute bottom-0 start-0 end-0 bg-gradient-dark text-white p-2">
+                              <small className="fw-bold">Image {index + 1} of {Math.min(product.image.length, 3)}</small>
+                            </div>
+                          </div>
                         </Carousel.Item>
-                      ))}
+                      ))} */}
                     </Carousel>
+                    {product.image.length > 3 && (
+                      <div className="p-3 bg-light border-top text-center">
+                        <small className="text-muted">
+                          <i className="fas fa-info-circle me-1"></i>
+                          Showing first 3 images. Total: {product.image.length} images available.
+                        </small>
+                      </div>
+                    )}
                   </Card.Body>
                 </Card>
               )}
@@ -455,22 +475,7 @@ const ProductDetail = () => {
             </Col>
           </Row>
 
-          {/* Debug Section - Only show in development */}
-          {/* {process.env.NODE_ENV === 'development' && (
-            <Card className="shadow-sm mt-4">
-              <Card.Header className="bg-light">
-                <h6 className="mb-0 text-muted">
-                  <i className="fas fa-bug me-2"></i>
-                  Debug Information (Development Only)
-                </h6>
-              </Card.Header>
-              <Card.Body>
-                <pre className="bg-dark text-light p-3 rounded small" style={{ maxHeight: '300px', overflow: 'auto' }}>
-                  {JSON.stringify(product, null, 2)}
-                </pre>
-              </Card.Body>
-            </Card>
-          )} */}
+        
         </Col>
       </Row>
 
