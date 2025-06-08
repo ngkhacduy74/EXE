@@ -12,10 +12,10 @@ const CreateProduct = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   
-  // Fixed image URLs for testing
+  // Fixed image URLs for testing - using real image URLs that pass validation
   const fixedImageUrls = [
-    "https://via.placeholder.com/300x200/007bff/ffffff?text=Product+Image+1",
-    "https://via.placeholder.com/300x200/28a745/ffffff?text=Product+Image+2"
+    "https://fushimavina.com/data/data/files/test/may-lam-da-30kg.jpg",
+      "https://example.com/vacuum2.jpg"
   ];
   
   const [imagePreviews] = useState(fixedImageUrls);
@@ -40,8 +40,6 @@ const CreateProduct = () => {
   });
 
   const [errors, setErrors] = useState({});
-
-
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -100,13 +98,13 @@ const CreateProduct = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Tên sản phẩm là bắt buộc";
     if (!formData.brand.trim()) newErrors.brand = "Thương hiệu là bắt buộc";
-    if (!formData.price || formData.price <= 0) newErrors.price = "Giá phải lớn hơn 0";
+    if (!formData.price || parseFloat(formData.price) < 1000) newErrors.price = "Giá phải lớn hơn hoặc bằng 1.000 VND";
     if (!formData.capacity || formData.capacity <= 0) newErrors.capacity = "Dung tích phải lớn hơn 0";
-    if (!formData.category.trim()) newErrors.category = "Danh mục là bắt buộc";
     if (!formData.description.trim()) newErrors.description = "Mô tả là bắt buộc";
     if (!formData.size.trim()) newErrors.size = "Kích thước là bắt buộc";
     if (!formData.weight || formData.weight <= 0) newErrors.weight = "Trọng lượng phải lớn hơn 0";
     if (!formData.voltage.trim()) newErrors.voltage = "Điện áp là bắt buộc";
+    if (!formData.quantity || formData.quantity <= 0) newErrors.quantity = "Số lượng phải lớn hơn 0";
     if (formData.features.some((f) => !f.title.trim() || !f.description.trim())) {
       newErrors.features = "Tất cả tính năng phải có tiêu đề và mô tả";
     }
@@ -135,39 +133,34 @@ const CreateProduct = () => {
     setSuccess("");
 
     try {
-      const submitData = new FormData();
-      submitData.append("name", formData.name);
-      submitData.append("brand", formData.brand);
-      submitData.append("price", formData.price);
-      submitData.append("capacity", formData.capacity);
-      submitData.append("status", formData.status);
-      submitData.append("description", formData.description);
-      submitData.append("category", formData.category);
-      submitData.append("size", formData.size);
-      submitData.append("weight", formData.weight);
-      submitData.append("voltage", formData.voltage);
-      submitData.append("features", JSON.stringify(formData.features.map((f) => ({ title: f.title, description: f.description }))));
+      // Prepare JSON payload matching the expected format
+      const submitData = {
+        image: formData.images, // Use 'image' not 'images'
+        video: formData.videos.length > 0 ? formData.videos : [], // Use 'video' not 'videos'
+        name: formData.name,
+        brand: formData.brand,
+        price: parseFloat(formData.price), // Convert to number, not string
+        description: formData.description,
+        size: formData.size,
+        weight: parseFloat(formData.weight),
+        status: formData.status,
+        warranty_period: parseInt(formData.warranty_period),
+        capacity: parseFloat(formData.capacity),
+        voltage: formData.voltage,
+        features: formData.features.map((f, index) => ({
+          id: `f${index + 1}`, // Add id field as expected
+          title: f.title,
+          description: f.description
+        })),
+        quantity: parseInt(formData.quantity)
+        // Remove category field as it's not allowed by backend
+      };
 
-      // Send images as strings (URLs) instead of binary files
-      formData.images.forEach((imageUrl, index) => {
-        submitData.append("image", imageUrl);
-      });
-      
-      // If no videos, can still append empty or skip
-      if (formData.videos && formData.videos.length > 0) {
-        formData.videos.forEach((videoUrl) => {
-          submitData.append("video", videoUrl);
-        });
-      }
-
-      console.log("FormData contents:");
-      for (let [key, value] of submitData.entries()) {
-        console.log(key, value);
-      }
+      console.log("JSON payload:", JSON.stringify(submitData, null, 2));
 
       const response = await axios.post("http://localhost:4000/product/createProduct", submitData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
           token: token,
         },
       });
@@ -261,7 +254,7 @@ const CreateProduct = () => {
                       </Col>
                     </Row>
                     <Row>
-                      <Col md={4}>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>Giá (VND) *</Form.Label>
                           <Form.Control
@@ -270,13 +263,14 @@ const CreateProduct = () => {
                             value={formData.price}
                             onChange={handleInputChange}
                             isInvalid={!!errors.price}
-                            placeholder="0"
-                            min="0"
+                            placeholder="1000"
+                            min="1000"
                           />
+                          <Form.Text className="text-muted">Tối thiểu 1.000 VND</Form.Text>
                           <Form.Control.Feedback type="invalid">{errors.price}</Form.Control.Feedback>
                         </Form.Group>
                       </Col>
-                      <Col md={4}>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>Dung tích (lít) *</Form.Label>
                           <Form.Control
@@ -292,7 +286,22 @@ const CreateProduct = () => {
                           <Form.Control.Feedback type="invalid">{errors.capacity}</Form.Control.Feedback>
                         </Form.Group>
                       </Col>
-                      <Col md={4}>
+                      <Col md={3}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Số lượng *</Form.Label>
+                          <Form.Control
+                            type="number"
+                            name="quantity"
+                            value={formData.quantity}
+                            onChange={handleInputChange}
+                            isInvalid={!!errors.quantity}
+                            placeholder="1"
+                            min="1"
+                          />
+                          <Form.Control.Feedback type="invalid">{errors.quantity}</Form.Control.Feedback>
+                        </Form.Group>
+                      </Col>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>Tình trạng</Form.Label>
                           <Form.Select name="status" value={formData.status} onChange={handleInputChange}>
@@ -302,18 +311,6 @@ const CreateProduct = () => {
                         </Form.Group>
                       </Col>
                     </Row>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Danh mục *</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="category"
-                        value={formData.category}
-                        onChange={handleInputChange}
-                        isInvalid={!!errors.category}
-                        placeholder="VD: Máy hút bụi, Tủ lạnh"
-                      />
-                      <Form.Control.Feedback type="invalid">{errors.category}</Form.Control.Feedback>
-                    </Form.Group>
                     <Form.Group className="mb-3">
                       <Form.Label>Mô tả *</Form.Label>
                       <Form.Control
@@ -387,6 +384,19 @@ const CreateProduct = () => {
                             <span className="ms-2">volt</span>
                           </div>
                           <Form.Control.Feedback type="invalid">{errors.voltage}</Form.Control.Feedback>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label>Thời gian bảo hành (tháng)</Form.Label>
+                          <Form.Control
+                            type="number"
+                            name="warranty_period"
+                            value={formData.warranty_period}
+                            onChange={handleInputChange}
+                            min="0"
+                            placeholder="12"
+                          />
                         </Form.Group>
                       </Col>
                     </Row>

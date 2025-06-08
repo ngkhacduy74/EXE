@@ -28,7 +28,7 @@ const ProductDetail = () => {
         setError(null);
 
         const token = localStorage.getItem("token");
-        
+
         console.log("📦 Product ID:", productId);
         console.log("🔑 Token from localStorage:", token ? "Token exists" : "No token found");
 
@@ -63,7 +63,7 @@ const ProductDetail = () => {
 
       } catch (err) {
         console.error("❌ Error fetching product:", err);
-        
+
         if (err.response) {
           switch (err.response.status) {
             case 401:
@@ -215,35 +215,34 @@ const ProductDetail = () => {
                       <i className="fas fa-images text-primary me-2"></i>
                       Product Images
                     </h6>
-                    <small className="text-muted">
+                    {/* <small className="text-muted">
                       {Math.min(product.image.length, 3)} of {product.image.length} images
-                    </small>
+                    </small> */}
                   </Card.Header>
                   <Card.Body className="p-0">
-                    <Carousel 
+                    <Carousel
                       indicators={Math.min(product.image.length, 3) > 1}
                       controls={Math.min(product.image.length, 3) > 1}
                       interval={4000}
                       pause="hover"
                     >
-                      {/* {product.image.slice(0, 3).map((img, index) => (
-                        <Carousel.Item key={index}>
-                          <div className="position-relative">
-                            <img
-                              className="d-block w-100"
-                              src={img}
-                              alt={`${product.name} - Image ${index + 1}`}
-                              style={{ height: "350px", objectFit: "cover" }}
-                              onError={(e) => {
-                                e.target.src = "https://via.placeholder.com/400x350?text=Image+Not+Found";
-                              }}
-                            />
-                            <div className="position-absolute bottom-0 start-0 end-0 bg-gradient-dark text-white p-2">
-                              <small className="fw-bold">Image {index + 1} of {Math.min(product.image.length, 3)}</small>
+                      {product.image && Array.isArray(product.image) && product.image.length > 0 ? (
+                        product.image.slice(0, 3).map((img, index) => (
+                          <Carousel.Item key={img || index}>
+                            <div className="position-relative">
+                              <img
+                                className="d-block w-100"
+                                src={img}
+                                alt={`${product.name} - Image ${index + 1}`}
+                                style={{ width: '100px', height: 'auto', objectFit: 'cover' }}
+                              />
+                              <div className="position-absolute bottom-0 start-0 end-0 bg-gradient-dark text-white p-2">
+                                <small className="fw-bold">Image {index + 1} of {Math.min(product.image.length, 3)}</small>
+                              </div>
                             </div>
-                          </div>
-                        </Carousel.Item>
-                      ))} */}
+                          </Carousel.Item>
+                        ))
+                      ) : null}
                     </Carousel>
                     {product.image.length > 3 && (
                       <div className="p-3 bg-light border-top text-center">
@@ -270,7 +269,7 @@ const ProductDetail = () => {
                     <Row>
                       {product.video.map((vid, index) => (
                         <Col key={index} xs={6} className="mb-3">
-                          <div 
+                          <div
                             className="position-relative bg-dark rounded overflow-hidden"
                             style={{ height: "120px", cursor: "pointer" }}
                             onClick={() => handleVideoPlay(vid)}
@@ -306,7 +305,7 @@ const ProductDetail = () => {
                         <label className="form-label text-muted small fw-bold">PRODUCT NAME</label>
                         <p className="fs-5 mb-0">{product.name || 'N/A'}</p>
                       </div>
-                      
+
                       <div className="mb-3">
                         <label className="form-label text-muted small fw-bold">BRAND</label>
                         <p className="mb-0">{product.brand || 'N/A'}</p>
@@ -467,7 +466,7 @@ const ProductDetail = () => {
                     Low Quantity Alert
                   </Alert.Heading>
                   <p className="mb-0 small">
-                    This product is running low on quantity ({product.quantity} units remaining). 
+                    This product is running low on quantity ({product.quantity} units remaining).
                     Consider restocking soon.
                   </p>
                 </Alert>
@@ -475,7 +474,7 @@ const ProductDetail = () => {
             </Col>
           </Row>
 
-        
+
         </Col>
       </Row>
 

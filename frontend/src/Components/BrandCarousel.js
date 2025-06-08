@@ -5,15 +5,27 @@ import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
-import { Container, Spinner, Card } from 'react-bootstrap';
+import { Container, Spinner } from 'react-bootstrap';
 
 const BrandCarousel = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [quantities, setQuantities] = useState({});
   const navigate = useNavigate();
 
-  // Fetch products with status == 'New'
+  // Initialize quantities for each product
+  useEffect(() => {
+    if (products.length > 0) {
+      const initialQuantities = {};
+      products.forEach(product => {
+        initialQuantities[product.id] = 1;
+      });
+      setQuantities(initialQuantities);
+    }
+  }, [products]);
+
+  // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -27,18 +39,15 @@ const BrandCarousel = () => {
         const productData = Array.isArray(response.data.data)
           ? response.data.data
           : [];
-        
-        // Filter for products with status == 'New'
-        const newProducts = productData.filter((product) => product.status === 'New');
-        
-        if (newProducts.length === 0) {
-          throw new Error('No newly arrived brands found.');
+
+        if (productData.length === 0) {
+          throw new Error('No products found.');
         }
 
-        setProducts(newProducts);
+        setProducts(productData);
       } catch (err) {
         console.error('Error fetching products:', err);
-        setError(err.message || 'Failed to fetch newly arrived brands.');
+        setError(err.message || 'Failed to fetch products.');
         setProducts([]);
       } finally {
         setLoading(false);
@@ -48,36 +57,84 @@ const BrandCarousel = () => {
     fetchProducts();
   }, []);
 
-  // Initialize Swiper after products are loaded
+  // Initialize Swiper for each tab pane after products are loaded
   useEffect(() => {
     if (!loading && products.length > 0) {
-      new Swiper('.brand-carousel', {
-        modules: [Navigation],
-        slidesPerView: 4,
-        spaceBetween: 30,
-        speed: 500,
-        navigation: {
-          nextEl: '.brand-carousel-next',
-          prevEl: '.brand-carousel-prev',
-        },
-        breakpoints: {
-          0: { slidesPerView: 2 },
-          768: { slidesPerView: 2 },
-          991: { slidesPerView: 3 },
-          1500: { slidesPerView: 4 },
-        },
-      });
+      // Add delay to ensure DOM is rendered
+      setTimeout(() => {
+        const carousels = document.querySelectorAll('.products-carousel');
+        carousels.forEach((carousel) => {
+          new Swiper(carousel, {
+            modules: [Navigation],
+            slidesPerView: 5,
+            spaceBetween: 25,
+            speed: 500,
+            navigation: {
+              nextEl: carousel.querySelector('.products-carousel-next'),
+              prevEl: carousel.querySelector('.products-carousel-prev'),
+            },
+            breakpoints: {
+              0: { slidesPerView: 1, spaceBetween: 15 },
+              576: { slidesPerView: 2, spaceBetween: 20 },
+              768: { slidesPerView: 2, spaceBetween: 20 },
+              992: { slidesPerView: 3, spaceBetween: 25 },
+              1200: { slidesPerView: 4, spaceBetween: 25 },
+              1400: { slidesPerView: 5, spaceBetween: 25 },
+            },
+          });
+        });
+      }, 100);
     }
   }, [loading, products]);
 
-  // Handle card click to navigate to product details
-  const handleCardClick = (productId) => {
+  // Handle navigation to product details
+  const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
   };
 
-  // Hide component if there's an error
-  if (error) {
-    return null; // or return <></>;
+  // Handle quantity change
+  const handleQuantityChange = (productId, change) => {
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: Math.max(1, (prev[productId] || 1) + change)
+    }));
+  };
+
+  // Handle Add to Cart
+  const handleAddToCart = (productId) => {
+    const quantity = quantities[productId] || 1;
+    const product = products.find(p => p.id === productId);
+    console.log(`Xem chi tiết: ${product?.name} - Quantity: ${quantity}`);
+    // Implement your cart logic here
+  };
+
+  // Get product image (handle array format)
+  const getProductImage = (product) => {
+    if (Array.isArray(product.image) && product.image.length > 0) {
+      return product.image[0];
+    } else if (typeof product.image === 'string') {
+      return product.image;
+    }
+    return '';
+  };
+
+  // Handle image load error
+  const handleImageError = (e) => {
+    e.target.src = '';
+  };
+
+  // Filter products by category/brand for tabs
+  const allProducts = products;
+  const fushimavinaProducts = products.filter(
+    (product) => product.brand === 'Fushimavina'
+  );
+  const ababaProducts = products.filter(
+    (product) => product.brand === 'ABABA'
+  );
+
+  // Hide component on error or if no products
+  if (error || products.length === 0) {
+    return null;
   }
 
   // Show loading spinner
@@ -90,64 +147,276 @@ const BrandCarousel = () => {
         <Spinner animation="border" role="status">
           <span className="visually-hidden">Loading...</span>
         </Spinner>
-        <span className="ms-2">Loading newly arrived brands...</span>
+        <span className="ms-2">Loading products...</span>
       </Container>
     );
   }
 
-  // Render carousel only if there are products
-  return (
-    <section className="py-5 overflow-hidden">
-      <div className="container-fluid">
-        <div className="row">
-          <div className="col-md-12">
-            <div className="section-header d-flex flex-wrap justify-content-between mb-5">
-              <h2 className="section-title">Newly Arrived Brands</h2>
-              <div className="d-flex align-items-center">
-                <a href="/products" className="btn-link text-decoration-none">
-                  View All Products →
-                </a>
-                <div className="swiper-buttons">
-                  <button className="swiper-prev brand-carousel-prev btn btn-yellow">
-                    ❮
-                  </button>
-                  <button className="swiper-next brand-carousel-next btn btn-yellow">
-                    ❯
-                  </button>
-                </div>
-              </div>
-            </div>
+  // Render product item
+  const renderProductItem = (product) => (
+    <div className="product-item card h-100 border-0 shadow-sm" 
+         style={{ 
+           minHeight: '420px',
+           maxWidth: '100%',
+           transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out'
+         }}
+         onMouseEnter={(e) => {
+           e.currentTarget.style.transform = 'translateY(-5px)';
+           e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+         }}
+         onMouseLeave={(e) => {
+           e.currentTarget.style.transform = 'translateY(0)';
+           e.currentTarget.style.boxShadow = '';
+         }}>
+      <div className="position-relative">
+        {product.discount && (
+          <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1 fs-7">
+            -{product.discount}%
+          </span>
+        )}
+        <div 
+          className="card-img-top"
+          style={{ cursor: 'pointer' }}
+          onClick={() => handleProductClick(product.id)}
+        >
+          <img
+            src={getProductImage(product)}
+            className="img-fluid rounded-top"
+            alt={product.name}
+            onError={handleImageError}
+            style={{ 
+              height: '240px', 
+              width: '100%', 
+              objectFit: 'cover',
+              display: 'block'
+            }}
+          />
+        </div>
+      </div>
+      
+      <div className="card-body d-flex flex-column p-3">
+        <div className="mb-auto">
+          <h6 className="card-title fw-bold mb-2 fs-6" 
+              style={{ 
+                lineHeight: '1.3',
+                height: '2.6em',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical'
+              }}>
+            {product.name || 'N/A'}
+          </h6>
+          <p className="text-muted mb-2 small fw-medium">{product.brand || 'N/A'}</p>
+          <div className="d-flex align-items-center mb-2">
+            <span className="text-warning me-1 fs-7">★★★★☆</span>
+            <small className="text-muted">(4.0)</small>
+          </div>
+          <div className="h6 text-success fw-bold mb-3">
+            {product.price
+              ? new Intl.NumberFormat('vi-VN', { 
+                  style: 'currency', 
+                  currency: 'VND' 
+                }).format(product.price)
+              : 'Liên hệ'}
           </div>
         </div>
+        
+        <div className="mt-auto">
+          <div className="d-flex align-items-center justify-content-center mb-3">
+            <div className="input-group" style={{ width: '130px' }}>
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm px-2"
+                onClick={() => handleQuantityChange(product.id, -1)}
+                style={{ fontSize: '14px' }}
+              >
+                −
+              </button>
+              <input
+                type="text"
+                className="form-control form-control-sm text-center fw-medium"
+                value={quantities[product.id] || 1}
+                readOnly
+                style={{ maxWidth: '60px' }}
+              />
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm px-2"
+                onClick={() => handleQuantityChange(product.id, 1)}
+                style={{ fontSize: '14px' }}
+              >
+                +
+              </button>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => handleAddToCart(product.id)}
+            className="btn btn-primary btn-sm w-100 py-2 fw-medium"
+            style={{ 
+              transition: 'all 0.2s ease-in-out',
+              fontSize: '14px'
+            }}
+          >
+            <i className="fas fa-shopping-cart me-1"></i>
+            Xem chi tiết
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <section className="py-5">
+      <div className="container-fluid px-4">
         <div className="row">
           <div className="col-md-12">
-            <div className="brand-carousel swiper">
-              <div className="swiper-wrapper">
-                {products.map((product) => (
-                  <div className="swiper-slide" key={product.id}>
-                    <div
-                      className="card mb-3 p-3 rounded-4 shadow border-0"
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => handleCardClick(product.id)}
+            <div className="bootstrap-tabs product-tabs">
+              <div className="tabs-header d-flex justify-content-between border-bottom mb-4 pb-3">
+                <h3 className="fw-bold mb-0">Sản phẩm đồ cũ</h3>
+                <nav>
+                  <div className="nav nav-tabs border-0" id="nav-tab" role="tablist">
+                    <button
+                      className="nav-link text-uppercase fs-6 active fw-medium px-4"
+                      id="nav-all-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#nav-all"
+                      type="button"
+                      role="tab"
                     >
-                      <div className="row g-0">
-                        <div className="col-md-4">
-                          <img
-                            src={product.image || '/images/product-thumb-default.jpg'}
-                            className="img-fluid rounded"
-                            alt={product.name || 'Product'}
-                          />
-                        </div>
-                        <div className="col-md-8">
-                          <div className="card-body py-0">
-                            <p className="text-muted mb-0">{product.brand || 'N/A'}</p>
-                            <h5 className="card-title">{product.name || 'N/A'}</h5>
+                      All
+                    </button>
+                    <button
+                      className="nav-link text-uppercase fs-6 fw-medium px-4"
+                      id="nav-fushima-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#nav-fushima"
+                      type="button"
+                      role="tab"
+                    >
+                      Fushimavina
+                    </button>
+                    <button
+                      className="nav-link text-uppercase fs-6 fw-medium px-4"
+                      id="nav-ababa-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#nav-ababa"
+                      type="button"
+                      role="tab"
+                    >
+                      ABABA
+                    </button>
+                  </div>
+                </nav>
+              </div>
+              
+              <div className="tab-content" id="nav-tabContent">
+                {/* Tab Pane: All */}
+                <div
+                  className="tab-pane fade show active"
+                  id="nav-all"
+                  role="tabpanel"
+                  aria-labelledby="nav-all-tab"
+                >
+                  <div className="position-relative">
+                    <div className="products-carousel swiper">
+                      <div className="swiper-wrapper">
+                        {allProducts.map((product) => (
+                          <div className="swiper-slide" key={product.id}>
+                            {renderProductItem(product)}
                           </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
+                    <div className="swiper-buttons position-absolute top-50 w-100 d-flex justify-content-between" style={{ zIndex: 10, transform: 'translateY(-50%)' }}>
+                      <button className="swiper-prev products-carousel-prev btn btn-warning rounded-circle ms-3 shadow-sm" 
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
+                        ❮
+                      </button>
+                      <button className="swiper-next products-carousel-next btn btn-warning rounded-circle me-3 shadow-sm"
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
+                        ❯
+                      </button>
+                    </div>
                   </div>
-                ))}
+                </div>
+                
+                {/* Tab Pane: Fushimavina */}
+                <div
+                  className="tab-pane fade"
+                  id="nav-fushima"
+                  role="tabpanel"
+                  aria-labelledby="nav-fushima-tab"
+                >
+                  <div className="position-relative">
+                    <div className="products-carousel swiper">
+                      <div className="swiper-wrapper">
+                        {fushimavinaProducts.length > 0 ? (
+                          fushimavinaProducts.map((product) => (
+                            <div className="swiper-slide" key={product.id}>
+                              {renderProductItem(product)}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="swiper-slide">
+                            <div className="text-center p-5">
+                              <p className="text-muted">No Fushimavina products available.</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="swiper-buttons position-absolute top-50 w-100 d-flex justify-content-between" style={{ zIndex: 10, transform: 'translateY(-50%)' }}>
+                      <button className="swiper-prev products-carousel-prev btn btn-warning rounded-circle ms-3 shadow-sm"
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
+                        ❮
+                      </button>
+                      <button className="swiper-next products-carousel-next btn btn-warning rounded-circle me-3 shadow-sm"
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
+                        ❯
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Tab Pane: ABABA */}
+                <div
+                  className="tab-pane fade"
+                  id="nav-ababa"
+                  role="tabpanel"
+                  aria-labelledby="nav-ababa-tab"
+                >
+                  <div className="position-relative">
+                    <div className="products-carousel swiper">
+                      <div className="swiper-wrapper">
+                        {ababaProducts.length > 0 ? (
+                          ababaProducts.map((product) => (
+                            <div className="swiper-slide" key={product.id}>
+                              {renderProductItem(product)}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="swiper-slide">
+                            <div className="text-center p-5">
+                              <p className="text-muted">No ABABA products available.</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="swiper-buttons position-absolute top-50 w-100 d-flex justify-content-between" style={{ zIndex: 10, transform: 'translateY(-50%)' }}>
+                      <button className="swiper-prev products-carousel-prev btn btn-warning rounded-circle ms-3 shadow-sm"
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
+                        ❮
+                      </button>
+                      <button className="swiper-next products-carousel-next btn btn-warning rounded-circle me-3 shadow-sm"
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
+                        ❯
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

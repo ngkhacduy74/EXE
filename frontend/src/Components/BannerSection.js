@@ -204,16 +204,14 @@ const BannerSection = () => {
                           </div>
                         </div>
                       </div>
-                      {/* <div className="col-md-5 p-4">
+                      <div className="col-md-5 p-4">
                         <div className="position-relative">
                           <img
                             src={product.image}
                             className="img-fluid rounded-3 shadow-sm"
                             alt={product.name}
                             style={{ maxHeight: '300px', width: '100%', objectFit: 'cover' }}
-                            onError={(e) => {
-                              e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
-                            }}
+                          
                           />
                           <div className="position-absolute top-0 end-0 m-3">
                             <span className="badge bg-warning text-dark px-3 py-2 rounded-pill">
@@ -226,7 +224,7 @@ const BannerSection = () => {
                             </span>
                           </div>
                         </div>
-                      </div> */}
+                      </div>
                     </div>
                   </div>
                 ))}

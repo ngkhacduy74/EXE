@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Table, Button, Form } from "react-bootstrap";
+import { Container, Row, Col, Table, Button, Form, Modal } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { Plus, Eye, EyeOff, Check, Package } from "lucide-react";
+import { Plus, Eye, EyeOff, Check, Package, Trash2 } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
@@ -53,6 +53,11 @@ const ManageProduct = () => {
   const [brands, setBrands] = useState([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  
+  // Delete modal states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   console.log("Access token found:", tokens.accessToken ? "Yes" : "No");
   console.log("Refresh token found:", tokens.refreshToken ? "Yes" : "No");
@@ -139,7 +144,7 @@ const ManageProduct = () => {
         ...config,
         headers: {
           ...config.headers,
-          Authorization: `Bearer ${tokens.accessToken}`,
+          token: tokens.accessToken,
         },
       };
 
@@ -317,6 +322,46 @@ const ManageProduct = () => {
       console.error("Error updating product status:", err);
       setError(err.message || "Failed to update product status.");
     }
+  };
+
+  // Handle delete product - show confirmation modal
+  const handleDeleteProduct = (product) => {
+    setProductToDelete(product);
+    setShowDeleteModal(true);
+  };
+
+  // Confirm delete product
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return;
+
+    try {
+      setDeleteLoading(true);
+      await makeAuthenticatedRequest({
+        method: 'DELETE',
+        url: `/product/${productToDelete.id}`,
+      });
+
+      // Remove product from local state
+      setProducts(products.filter(product => product.id !== productToDelete.id));
+      
+      console.log(`Product ${productToDelete.id} deleted successfully`);
+      
+      // Close modal and reset state
+      setShowDeleteModal(false);
+      setProductToDelete(null);
+      
+    } catch (err) {
+      console.error("Error deleting product:", err);
+      setError(err.message || "Failed to delete product.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // Cancel delete
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setProductToDelete(null);
   };
 
   if (error && error.includes("Session expired")) {
@@ -570,6 +615,14 @@ const ManageProduct = () => {
                           >
                             {product.status === "New" ? <EyeOff size={16} /> : <Check size={16} />}
                           </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDeleteProduct(product)}
+                            title="Delete Product"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -580,6 +633,62 @@ const ManageProduct = () => {
           </div>
         </Col>
       </Row>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={cancelDelete} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="text-danger">
+            <Trash2 size={24} className="me-2" />
+            Confirm Delete
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="text-center">
+            <div className="mb-3">
+              <Trash2 size={48} className="text-danger" />
+            </div>
+            <h5>Are you sure you want to delete this product?</h5>
+            {productToDelete && (
+              <div className="mt-3 p-3 bg-light rounded">
+                <strong>{productToDelete.name}</strong>
+                <br />
+                <small className="text-muted">
+                  Brand: {productToDelete.brand} | 
+                  Price: {productToDelete.price ? `${parseFloat(productToDelete.price).toLocaleString("vi-VN")} VND` : "N/A"}
+                </small>
+              </div>
+            )}
+            <div className="alert alert-warning mt-3">
+              <strong>Warning:</strong> This action cannot be undone. The product will be permanently deleted from the system.
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={cancelDelete} disabled={deleteLoading}>
+            Cancel
+          </Button>
+          <Button 
+            variant="danger" 
+            onClick={confirmDeleteProduct} 
+            disabled={deleteLoading}
+            className="d-flex align-items-center"
+          >
+            {deleteLoading ? (
+              <>
+                <div className="spinner-border spinner-border-sm me-2" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 size={16} className="me-2" />
+                Delete Product
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

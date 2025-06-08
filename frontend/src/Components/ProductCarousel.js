@@ -11,7 +11,19 @@ const ProductsCarousel = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [quantities, setQuantities] = useState({});
   const navigate = useNavigate();
+
+  // Initialize quantities for each product
+  useEffect(() => {
+    if (products.length > 0) {
+      const initialQuantities = {};
+      products.forEach(product => {
+        initialQuantities[product.id] = 1;
+      });
+      setQuantities(initialQuantities);
+    }
+  }, [products]);
 
   // Fetch products from API
   useEffect(() => {
@@ -27,7 +39,7 @@ const ProductsCarousel = () => {
         const productData = Array.isArray(response.data.data)
           ? response.data.data
           : [];
-        
+
         if (productData.length === 0) {
           throw new Error('No products found.');
         }
@@ -48,25 +60,30 @@ const ProductsCarousel = () => {
   // Initialize Swiper for each tab pane after products are loaded
   useEffect(() => {
     if (!loading && products.length > 0) {
-      const carousels = document.querySelectorAll('.products-carousel');
-      carousels.forEach((carousel) => {
-        new Swiper(carousel, {
-          modules: [Navigation],
-          slidesPerView: 10,
-          spaceBetween: 30,
-          speed: 500,
-          navigation: {
-            nextEl: carousel.querySelector('.products-carousel-next'),
-            prevEl: carousel.querySelector('.products-carousel-prev'),
-          },
-          breakpoints: {
-            0: { slidesPerView: 1 },
-            768: { slidesPerView: 3 },
-            991: { slidesPerView: 4 },
-            1500: { slidesPerView: 6 },
-          },
+      // Add delay to ensure DOM is rendered
+      setTimeout(() => {
+        const carousels = document.querySelectorAll('.products-carousel');
+        carousels.forEach((carousel) => {
+          new Swiper(carousel, {
+            modules: [Navigation],
+            slidesPerView: 5,
+            spaceBetween: 25,
+            speed: 500,
+            navigation: {
+              nextEl: carousel.querySelector('.products-carousel-next'),
+              prevEl: carousel.querySelector('.products-carousel-prev'),
+            },
+            breakpoints: {
+              0: { slidesPerView: 1, spaceBetween: 15 },
+              576: { slidesPerView: 2, spaceBetween: 20 },
+              768: { slidesPerView: 2, spaceBetween: 20 },
+              992: { slidesPerView: 3, spaceBetween: 25 },
+              1200: { slidesPerView: 4, spaceBetween: 25 },
+              1400: { slidesPerView: 5, spaceBetween: 25 },
+            },
+          });
         });
-      });
+      }, 100);
     }
   }, [loading, products]);
 
@@ -75,19 +92,44 @@ const ProductsCarousel = () => {
     navigate(`/product/${productId}`);
   };
 
-  // Handle Add to Cart (placeholder - implement your cart logic)
-  const handleAddToCart = (productId) => {
-    console.log(`Add to cart: ${productId}`);
-    // Implement your cart logic here (e.g., dispatch to a Redux store or API call)
+  // Handle quantity change
+  const handleQuantityChange = (productId, change) => {
+    setQuantities(prev => ({
+      ...prev,
+      [productId]: Math.max(1, (prev[productId] || 1) + change)
+    }));
   };
 
-  // Filter products by category for tabs
+  // Handle Add to Cart
+  const handleAddToCart = (productId) => {
+    const quantity = quantities[productId] || 1;
+    const product = products.find(p => p.id === productId);
+    console.log(`Xem chi tiết: ${product?.name} - Quantity: ${quantity}`);
+    // Implement your cart logic here
+  };
+
+  // Get product image (handle array format)
+  const getProductImage = (product) => {
+    if (Array.isArray(product.image) && product.image.length > 0) {
+      return product.image[0];
+    } else if (typeof product.image === 'string') {
+      return product.image;
+    }
+    return '';
+  };
+
+  // Handle image load error
+  const handleImageError = (e) => {
+    e.target.src = '';
+  };
+
+  // Filter products by category/brand for tabs
   const allProducts = products;
-  const fruitsVegesProducts = products.filter(
-    (product) => product.category === 'Fruits & Veges'
+  const fushimavinaProducts = products.filter(
+    (product) => product.brand === 'Fushimavina'
   );
-  const juicesProducts = products.filter(
-    (product) => product.category === 'Juices'
+  const ababaProducts = products.filter(
+    (product) => product.brand === 'ABABA'
   );
 
   // Hide component on error or if no products
@@ -112,127 +154,163 @@ const ProductsCarousel = () => {
 
   // Render product item
   const renderProductItem = (product) => (
-    <div className="product-item">
-      {product.discount && (
-        <span className="badge bg-success position-absolute m-3">
-          -{product.discount}%
-        </span>
-      )}
-      <a href="#" className="btn-wishlist">
-        <svg width="24" height="24">
-          <use href="#heart" />
-        </svg>
-      </a>
-      <figure>
-        <a
-          onClick={() => handleProductClick(product.id)}
-          title={product.name}
+    <div className="product-item card h-100 border-0 shadow-sm" 
+         style={{ 
+           minHeight: '420px',
+           maxWidth: '100%',
+           transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out'
+         }}
+         onMouseEnter={(e) => {
+           e.currentTarget.style.transform = 'translateY(-5px)';
+           e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+         }}
+         onMouseLeave={(e) => {
+           e.currentTarget.style.transform = 'translateY(0)';
+           e.currentTarget.style.boxShadow = '';
+         }}>
+      <div className="position-relative">
+        {product.discount && (
+          <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1 fs-7">
+            -{product.discount}%
+          </span>
+        )}
+        <div 
+          className="card-img-top"
           style={{ cursor: 'pointer' }}
+          onClick={() => handleProductClick(product.id)}
         >
           <img
-            src={product.image || '/images/thumb-default.png'}
-            className="tab-image"
-            alt={product.name || 'Product'}
+            src={getProductImage(product)}
+            className="img-fluid rounded-top"
+            alt={product.name}
+            onError={handleImageError}
+            style={{ 
+              height: '240px', 
+              width: '100%', 
+              objectFit: 'cover',
+              display: 'block'
+            }}
           />
-        </a>
-      </figure>
-      <h3>{product.name || 'N/A'}</h3>
-      <span className="qty">{product.quantity || 1} Unit</span>
-      <span className="rating">
-        <svg width="24" height="24" className="text-primary">
-          <use href="#star-solid" />
-        </svg>{' '}
-        {product.rating || 'N/A'}
-      </span>
-      <span className="price">
-        {product.price
-          ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND`
-          : 'N/A'}
-      </span>
-      <div className="d-flex align-items-center justify-content-between">
-        <div className="input-group product-qty">
-          <span className="input-group-btn">
-            <button
-              type="button"
-              className="quantity-left-minus btn btn-danger btn-number"
-              data-type="minus"
-            >
-              <svg width="16" height="16">
-                <use href="#minus" />
-              </svg>
-            </button>
-          </span>
-          <input
-            type="text"
-            id={`quantity-${product.id}`}
-            name="quantity"
-            className="form-control input-number"
-            value="1"
-            readOnly
-          />
-          <span className="input-group-btn">
-            <button
-              type="button"
-              className="quantity-right-plus btn btn-success btn-number"
-              data-type="plus"
-            >
-              <svg width="16" height="16">
-                <use href="#plus" />
-              </svg>
-            </button>
-          </span>
         </div>
-        <a
-          onClick={() => handleAddToCart(product.id)}
-          className="nav-link"
-          style={{ cursor: 'pointer' }}
-        >
-          Add to Cart <iconify-icon icon="uil:shopping-cart" />
-        </a>
+      </div>
+      
+      <div className="card-body d-flex flex-column p-3">
+        <div className="mb-auto">
+          <h6 className="card-title fw-bold mb-2 fs-6" 
+              style={{ 
+                lineHeight: '1.3',
+                height: '2.6em',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical'
+              }}>
+            {product.name || 'N/A'}
+          </h6>
+          <p className="text-muted mb-2 small fw-medium">{product.brand || 'N/A'}</p>
+          <div className="d-flex align-items-center mb-2">
+            <span className="text-warning me-1 fs-7">★★★★☆</span>
+            <small className="text-muted">(4.0)</small>
+          </div>
+          <div className="h6 text-success fw-bold mb-3">
+            {product.price
+              ? new Intl.NumberFormat('vi-VN', { 
+                  style: 'currency', 
+                  currency: 'VND' 
+                }).format(product.price)
+              : 'Liên hệ'}
+          </div>
+        </div>
+        
+        <div className="mt-auto">
+          <div className="d-flex align-items-center justify-content-center mb-3">
+            <div className="input-group" style={{ width: '130px' }}>
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm px-2"
+                onClick={() => handleQuantityChange(product.id, -1)}
+                style={{ fontSize: '14px' }}
+              >
+                −
+              </button>
+              <input
+                type="text"
+                className="form-control form-control-sm text-center fw-medium"
+                value={quantities[product.id] || 1}
+                readOnly
+                style={{ maxWidth: '60px' }}
+              />
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm px-2"
+                onClick={() => handleQuantityChange(product.id, 1)}
+                style={{ fontSize: '14px' }}
+              >
+                +
+              </button>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => handleAddToCart(product.id)}
+            className="btn btn-primary btn-sm w-100 py-2 fw-medium"
+            style={{ 
+              transition: 'all 0.2s ease-in-out',
+              fontSize: '14px'
+            }}
+          >
+            <i className="fas fa-shopping-cart me-1"></i>
+            Xem chi tiết
+          </button>
+        </div>
       </div>
     </div>
   );
 
   return (
     <section className="py-5">
-      <div className="container-fluid">
+      <div className="container-fluid px-4">
         <div className="row">
           <div className="col-md-12">
             <div className="bootstrap-tabs product-tabs">
-              <div className="tabs-header d-flex justify-content-between border-bottom my-5">
-                <h3>Trending Products</h3>
+              <div className="tabs-header d-flex justify-content-between border-bottom mb-4 pb-3">
+                <h3 className="fw-bold mb-0">Sản phẩm mới</h3>
                 <nav>
-                  <div className="nav nav-tabs" id="nav-tab" role="tablist">
-                    <a
-                      href="#"
-                      className="nav-link text-uppercase fs-6 active"
+                  <div className="nav nav-tabs border-0" id="nav-tab" role="tablist">
+                    <button
+                      className="nav-link text-uppercase fs-6 active fw-medium px-4"
                       id="nav-all-tab"
                       data-bs-toggle="tab"
                       data-bs-target="#nav-all"
+                      type="button"
+                      role="tab"
                     >
                       All
-                    </a>
-                    <a
-                      href="#"
-                      className="nav-link text-uppercase fs-6"
-                      id="nav-fruits-tab"
+                    </button>
+                    <button
+                      className="nav-link text-uppercase fs-6 fw-medium px-4"
+                      id="nav-fushima-tab"
                       data-bs-toggle="tab"
-                      data-bs-target="#nav-fruits"
+                      data-bs-target="#nav-fushima"
+                      type="button"
+                      role="tab"
                     >
-                      Fruits & Veges
-                    </a>
-                    <a
-                      href="#"
-                      className="nav-link text-uppercase fs-6"
-                      id="nav-juices-tab"
+                      Fushimavina
+                    </button>
+                    <button
+                      className="nav-link text-uppercase fs-6 fw-medium px-4"
+                      id="nav-ababa-tab"
                       data-bs-toggle="tab"
-                      data-bs-target="#nav-juices"
+                      data-bs-target="#nav-ababa"
+                      type="button"
+                      role="tab"
                     >
-                      Juices
-                    </a>
+                      ABABA
+                    </button>
                   </div>
                 </nav>
               </div>
+              
               <div className="tab-content" id="nav-tabContent">
                 {/* Tab Pane: All */}
                 <div
@@ -241,85 +319,99 @@ const ProductsCarousel = () => {
                   role="tabpanel"
                   aria-labelledby="nav-all-tab"
                 >
-                  <div className="products-carousel swiper">
-                    <div className="swiper-wrapper">
-                      {allProducts.map((product) => (
-                        <div className="swiper-slide" key={product.id}>
-                          {renderProductItem(product)}
-                        </div>
-                      ))}
+                  <div className="position-relative">
+                    <div className="products-carousel swiper">
+                      <div className="swiper-wrapper">
+                        {allProducts.map((product) => (
+                          <div className="swiper-slide" key={product.id}>
+                            {renderProductItem(product)}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="swiper-buttons">
-                      <button className="swiper-prev products-carousel-prev btn btn-yellow">
+                    <div className="swiper-buttons position-absolute top-50 w-100 d-flex justify-content-between" style={{ zIndex: 10, transform: 'translateY(-50%)' }}>
+                      <button className="swiper-prev products-carousel-prev btn btn-warning rounded-circle ms-3 shadow-sm" 
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
                         ❮
                       </button>
-                      <button className="swiper-next products-carousel-next btn btn-yellow">
+                      <button className="swiper-next products-carousel-next btn btn-warning rounded-circle me-3 shadow-sm"
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
                         ❯
                       </button>
                     </div>
                   </div>
                 </div>
-                {/* Tab Pane: Fruits & Veges */}
+                
+                {/* Tab Pane: Fushimavina */}
                 <div
                   className="tab-pane fade"
-                  id="nav-fruits"
+                  id="nav-fushima"
                   role="tabpanel"
-                  aria-labelledby="nav-fruits-tab"
+                  aria-labelledby="nav-fushima-tab"
                 >
-                  <div className="products-carousel swiper">
-                    <div className="swiper-wrapper">
-                      {fruitsVegesProducts.length > 0 ? (
-                        fruitsVegesProducts.map((product) => (
-                          <div className="swiper-slide" key={product.id}>
-                            {renderProductItem(product)}
+                  <div className="position-relative">
+                    <div className="products-carousel swiper">
+                      <div className="swiper-wrapper">
+                        {fushimavinaProducts.length > 0 ? (
+                          fushimavinaProducts.map((product) => (
+                            <div className="swiper-slide" key={product.id}>
+                              {renderProductItem(product)}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="swiper-slide">
+                            <div className="text-center p-5">
+                              <p className="text-muted">No Fushimavina products available.</p>
+                            </div>
                           </div>
-                        ))
-                      ) : (
-                        <div className="swiper-slide">
-                          <div className="product-item text-center">
-                            <p>No Fruits & Veges products available.</p>
-                          </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                    <div className="swiper-buttons">
-                      <button className="swiper-prev products-carousel-prev btn btn-yellow">
+                    <div className="swiper-buttons position-absolute top-50 w-100 d-flex justify-content-between" style={{ zIndex: 10, transform: 'translateY(-50%)' }}>
+                      <button className="swiper-prev products-carousel-prev btn btn-warning rounded-circle ms-3 shadow-sm"
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
                         ❮
                       </button>
-                      <button className="swiper-next products-carousel-next btn btn-yellow">
+                      <button className="swiper-next products-carousel-next btn btn-warning rounded-circle me-3 shadow-sm"
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
                         ❯
                       </button>
                     </div>
                   </div>
                 </div>
-                {/* Tab Pane: Juices */}
+                
+                {/* Tab Pane: ABABA */}
                 <div
                   className="tab-pane fade"
-                  id="nav-juices"
+                  id="nav-ababa"
                   role="tabpanel"
-                  aria-labelledby="nav-juices-tab"
+                  aria-labelledby="nav-ababa-tab"
                 >
-                  <div className="products-carousel swiper">
-                    <div className="swiper-wrapper">
-                      {juicesProducts.length > 0 ? (
-                        juicesProducts.map((product) => (
-                          <div className="swiper-slide" key={product.id}>
-                            {renderProductItem(product)}
+                  <div className="position-relative">
+                    <div className="products-carousel swiper">
+                      <div className="swiper-wrapper">
+                        {ababaProducts.length > 0 ? (
+                          ababaProducts.map((product) => (
+                            <div className="swiper-slide" key={product.id}>
+                              {renderProductItem(product)}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="swiper-slide">
+                            <div className="text-center p-5">
+                              <p className="text-muted">No ABABA products available.</p>
+                            </div>
                           </div>
-                        ))
-                      ) : (
-                        <div className="swiper-slide">
-                          <div className="product-item text-center">
-                            <p>No Juices products available.</p>
-                          </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                    <div className="swiper-buttons">
-                      <button className="swiper-prev products-carousel-prev btn btn-yellow">
+                    <div className="swiper-buttons position-absolute top-50 w-100 d-flex justify-content-between" style={{ zIndex: 10, transform: 'translateY(-50%)' }}>
+                      <button className="swiper-prev products-carousel-prev btn btn-warning rounded-circle ms-3 shadow-sm"
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
                         ❮
                       </button>
-                      <button className="swiper-next products-carousel-next btn btn-yellow">
+                      <button className="swiper-next products-carousel-next btn btn-warning rounded-circle me-3 shadow-sm"
+                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
                         ❯
                       </button>
                     </div>

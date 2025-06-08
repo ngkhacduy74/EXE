@@ -138,68 +138,12 @@ const Home = () => {
         </div>
         <Header />
 
-        <div className="offcanvas-body d-flex justify-content-center align-items-center flex-wrap">
-          <select className="filter-categories border-0 mb-0 me-5">
-            <option>Shop by ABC</option>
-            <option>A</option>
-            <option>B</option>
-            <option>C</option>
-          </select>
-
-          <ul className="navbar-nav d-flex flex-row gap-3 mb-0 list-unstyled">
-            {[
-              'Category1',
-              'Category2',
-              'Category3',
-              'Category4',
-              'Brand1',
-              'Category5',
-              'Category6',
-              'Blog',
-            ].map((item, index) => (
-              <li key={index} className="nav-item">
-                <a href="#" className="nav-link">{item}</a>
-              </li>
-            ))}
-
-            <li className="nav-item dropdown">
-              <a
-                className="nav-link dropdown-toggle"
-                role="button"
-                id="pages"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                Brands
-              </a>
-              <ul className="dropdown-menu" aria-labelledby="pages">
-                {[
-                  'About Us',
-                  'Shop',
-                  'Single Product',
-                  'Cart',
-                  'Checkout',
-                  'Blog',
-                  'Single Post',
-                  'Styles',
-                  'Contact',
-                  'Thank You',
-                  'My Account',
-                  '404 Error',
-                ].map((page, idx) => (
-                  <li key={idx}>
-                    <a href="/" className="dropdown-item">{page}</a>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          </ul>
-        </div>
+        
 
 
         <BannerSection2 />
         <BannerSection />
-        <CategoryCarousel />
+        {/* <CategoryCarousel /> */}
         <BrandCarousel />
         <ProductsCarousel />
         <BestSellingCarousel />

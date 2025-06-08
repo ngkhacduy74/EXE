@@ -289,55 +289,34 @@ const ManagePost = () => {
 
   // Handle toggle condition status with checkbox
   const handleToggleCondition = async (postId, currentCondition) => {
-    // Set loading state for this specific post
-    setToggleLoading(prev => ({ ...prev, [postId]: true }));
-    
-    // Determine new condition (toggle between Active and Inactive)
-    const newCondition = currentCondition === "Active" ? "Inactive" : "Active";
-    
-    try {
-      // Use the new API endpoint format
-      const response = await makeAuthenticatedRequest({
-        method: 'PUT', // or POST, depending on your API
-        url: `/post/change-condition/Active/${postId}`,
-      });
+  setToggleLoading(prev => ({ ...prev, [postId]: true }));
+  
+  const newCondition = currentCondition === "Active" ? "Inactive" : "Active";
 
-      console.log(`API Response for condition change:`, response.data);
+  try {
+    const response = await makeAuthenticatedRequest({
+      method: 'PUT',
+      url: `/post/change-condition/${newCondition}/${postId}`,
+    });
 
-      // Update local state
-      setPosts(prevPosts =>
-        prevPosts.map((post) =>
-          post._id === postId ? { ...post, condition: newCondition } : post
-        )
-      );
-      
-      console.log(`Post ${postId} condition updated to ${newCondition}`);
-    } catch (err) {
-      console.error("Error updating post condition:", err);
-      
-      // Show more specific error message
-      let errorMessage = "Failed to update post condition.";
-      if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setError(errorMessage);
-      
-      // Clear error after 5 seconds
-      setTimeout(() => {
-        setError(null);
-      }, 5000);
-    } finally {
-      // Remove loading state for this post
-      setToggleLoading(prev => {
-        const newState = { ...prev };
-        delete newState[postId];
-        return newState;
-      });
-    }
-  };
+    setPosts(prevPosts =>
+      prevPosts.map((post) =>
+        post._id === postId ? { ...post, condition: newCondition } : post
+      )
+    );
+  } catch (err) {
+    console.error("Error updating post condition:", err);
+    setError("Failed to update post condition.");
+    setTimeout(() => setError(null), 5000);
+  } finally {
+    setToggleLoading(prev => {
+      const newState = { ...prev };
+      delete newState[postId];
+      return newState;
+    });
+  }
+};
+
 
   if (error && error.includes("Session expired")) {
     return <ErrorPage message={error} />;
