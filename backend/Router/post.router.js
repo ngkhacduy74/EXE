@@ -11,9 +11,14 @@ const {
   loadAllPost,
 } = require("../Controller/post.controller");
 const { getUserById } = require("../Controller/user.controller");
-const { token } = require("../Middleware/auth.middleware");
+const {
+  token,
+  verifyAdmin,
+  verifyToken,
+  verifyUser,
+} = require("../Middleware/auth.middleware");
 
-router.get("/user-post", async (req, res) => {
+router.get("/user-post", verifyToken, async (req, res) => {
   const result = await getPostByUserId(req.user.id);
   if (result.success === false) {
     return res.status(500).json(result);
@@ -21,30 +26,39 @@ router.get("/user-post", async (req, res) => {
   res.status(200).json(result);
 });
 //verify admin
-router.get("/change-condition/:condition/:id", async (req, res) => {
-  const { condition, id } = req.params;
-  const authHeader = req.headers.token;
-  const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
-  console.log("jhs", decoded);
-  const result = await changePostCondition(condition, id, decoded);
-  if (result.success === false) {
-    return res.status(500).json(result);
+router.get(
+  "/change-condition/:condition/:id",
+  verifyAdmin,
+  async (req, res) => {
+    const { condition, id } = req.params;
+    const authHeader = req.headers.token;
+    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
+    console.log("jhs", decoded);
+    const result = await changePostCondition(condition, id, decoded);
+    if (result.success === false) {
+      return res.status(500).json(result);
+    }
+    res.status(200).json(result);
   }
-  res.status(200).json(result);
-});
-router.post("/createPost", postMiddleware.postMiddleware, async (req, res) => {
-  const authHeader = req.headers.token;
+);
+router.post(
+  "/createPost",
+  verifyUser,
+  postMiddleware.postMiddleware,
+  async (req, res) => {
+    const authHeader = req.headers.token;
 
-  const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
+    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
 
-  const result = await createPost(req.body, decoded);
-  if (result.success === false) {
-    return res.status(500).json(result);
+    const result = await createPost(req.body, decoded);
+    if (result.success === false) {
+      return res.status(500).json(result);
+    }
+    res.status(200).json(result);
   }
-  res.status(200).json(result);
-});
+);
 
-router.put("/update-post/:id", async (req, res) => {
+router.put("/update-post/:id", verifyUser, async (req, res) => {
   const id = req.params.id;
   const userId = req.user.id;
   const seller = await getUserById(userId);
@@ -77,7 +91,7 @@ router.put("/update-post/:id", async (req, res) => {
   }
   res.status(200).json(result);
 });
-router.delete("/deletePost/:id", async (req, res) => {
+router.delete("/deletePost/:id", verifyToken, async (req, res) => {
   const result = await deletePost(req.params.id);
   if (result.success === false) {
     return res.status(500).json(result);
