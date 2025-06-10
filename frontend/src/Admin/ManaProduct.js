@@ -568,12 +568,12 @@ const ManageProduct = () => {
                 <thead className="bg-primary text-white">
                   <tr>
                     <th>#</th>
-                    <th>Name</th>
-                    <th>Brand</th>
-                    <th>Price</th>
-                    <th>Capacity</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>Tên</th>
+                    <th>Thương hiệu</th>
+                    <th>Giá tiền</th>
+                    <th>Dung tích/ Ngày</th>
+                    <th>Trạng thái</th>
+                    <th>Chỉnh sủa</th>
                   </tr>
                 </thead>
                 <tbody>

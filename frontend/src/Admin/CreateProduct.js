@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Container, Row, Col, Form, Button, Card, Alert, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, Upload, X, Save, Eye } from "lucide-react";
+import { ArrowLeft, Upload, X, Save, Eye, Plus, Link } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 
@@ -12,14 +12,9 @@ const CreateProduct = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   
-  // Fixed image URLs for testing - using real image URLs that pass validation
-  const fixedImageUrls = [
-    "https://fushimavina.com/data/data/files/test/may-lam-da-30kg.jpg",
-      "https://example.com/vacuum2.jpg"
-  ];
-  
-  const [imagePreviews] = useState(fixedImageUrls);
-  const [videoPreviews] = useState([]);
+  // Thay đổi state để lưu URLs thay vì files
+  const [imageUrls, setImageUrls] = useState([""]);
+  const [videoUrl, setVideoUrl] = useState("");
   
   const [formData, setFormData] = useState({
     name: "",
@@ -35,8 +30,8 @@ const CreateProduct = () => {
     warranty_period: 12,
     quantity: 1,
     features: [{ title: "", description: "" }],
-    images: fixedImageUrls, // Use fixed URLs instead of empty array
-    videos: [],
+    image: [],
+    video: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -74,23 +69,68 @@ const CreateProduct = () => {
     }
   };
 
-  // Dummy handlers for image/video (since we're using fixed images)
-  const handleImageChange = (e) => {
-    // Do nothing - images are fixed
-    setError("");
+  // Handle image URL changes
+  const handleImageUrlChange = (index, value) => {
+    const newImageUrls = [...imageUrls];
+    newImageUrls[index] = value;
+    setImageUrls(newImageUrls);
+    
+    if (errors.images) {
+      setErrors((prev) => ({ ...prev, images: "" }));
+    }
   };
 
-  const handleVideoChange = (e) => {
-    // Do nothing - no video for testing
-    setError("");
+  // Add new image URL input (max 3)
+  const addImageUrl = () => {
+    if (imageUrls.length < 3) {
+      setImageUrls([...imageUrls, ""]);
+    }
   };
 
-  const removeImage = (index) => {
-    // Do nothing - images are fixed
+  // Remove image URL input
+  const removeImageUrl = (index) => {
+    if (imageUrls.length > 1) {
+      const newImageUrls = imageUrls.filter((_, i) => i !== index);
+      setImageUrls(newImageUrls);
+    }
   };
 
-  const removeVideo = (index) => {
-    // Do nothing - no video
+  // Handle video URL change
+  const handleVideoUrlChange = (value) => {
+    setVideoUrl(value);
+  };
+
+  // Validate URL format
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  // Validate if URL is an image
+  const isImageUrl = (url) => {
+    if (!isValidUrl(url)) return false;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+    const urlLower = url.toLowerCase();
+    return imageExtensions.some(ext => urlLower.includes(ext)) || 
+           url.includes('imgur.com') || 
+           url.includes('cloudinary.com') ||
+           url.includes('unsplash.com') ||
+           url.includes('pexels.com');
+  };
+
+  // Validate if URL is a video
+  const isVideoUrl = (url) => {
+    if (!isValidUrl(url)) return false;
+    const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm'];
+    const urlLower = url.toLowerCase();
+    return videoExtensions.some(ext => urlLower.includes(ext)) ||
+           url.includes('youtube.com') ||
+           url.includes('youtu.be') ||
+           url.includes('vimeo.com');
   };
 
   // Form validation
@@ -108,6 +148,23 @@ const CreateProduct = () => {
     if (formData.features.some((f) => !f.title.trim() || !f.description.trim())) {
       newErrors.features = "Tất cả tính năng phải có tiêu đề và mô tả";
     }
+
+    // Validate image URLs
+    const validImageUrls = imageUrls.filter(url => url.trim() !== "");
+    if (validImageUrls.length === 0) {
+      newErrors.images = "Cần ít nhất một URL hình ảnh";
+    } else {
+      const invalidImageUrls = validImageUrls.filter(url => !isImageUrl(url));
+      if (invalidImageUrls.length > 0) {
+        newErrors.images = "Một số URL hình ảnh không hợp lệ";
+      }
+    }
+
+    // Validate video URL (optional)
+    if (videoUrl.trim() !== "" && !isVideoUrl(videoUrl)) {
+      newErrors.video = "URL video không hợp lệ";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -122,7 +179,6 @@ const CreateProduct = () => {
     }
 
     const token = localStorage.getItem("token");
-    console.log("Token:", token);
     if (!token) {
       setError("Vui lòng đăng nhập để tạo sản phẩm");
       return;
@@ -133,13 +189,11 @@ const CreateProduct = () => {
     setSuccess("");
 
     try {
-      // Prepare JSON payload matching the expected format
-      const submitData = {
-        image: formData.images, // Use 'image' not 'images'
-        video: formData.videos.length > 0 ? formData.videos : [], // Use 'video' not 'videos'
+      // Prepare data to send
+      const dataToSend = {
         name: formData.name,
         brand: formData.brand,
-        price: parseFloat(formData.price), // Convert to number, not string
+        price: parseFloat(formData.price),
         description: formData.description,
         size: formData.size,
         weight: parseFloat(formData.weight),
@@ -147,18 +201,19 @@ const CreateProduct = () => {
         warranty_period: parseInt(formData.warranty_period),
         capacity: parseFloat(formData.capacity),
         voltage: formData.voltage,
+        quantity: parseInt(formData.quantity),
         features: formData.features.map((f, index) => ({
-          id: `f${index + 1}`, // Add id field as expected
+          id: `f${index + 1}`,
           title: f.title,
           description: f.description
         })),
-        quantity: parseInt(formData.quantity)
-        // Remove category field as it's not allowed by backend
+        image: imageUrls.filter(url => url.trim() !== ""),
+        video: videoUrl.trim() !== "" ? [videoUrl] : []
       };
 
-      console.log("JSON payload:", JSON.stringify(submitData, null, 2));
+      console.log("Sending data:", dataToSend);
 
-      const response = await axios.post("http://localhost:4000/product/createProduct", submitData, {
+      const response = await axios.post("http://localhost:4000/product/createProduct", dataToSend, {
         headers: {
           "Content-Type": "application/json",
           token: token,
@@ -167,7 +222,7 @@ const CreateProduct = () => {
 
       setSuccess("Tạo sản phẩm thành công!");
       setTimeout(() => {
-        navigate("/manage-products");
+        navigate("/manaProduct");
       }, 2000);
     } catch (err) {
       console.error("Lỗi khi tạo sản phẩm:", err);
@@ -179,9 +234,6 @@ const CreateProduct = () => {
             break;
           case 400:
             errorMessage = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại các trường";
-            break;
-          case 413:
-            errorMessage = "File tải lên quá lớn";
             break;
           default:
             errorMessage = err.response.data?.message || errorMessage;
@@ -195,6 +247,8 @@ const CreateProduct = () => {
 
   const handlePreview = () => {
     console.log("Xem trước sản phẩm:", formData);
+    console.log("Image URLs:", imageUrls);
+    console.log("Video URL:", videoUrl);
   };
 
   return (
@@ -209,7 +263,7 @@ const CreateProduct = () => {
             <Button variant="outline-secondary" onClick={() => navigate("/manaProduct")} className="me-3">
               <ArrowLeft size={20} />
             </Button>
-            <h3 className="mb-0">Tạo sản phẩm mới (Test Mode)</h3>
+            <h3 className="mb-0">Tạo sản phẩm mới</h3>
           </div>
 
           {error && <Alert variant="danger">{error}</Alert>}
@@ -272,7 +326,7 @@ const CreateProduct = () => {
                       </Col>
                       <Col md={3}>
                         <Form.Group className="mb-3">
-                          <Form.Label>Dung tích (lít) *</Form.Label>
+                          <Form.Label>Dung tích/Ngày *</Form.Label>
                           <Form.Control
                             type="number"
                             name="capacity"
@@ -447,39 +501,128 @@ const CreateProduct = () => {
 
               <Col md={4}>
                 <Card className="mb-4">
-                  <Card.Header>
-                    <h5 className="mb-0">Hình ảnh sản phẩm (Fixed for Testing)</h5>
+                  <Card.Header className="d-flex justify-content-between align-items-center">
+                    <h5 className="mb-0">
+                      <Link size={20} className="me-2" />
+                      URL Hình ảnh sản phẩm
+                    </h5>
+                    {imageUrls.length < 3 && (
+                      <Button variant="outline-primary" size="sm" onClick={addImageUrl}>
+                        <Plus size={16} />
+                      </Button>
+                    )}
                   </Card.Header>
                   <Card.Body>
-                    <div className="alert alert-info">
-                      <small>🔧 Test Mode: Hình ảnh đã được fix cứng để test dữ liệu</small>
-                    </div>
-                    {imagePreviews.map((preview, index) => (
-                      <div key={index} className="text-center mb-3">
-                        <img
-                          src={preview}
-                          alt={`Test Image ${index + 1}`}
-                          className="img-fluid"
-                          style={{ maxHeight: "200px", borderRadius: "8px" }}
-                        />
-                        <div className="mt-2">
-                          <small className="text-muted">Test Image {index + 1}</small>
-                        </div>
+                    {imageUrls.map((url, index) => (
+                      <div key={index} className="mb-3">
+                        <Form.Group>
+                          <Form.Label>URL Hình ảnh {index + 1} {index === 0 && "*"}</Form.Label>
+                          <div className="d-flex">
+                            <Form.Control
+                              type="url"
+                              value={url}
+                              onChange={(e) => handleImageUrlChange(index, e.target.value)}
+                              placeholder="https://example.com/image.jpg"
+                              isInvalid={!!errors.images && url.trim() !== "" && !isImageUrl(url)}
+                            />
+                            {imageUrls.length > 1 && (
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                className="ms-2"
+                                onClick={() => removeImageUrl(index)}
+                              >
+                                <X size={16} />
+                              </Button>
+                            )}
+                          </div>
+                          {url.trim() !== "" && !isImageUrl(url) && (
+                            <Form.Text className="text-danger">
+                              URL hình ảnh không hợp lệ
+                            </Form.Text>
+                          )}
+                        </Form.Group>
+                        
+                        {/* Preview image */}
+                        {url.trim() !== "" && isImageUrl(url) && (
+                          <div className="mt-2">
+                            <img
+                              src={url}
+                              alt={`Preview ${index + 1}`}
+                              className="img-fluid"
+                              style={{ 
+                                maxHeight: "150px", 
+                                borderRadius: "8px",
+                                border: "1px solid #dee2e6"
+                              }}
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
                     ))}
+                    
+                    <Form.Text className="text-muted">
+                      Tối đa 3 URL hình ảnh. Hỗ trợ: JPG, PNG, GIF, WebP
+                    </Form.Text>
+                    {errors.images && <Form.Text className="text-danger d-block">{errors.images}</Form.Text>}
                   </Card.Body>
                 </Card>
 
                 <Card className="mb-4">
                   <Card.Header>
-                    <h5 className="mb-0">Video sản phẩm (Disabled for Testing)</h5>
+                    <h5 className="mb-0">
+                      <Link size={20} className="me-2" />
+                      URL Video sản phẩm
+                    </h5>
                   </Card.Header>
                   <Card.Body>
-                    <div className="text-center">
-                      <div className="alert alert-secondary">
-                        <small>Video upload disabled in test mode</small>
+                    <Form.Group className="mb-3">
+                      <Form.Label>URL Video (tùy chọn)</Form.Label>
+                      <Form.Control
+                        type="url"
+                        value={videoUrl}
+                        onChange={(e) => handleVideoUrlChange(e.target.value)}
+                        placeholder="https://example.com/video.mp4"
+                        isInvalid={!!errors.video}
+                      />
+                      <Form.Text className="text-muted">
+                        Hỗ trợ: MP4, AVI, MOV, YouTube, Vimeo
+                      </Form.Text>
+                      <Form.Control.Feedback type="invalid">{errors.video}</Form.Control.Feedback>
+                    </Form.Group>
+                    
+                    {/* Preview video */}
+                    {videoUrl.trim() !== "" && isVideoUrl(videoUrl) && (
+                      <div className="mt-3">
+                        {videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') ? (
+                          <div className="ratio ratio-16x9">
+                            <iframe
+                              src={videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                              title="Video preview"
+                              allowFullScreen
+                              style={{ borderRadius: "8px" }}
+                            ></iframe>
+                          </div>
+                        ) : (
+                          <video
+                            src={videoUrl}
+                            controls
+                            className="img-fluid"
+                            style={{ 
+                              maxHeight: "200px", 
+                              borderRadius: "8px",
+                              border: "1px solid #dee2e6"
+                            }}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        )}
                       </div>
-                    </div>
+                    )}
                   </Card.Body>
                 </Card>
 
@@ -495,7 +638,7 @@ const CreateProduct = () => {
                         ) : (
                           <>
                             <Save size={20} className="me-2" />
-                            Tạo sản phẩm (Test)
+                            Tạo sản phẩm
                           </>
                         )}
                       </Button>

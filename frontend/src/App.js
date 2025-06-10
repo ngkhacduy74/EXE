@@ -25,6 +25,8 @@ import CreateProduct from "./Admin/CreateProduct";
 import ProductBrowser  from "./Pages/ProductBrowser";
 import CompareProduct from "./Pages/CompareProduct";
 import MultiProductViewer from "./Admin/MultiProductViewer";
+import Profile from "./Pages/Profile";
+import ProductView from "./Pages/ProductView";
 
 
 const App = () => {
@@ -48,6 +50,8 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/otp" element={<OTP />} />
           <Route path="/newPost" element={<NewPostForm />} />
+          <Route path="/profile" element={<Profile />} />
+            <Route path="/productView/:id" element={<ProductView />} />
           {/* UI ADMIN */}
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/manaAccount" element={<ManaAccount />} />

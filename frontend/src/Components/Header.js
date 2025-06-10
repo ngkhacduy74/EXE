@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit, LogOut, LogIn, Copy, ChevronDown, Search, Menu } from 'lucide-react';
+import { Edit, LogOut, LogIn, Copy, ChevronDown, Search, Menu, X } from 'lucide-react';
 import axios from 'axios';
 
 function Header() {
@@ -14,7 +14,133 @@ function Header() {
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [showBrandsDropdown, setShowBrandsDropdown] = useState(false);
+  
+  // New states for product suggestions
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [recentSearches, setRecentSearches] = useState([]);
+  
+  const searchRef = useRef(null);
+  const suggestionsRef = useRef(null);
   const navigate = useNavigate();
+
+  // Load recent searches from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('recentsearches');
+    if (saved) {
+      try {
+        setRecentSearches(JSON.parse(saved));
+      } catch (e) {
+        console.error('Error loading recent searches:', e);
+      }
+    }
+  }, []);
+
+  // Debounced search suggestions
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.trim() && searchTerm.length >= 2) {
+        fetchSuggestions(searchTerm);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        searchRef.current && 
+        !searchRef.current.contains(event.target) &&
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target)
+      ) {
+        setShowSuggestions(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Fetch product suggestions
+  const fetchSuggestions = async (query) => {
+    try {
+      setLoadingSuggestions(true);
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/product/search/suggestions`,
+        {
+          params: {
+            q: query,
+            limit: 8,
+            category: selectedCategory !== 'all' ? selectedCategory : undefined
+          }
+        }
+      );
+
+      if (response.data && response.data.suggestions) {
+        setSuggestions(response.data.suggestions);
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+      // Fallback: search in existing products
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/product/`
+        );
+        
+        const productData = Array.isArray(response.data.data) ? response.data.data : [];
+        const filtered = productData
+          .filter(product => 
+            product.name.toLowerCase().includes(query.toLowerCase()) ||
+            product.brand.toLowerCase().includes(query.toLowerCase()) ||
+            product.category.toLowerCase().includes(query.toLowerCase())
+          )
+          .slice(0, 8)
+          .map(product => ({
+            id: product._id,
+            name: product.name,
+            brand: product.brand,
+            category: product.category,
+            price: product.price,
+            image: product.images?.[0],
+            type: 'product'
+          }));
+
+        setSuggestions(filtered);
+        setShowSuggestions(filtered.length > 0);
+      } catch (fallbackError) {
+        console.error('Fallback search failed:', fallbackError);
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  // Save search term to recent searches
+  const saveRecentSearch = (term) => {
+    if (!term.trim()) return;
+    
+    const updated = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5);
+    setRecentSearches(updated);
+    localStorage.setItem('recentSearches', JSON.stringify(updated));
+  };
+
+  // Clear recent searches
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    localStorage.removeItem('recentSearches');
+  };
 
   // Fetch categories and brands from products
   useEffect(() => {
@@ -28,14 +154,12 @@ function Header() {
         const productData = Array.isArray(response.data.data) ? response.data.data : [];
         
         if (productData.length > 0) {
-          // Extract unique categories
           const uniqueCategories = [...new Set(
             productData
               .map(product => product.category)
               .filter(category => category && category.trim() !== '')
           )].sort();
 
-          // Extract unique brands
           const uniqueBrands = [...new Set(
             productData
               .map(product => product.brand)
@@ -115,12 +239,18 @@ function Header() {
     navigate('/login', { replace: true });
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
+  const handleSearch = (e, searchQuery = null) => {
+    if (e) e.preventDefault();
+    
+    const query = searchQuery || searchTerm;
+    if (query.trim()) {
+      saveRecentSearch(query.trim());
+    }
+    
     const params = new URLSearchParams();
     
-    if (searchTerm.trim()) {
-      params.append('search', searchTerm.trim());
+    if (query.trim()) {
+      params.append('search', query.trim());
     }
     
     if (selectedCategory && selectedCategory !== 'all') {
@@ -129,21 +259,25 @@ function Header() {
     
     const queryString = params.toString();
     navigate(`/product-browser${queryString ? `?${queryString}` : ''}`);
+    setShowSuggestions(false);
   };
 
-  const handleSearchIconClick = () => {
-    const params = new URLSearchParams();
-    
-    if (searchTerm.trim()) {
-      params.append('search', searchTerm.trim());
+  const handleSuggestionClick = (suggestion) => {
+    if (suggestion.type === 'product') {
+      navigate(`/productView/${suggestion.id}`);
+    } else {
+      setSearchTerm(suggestion.name);
+      handleSearch(null, suggestion.name);
     }
-    
-    if (selectedCategory && selectedCategory !== 'all') {
-      params.append('category', selectedCategory);
+    setShowSuggestions(false);
+  };
+
+  const handleSearchFocus = () => {
+    if (searchTerm.trim().length >= 2 && suggestions.length > 0) {
+      setShowSuggestions(true);
+    } else if (recentSearches.length > 0) {
+      setShowSuggestions(true);
     }
-    
-    const queryString = params.toString();
-    navigate(`/product-browser${queryString ? `?${queryString}` : ''}`);
   };
 
   const handleBrandClick = (brand) => {
@@ -193,8 +327,8 @@ function Header() {
           </div>
 
           {/* Search Bar - Desktop */}
-          <div className="col-lg-6 d-none d-lg-block">
-            <div className="search-bar">
+          <div className="col-lg-6 d-none d-lg-block position-relative">
+            <div className="search-bar" ref={searchRef}>
               <form onSubmit={handleSearch}>
                 <div className="input-group shadow-sm rounded-pill overflow-hidden">
                   <select 
@@ -217,7 +351,9 @@ function Header() {
                     placeholder="Tìm kiếm hơn 20,000 sản phẩm..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={handleSearchFocus}
                     style={{ boxShadow: 'none' }}
+                    autoComplete="off"
                   />
                   <button
                     type="submit"
@@ -228,6 +364,109 @@ function Header() {
                   </button>
                 </div>
               </form>
+
+              {/* Search Suggestions Dropdown */}
+              {showSuggestions && (
+                <div 
+                  ref={suggestionsRef}
+                  className="position-absolute w-100 bg-white shadow-lg border rounded mt-1"
+                  style={{ 
+                    zIndex: 1050,
+                    maxHeight: '400px',
+                    overflowY: 'auto',
+                    top: '100%'
+                  }}
+                >
+                  {loadingSuggestions ? (
+                    <div className="p-3 text-center">
+                      <div className="spinner-border spinner-border-sm text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      <div className="mt-2 text-muted small">Đang tìm kiếm...</div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Recent Searches */}
+                      {recentSearches.length > 0 && !searchTerm.trim() && (
+                        <div className="p-2 border-bottom">
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <small className="text-muted fw-bold">Tìm kiếm gần đây</small>
+                            <button 
+                              className="btn btn-sm btn-link text-muted p-0"
+                              onClick={clearRecentSearches}
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                          {recentSearches.map((term, index) => (
+                            <div
+                              key={index}
+                              className="py-2 px-3 cursor-pointer hover-bg-light d-flex align-items-center"
+                              onClick={() => {
+                                setSearchTerm(term);
+                                handleSearch(null, term);
+                              }}
+                              style={{ cursor: 'pointer' }}
+                              onMouseEnter={(e) => e.target.classList.add('bg-light')}
+                              onMouseLeave={(e) => e.target.classList.remove('bg-light')}
+                            >
+                              <Search size={14} className="text-muted me-2" />
+                              <span>{term}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Product Suggestions */}
+                      {suggestions.length > 0 && (
+                        <div className="p-2">
+                          <small className="text-muted fw-bold mb-2 d-block">Sản phẩm gợi ý</small>
+                          {suggestions.map((suggestion) => (
+                            <div
+                              key={suggestion.id}
+                              className="d-flex align-items-center py-2 px-3 cursor-pointer rounded"
+                              onClick={() => handleSuggestionClick(suggestion)}
+                              style={{ cursor: 'pointer' }}
+                              onMouseEnter={(e) => e.target.closest('div').classList.add('bg-light')}
+                              onMouseLeave={(e) => e.target.closest('div').classList.remove('bg-light')}
+                            >
+                              {suggestion.image && (
+                                <img
+                                  src={suggestion.image}
+                                  alt={suggestion.name}
+                                  className="me-3 rounded"
+                                  style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                />
+                              )}
+                              <div className="flex-grow-1">
+                                <div className="fw-medium text-truncate" style={{ maxWidth: '300px' }}>
+                                  {suggestion.name}
+                                </div>
+                                <div className="small text-muted">
+                                  {suggestion.brand} • {suggestion.category}
+                                  {suggestion.price && (
+                                    <span className="text-primary fw-bold ms-2">
+                                      {suggestion.price.toLocaleString('vi-VN')}đ
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* No results */}
+                      {searchTerm.trim() && suggestions.length === 0 && !loadingSuggestions && (
+                        <div className="p-3 text-center text-muted">
+                          <div>Không tìm thấy sản phẩm phù hợp</div>
+                          <small>Thử tìm kiếm với từ khóa khác</small>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -275,11 +514,11 @@ function Header() {
               </div>
 
               {/* Create Post - Only for logged in users */}
-              {user && (
+              {/* {user && (
                 <a href="/newPost" className="btn btn-light rounded-circle p-2" title="Tạo bài viết">
                   <Edit size={20} />
                 </a>
-              )}
+              )} */}
 
               {/* Compare Products - Only for logged in users */}
               {user && (
@@ -350,7 +589,7 @@ function Header() {
                         </div>
                       </div>
                     ) : (
-                      categories.map((category, index) => (
+                      categories.map((category) => (
                         <div key={category} className="col-12">
                           <a
                             className="dropdown-item py-2 px-2 rounded"
@@ -436,13 +675,6 @@ function Header() {
                   </div>
                 </li>
               )}
-
-              {/* Hot Deals */}
-              <li className="nav-item">
-                {/* <a className="nav-link fw-medium px-3 py-2 text-danger" href="/deals">
-                  🔥 Khuyến mãi hot
-                </a> */}
-              </li>
             </ul>
           </div>
         </nav>

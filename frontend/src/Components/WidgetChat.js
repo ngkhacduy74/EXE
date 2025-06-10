@@ -26,8 +26,8 @@ const styles = {
     position: 'absolute',
     bottom: '60px',
     right: '0',
-    width: 'min(500px, calc(100vw - 48px))',
-    height: 'min(700px, calc(100vh - 120px))',
+    width: 'min(420px, calc(70vw - 35px))',
+    height: 'min(500px, calc(90vh - 120px))',
     borderRadius: '8px',
     overflow: 'hidden',
     display: 'flex',
@@ -86,12 +86,12 @@ const styles = {
   messageBubble: {
     display: 'flex',
     alignItems: 'flex-start',
-    padding: '12px 16px',  // Tăng padding
-    maxWidth: '85%',       // Tăng từ 80% lên 85%
-    borderRadius: '12px',  // Bo góc hơi lớn hơn
+    padding: '12px 16px',
+    maxWidth: '85%',
+    borderRadius: '12px',
     boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-    fontSize: '14px',      // Có thể tăng font size
-    lineHeight: '1.5'      // Tăng line height cho dễ đọc
+    fontSize: '14px',
+    lineHeight: '1.5'
   },
   userBubble: {
     backgroundColor: '#2563eb',
@@ -154,6 +154,16 @@ const styles = {
     gap: '8px',
     fontSize: '14px',
     fontWeight: 500
+  },
+  clearButton: {
+    backgroundColor: '#dc2626',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    padding: '6px 12px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    marginLeft: '8px'
   }
 };
 
@@ -167,28 +177,71 @@ export default function ChatWidget() {
   const [isBotTyping, setIsBotTyping] = useState(false);
   const messagesContainerRef = useRef(null);
 
+  // Hàm lưu tin nhắn vào localStorage
+  const saveMessagesToStorage = (messages) => {
+    try {
+      localStorage.setItem('chatMessages', JSON.stringify(messages));
+    } catch (error) {
+      console.error('Lỗi khi lưu tin nhắn:', error);
+    }
+  };
+
+  // Hàm tải tin nhắn từ localStorage
+  const loadMessagesFromStorage = () => {
+    try {
+      const savedMessages = localStorage.getItem('chatMessages');
+      return savedMessages ? JSON.parse(savedMessages) : [];
+    } catch (error) {
+      console.error('Lỗi khi tải tin nhắn:', error);
+      return [];
+    }
+  };
+
+  // Hàm xóa tin nhắn đã lưu
+  const clearSavedMessages = () => {
+    try {
+      localStorage.removeItem('chatMessages');
+      setMessages([{
+        id: 1,
+        text: `Chào ${username}! Tôi có thể giúp gì cho bạn hôm nay?`,
+        sender: 'bot',
+      }]);
+    } catch (error) {
+      console.error('Lỗi khi xóa tin nhắn:', error);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       // Kiểm tra cả token và user data
       const savedToken = localStorage.getItem("token");
       const userData = localStorage.getItem('user');
-      
+
       if (savedToken && userData) {
         try {
           const user = JSON.parse(userData);
           const name = user.fullname || user.username || user.email || null;
-          
+
           if (name) {
             setToken(savedToken);
             setIsLoggedIn(true);
             setUsername(name);
-            setMessages([
-              {
+            
+            // Tải tin nhắn đã lưu từ localStorage
+            const savedMessages = loadMessagesFromStorage();
+            
+            if (savedMessages.length > 0) {
+              setMessages(savedMessages);
+            } else {
+              // Nếu không có tin nhắn đã lưu, tạo tin nhắn chào mừng
+              const welcomeMessage = [{
                 id: 1,
                 text: `Chào ${name}! Tôi có thể giúp gì cho bạn hôm nay?`,
                 sender: 'bot',
-              },
-            ]);
+              }];
+              setMessages(welcomeMessage);
+              saveMessagesToStorage(welcomeMessage);
+            }
           } else {
             throw new Error('Không tìm thấy tên người dùng hợp lệ');
           }
@@ -199,10 +252,15 @@ export default function ChatWidget() {
       } else {
         handleAuthError();
       }
-    } else {
-      setMessages([]);
     }
   }, [isOpen]);
+
+  // Lưu tin nhắn mỗi khi messages thay đổi
+  useEffect(() => {
+    if (messages.length > 0 && isLoggedIn) {
+      saveMessagesToStorage(messages);
+    }
+  }, [messages, isLoggedIn]);
 
   const handleAuthError = () => {
     setIsLoggedIn(false);
@@ -226,12 +284,13 @@ export default function ChatWidget() {
     if (inputValue.trim() === '' || !isLoggedIn || !token) return;
 
     const newUserMessage = {
-      id: messages.length + 1,
+      id: Date.now(), // Sử dụng timestamp để đảm bảo ID duy nhất
       text: inputValue,
       sender: 'user',
     };
 
-    setMessages([...messages, newUserMessage]);
+    const updatedMessages = [...messages, newUserMessage];
+    setMessages(updatedMessages);
     setInputValue('');
     setIsBotTyping(true);
 
@@ -258,7 +317,7 @@ export default function ChatWidget() {
 
       const data = await response.json();
       const botResponse = {
-        id: messages.length + 2,
+        id: Date.now() + 1, // Đảm bảo ID duy nhất
         text: data.answer || data.response || 'Xin lỗi, tôi không hiểu bạn nói gì.',
         sender: 'bot',
       };
@@ -267,7 +326,7 @@ export default function ChatWidget() {
     } catch (error) {
       console.error('Lỗi khi lấy phản hồi từ bot:', error);
       const errorResponse = {
-        id: messages.length + 2,
+        id: Date.now() + 1,
         text: 'Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại.',
         sender: 'bot',
       };
@@ -281,7 +340,8 @@ export default function ChatWidget() {
     // Xóa token và user data khi hết hạn
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    
+    localStorage.removeItem('chatMessages'); // Xóa tin nhắn khi token hết hạn
+
     setToken(null);
     setIsLoggedIn(false);
     setMessages([
@@ -321,13 +381,25 @@ export default function ChatWidget() {
         <div style={styles.chatContainer}>
           <div style={styles.header}>
             <h2 style={styles.headerTitle}>Hỗ trợ trò chuyện</h2>
-            <button
-              onClick={toggleChat}
-              style={styles.closeButton}
-              aria-label="Đóng trò chuyện"
-            >
-              <X size={18} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {isLoggedIn && (
+                <button
+                  onClick={clearSavedMessages}
+                  style={styles.clearButton}
+                  aria-label="Xóa lịch sử chat"
+                  title="Xóa lịch sử chat"
+                >
+                  Xóa
+                </button>
+              )}
+              <button
+                onClick={toggleChat}
+                style={styles.closeButton}
+                aria-label="Đóng trò chuyện"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
           {isLoggedIn ? (

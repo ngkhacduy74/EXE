@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Swiper from 'swiper';
+import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Container, Spinner } from 'react-bootstrap';
 
-const BrandCarousel = () => {
+const BestSellingCarousel = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,36 +57,6 @@ const BrandCarousel = () => {
     fetchProducts();
   }, []);
 
-  // Initialize Swiper for each tab pane after products are loaded
-  useEffect(() => {
-    if (!loading && products.length > 0) {
-      // Add delay to ensure DOM is rendered
-      setTimeout(() => {
-        const carousels = document.querySelectorAll('.products-carousel');
-        carousels.forEach((carousel) => {
-          new Swiper(carousel, {
-            modules: [Navigation],
-            slidesPerView: 5,
-            spaceBetween: 25,
-            speed: 500,
-            navigation: {
-              nextEl: carousel.querySelector('.products-carousel-next'),
-              prevEl: carousel.querySelector('.products-carousel-prev'),
-            },
-            breakpoints: {
-              0: { slidesPerView: 1, spaceBetween: 15 },
-              576: { slidesPerView: 2, spaceBetween: 20 },
-              768: { slidesPerView: 2, spaceBetween: 20 },
-              992: { slidesPerView: 3, spaceBetween: 25 },
-              1200: { slidesPerView: 4, spaceBetween: 25 },
-              1400: { slidesPerView: 5, spaceBetween: 25 },
-            },
-          });
-        });
-      }, 100);
-    }
-  }, [loading, products]);
-
   // Handle navigation to product details
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
@@ -115,12 +85,12 @@ const BrandCarousel = () => {
     } else if (typeof product.image === 'string') {
       return product.image;
     }
-    return '';
+    return 'https://via.placeholder.com/240x240?text=No+Image';
   };
 
   // Handle image load error
   const handleImageError = (e) => {
-    e.target.src = '';
+    e.target.src = 'https://via.placeholder.com/240x240?text=No+Image';
   };
 
   // Filter products by category/brand for tabs
@@ -267,6 +237,44 @@ const BrandCarousel = () => {
     </div>
   );
 
+  // Swiper configuration
+  const swiperConfig = {
+    modules: [Navigation],
+    slidesPerView: 5,
+    spaceBetween: 25,
+    speed: 500,
+    navigation: true,
+    breakpoints: {
+      0: { slidesPerView: 1, spaceBetween: 15 },
+      576: { slidesPerView: 2, spaceBetween: 20 },
+      768: { slidesPerView: 2, spaceBetween: 20 },
+      992: { slidesPerView: 3, spaceBetween: 25 },
+      1200: { slidesPerView: 4, spaceBetween: 25 },
+      1400: { slidesPerView: 5, spaceBetween: 25 },
+    },
+  };
+
+  // Render Swiper component
+  const renderSwiper = (productsList) => (
+    <div className="position-relative">
+      <Swiper {...swiperConfig}>
+        {productsList.length > 0 ? (
+          productsList.map((product) => (
+            <SwiperSlide key={product.id}>
+              {renderProductItem(product)}
+            </SwiperSlide>
+          ))
+        ) : (
+          <SwiperSlide>
+            <div className="text-center p-5">
+              <p className="text-muted">No products available.</p>
+            </div>
+          </SwiperSlide>
+        )}
+      </Swiper>
+    </div>
+  );
+
   return (
     <section className="py-5">
       <div className="container-fluid px-4">
@@ -274,7 +282,7 @@ const BrandCarousel = () => {
           <div className="col-md-12">
             <div className="bootstrap-tabs product-tabs">
               <div className="tabs-header d-flex justify-content-between border-bottom mb-4 pb-3">
-                <h3 className="fw-bold mb-0">Sản phẩm đồ cũ</h3>
+                <h3 className="fw-bold mb-0">Các sản phẩm mới</h3>
                 <nav>
                   <div className="nav nav-tabs border-0" id="nav-tab" role="tablist">
                     <button
@@ -319,27 +327,7 @@ const BrandCarousel = () => {
                   role="tabpanel"
                   aria-labelledby="nav-all-tab"
                 >
-                  <div className="position-relative">
-                    <div className="products-carousel swiper">
-                      <div className="swiper-wrapper">
-                        {allProducts.map((product) => (
-                          <div className="swiper-slide" key={product.id}>
-                            {renderProductItem(product)}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="swiper-buttons position-absolute top-50 w-100 d-flex justify-content-between" style={{ zIndex: 10, transform: 'translateY(-50%)' }}>
-                      <button className="swiper-prev products-carousel-prev btn btn-warning rounded-circle ms-3 shadow-sm" 
-                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
-                        ❮
-                      </button>
-                      <button className="swiper-next products-carousel-next btn btn-warning rounded-circle me-3 shadow-sm"
-                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
-                        ❯
-                      </button>
-                    </div>
-                  </div>
+                  {renderSwiper(allProducts)}
                 </div>
                 
                 {/* Tab Pane: Fushimavina */}
@@ -349,35 +337,7 @@ const BrandCarousel = () => {
                   role="tabpanel"
                   aria-labelledby="nav-fushima-tab"
                 >
-                  <div className="position-relative">
-                    <div className="products-carousel swiper">
-                      <div className="swiper-wrapper">
-                        {fushimavinaProducts.length > 0 ? (
-                          fushimavinaProducts.map((product) => (
-                            <div className="swiper-slide" key={product.id}>
-                              {renderProductItem(product)}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="swiper-slide">
-                            <div className="text-center p-5">
-                              <p className="text-muted">No Fushimavina products available.</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="swiper-buttons position-absolute top-50 w-100 d-flex justify-content-between" style={{ zIndex: 10, transform: 'translateY(-50%)' }}>
-                      <button className="swiper-prev products-carousel-prev btn btn-warning rounded-circle ms-3 shadow-sm"
-                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
-                        ❮
-                      </button>
-                      <button className="swiper-next products-carousel-next btn btn-warning rounded-circle me-3 shadow-sm"
-                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
-                        ❯
-                      </button>
-                    </div>
-                  </div>
+                  {renderSwiper(fushimavinaProducts)}
                 </div>
                 
                 {/* Tab Pane: ABABA */}
@@ -387,35 +347,7 @@ const BrandCarousel = () => {
                   role="tabpanel"
                   aria-labelledby="nav-ababa-tab"
                 >
-                  <div className="position-relative">
-                    <div className="products-carousel swiper">
-                      <div className="swiper-wrapper">
-                        {ababaProducts.length > 0 ? (
-                          ababaProducts.map((product) => (
-                            <div className="swiper-slide" key={product.id}>
-                              {renderProductItem(product)}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="swiper-slide">
-                            <div className="text-center p-5">
-                              <p className="text-muted">No ABABA products available.</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="swiper-buttons position-absolute top-50 w-100 d-flex justify-content-between" style={{ zIndex: 10, transform: 'translateY(-50%)' }}>
-                      <button className="swiper-prev products-carousel-prev btn btn-warning rounded-circle ms-3 shadow-sm"
-                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
-                        ❮
-                      </button>
-                      <button className="swiper-next products-carousel-next btn btn-warning rounded-circle me-3 shadow-sm"
-                              style={{ width: '45px', height: '45px', fontSize: '18px' }}>
-                        ❯
-                      </button>
-                    </div>
-                  </div>
+                  {renderSwiper(ababaProducts)}
                 </div>
               </div>
             </div>
@@ -426,4 +358,4 @@ const BrandCarousel = () => {
   );
 };
 
-export default BrandCarousel;
+export default BestSellingCarousel;

@@ -48,7 +48,7 @@ const CompareProduct = () => {
         setProducts(productData);
       } catch (err) {
         console.error("Fetch Error:", err);
-        setError("Failed to fetch products. Please try again later.");
+        setError("Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.");
         setProducts([]);
       } finally {
         setLoading(false);
@@ -85,7 +85,7 @@ const CompareProduct = () => {
   // Add product to comparison
   const addToCompare = (product) => {
     if (compareProducts.length >= MAX_COMPARE_PRODUCTS) {
-      alert(`You can only compare up to ${MAX_COMPARE_PRODUCTS} products at once.`);
+      alert(`Bạn chỉ có thể so sánh tối đa ${MAX_COMPARE_PRODUCTS} sản phẩm cùng lúc.`);
       return;
     }
 
@@ -108,20 +108,20 @@ const CompareProduct = () => {
 
   // Format price
   const formatPrice = (price) => {
-    if (!price) return 'N/A';
+    if (!price) return 'Chưa có';
     return `${parseFloat(price).toLocaleString('vi-VN')} VND`;
   };
 
   // Render star rating
   const renderStars = (rating) => {
-    if (!rating) return <span className="text-muted">No rating</span>;
+    if (!rating) return <span className="text-muted">Chưa đánh giá</span>;
     
     return (
-      <div className="d-flex align-items-center">
+      <div className="d-flex align-items-center justify-content-center">
         {[...Array(5)].map((_, i) => (
           <Star 
             key={i} 
-            size={14} 
+            size={12} 
             fill={i < Math.floor(rating) ? 'currentColor' : 'none'}
             className="text-warning"
           />
@@ -136,15 +136,15 @@ const CompareProduct = () => {
     if (compareProducts.length === 0) return [];
     
     const features = [
-      { key: 'image', label: 'Product Image', type: 'image' },
-      { key: 'name', label: 'Product Name', type: 'text' },
-      { key: 'brand', label: 'Brand', type: 'text' },
-      { key: 'category', label: 'Category', type: 'text' },
-      { key: 'price', label: 'Price', type: 'price' },
-      { key: 'rating', label: 'Rating', type: 'rating' },
-      { key: 'quantity', label: 'Stock Status', type: 'stock' },
-      { key: 'capacity', label: 'Capacity', type: 'capacity' },
-      { key: 'description', label: 'Description', type: 'text' },
+      { key: 'image', label: 'Hình ảnh', type: 'image' },
+      { key: 'name', label: 'Tên sản phẩm', type: 'text' },
+      { key: 'brand', label: 'Thương hiệu', type: 'text' },
+      { key: 'category', label: 'Danh mục', type: 'text' },
+      { key: 'price', label: 'Giá', type: 'price' },
+      { key: 'rating', label: 'Đánh giá', type: 'rating' },
+      { key: 'quantity', label: 'Tình trạng', type: 'stock' },
+      { key: 'capacity', label: 'Dung lượng', type: 'capacity' },
+      { key: 'description', label: 'Mô tả', type: 'text' },
     ];
 
     return features.filter(feature => 
@@ -162,24 +162,26 @@ const CompareProduct = () => {
           <img
             src={value || './styles/images/product-thumb-1.png'}
             alt={product.name}
-            className="img-fluid rounded"
-            style={{ height: '100px', width: '100px', objectFit: 'cover' }}
+            className="img-fluid rounded mx-auto d-block"
+            style={{ height: '60px', width: '60px', objectFit: 'cover' }}
           />
         );
       case 'price':
-        return <span className="fw-bold text-primary">{formatPrice(value)}</span>;
+        return <span className="fw-bold text-primary small">{formatPrice(value)}</span>;
       case 'rating':
         return renderStars(value);
       case 'stock':
         return (
-          <span className={`badge ${value > 0 ? 'bg-success' : 'bg-danger'}`}>
-            {value > 0 ? `In Stock (${value})` : 'Out of Stock'}
+          <span className={`badge ${value > 0 ? 'bg-success' : 'bg-danger'} small`}>
+            {value > 0 ? `Còn hàng (${value})` : 'Hết hàng'}
           </span>
         );
       case 'capacity':
-        return value ? `${value} kg` : 'N/A';
+        return <span className="small">{value ? `${value} kg` : 'Chưa có'}</span>;
+      case 'text':
+        return <span className="small">{value || 'Chưa có'}</span>;
       default:
-        return value || 'N/A';
+        return <span className="small">{value || 'Chưa có'}</span>;
     }
   };
 
@@ -189,9 +191,9 @@ const CompareProduct = () => {
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
           <div className="text-center">
             <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Loading...</span>
+              <span className="visually-hidden">Đang tải...</span>
             </div>
-            <p className="mt-2">Loading products...</p>
+            <p className="mt-2">Đang tải sản phẩm...</p>
           </div>
         </div>
       </HelmetProvider>
@@ -207,7 +209,7 @@ const CompareProduct = () => {
               {error}
             </div>
             <button className="btn btn-primary" onClick={() => window.location.reload()}>
-              Try Again
+              Thử lại
             </button>
           </div>
         </div>
@@ -219,7 +221,7 @@ const CompareProduct = () => {
     <HelmetProvider>
       <div style={{ overflowX: 'hidden', paddingLeft: '10px', paddingRight: '10px' }}>
         <Helmet>
-          <title>Compare Products - Vinsaky Shop</title>
+          <title>So sánh sản phẩm - Vinsaky Shop</title>
           <meta charSet="utf-8" />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -268,10 +270,10 @@ const CompareProduct = () => {
                 <div>
                   <h2 className="mb-1">
                     <Scale className="me-2" size={28} />
-                    Compare Products
+                    So sánh sản phẩm
                   </h2>
                   <p className="text-muted mb-0">
-                    Compare up to {MAX_COMPARE_PRODUCTS} products side by side to make the best choice
+                    So sánh tối đa {MAX_COMPARE_PRODUCTS} sản phẩm để đưa ra lựa chọn tốt nhất
                   </p>
                 </div>
                 {compareProducts.length > 0 && (
@@ -280,7 +282,7 @@ const CompareProduct = () => {
                     onClick={clearAllComparisons}
                   >
                     <Trash2 size={16} className="me-1" />
-                    Clear All
+                    Xóa tất cả
                   </button>
                 )}
               </div>
@@ -293,9 +295,9 @@ const CompareProduct = () => {
               <div className="card">
                 <div className="card-body">
                   <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5 className="mb-0">Add Products to Compare</h5>
+                    <h5 className="mb-0">Thêm sản phẩm để so sánh</h5>
                     <span className="badge bg-primary">
-                      {compareProducts.length}/{MAX_COMPARE_PRODUCTS} Products
+                      {compareProducts.length}/{MAX_COMPARE_PRODUCTS} Sản phẩm
                     </span>
                   </div>
                   
@@ -308,7 +310,7 @@ const CompareProduct = () => {
                       <input
                         type="text"
                         className="form-control"
-                        placeholder="Search products by name, brand, or category..."
+                        placeholder="Tìm kiếm sản phẩm theo tên, thương hiệu hoặc danh mục..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onFocus={() => setShowProductSearch(true)}
@@ -321,7 +323,7 @@ const CompareProduct = () => {
                         {searchLoading ? (
                           <div className="p-3 text-center">
                             <div className="spinner-border spinner-border-sm text-primary" role="status">
-                              <span className="visually-hidden">Searching...</span>
+                              <span className="visually-hidden">Đang tìm kiếm...</span>
                             </div>
                           </div>
                         ) : searchResults.length > 0 ? (
@@ -351,7 +353,7 @@ const CompareProduct = () => {
                           ))
                         ) : searchTerm && (
                           <div className="p-3 text-center text-muted">
-                            No products found matching "{searchTerm}"
+                            Không tìm thấy sản phẩm nào khớp với "{searchTerm}"
                           </div>
                         )}
                         
@@ -361,7 +363,7 @@ const CompareProduct = () => {
                               className="btn btn-sm btn-link text-decoration-none w-100"
                               onClick={() => setShowProductSearch(false)}
                             >
-                              Close
+                              Đóng
                             </button>
                           </div>
                         )}
@@ -380,23 +382,23 @@ const CompareProduct = () => {
                 <div className="card">
                   <div className="card-body p-0">
                     <div className="table-responsive">
-                      <table className="table table-hover mb-0">
+                      <table className="table table-hover mb-0 table-sm">
                         <thead className="table-light">
                           <tr>
-                            <th scope="col" className="border-end" style={{ width: '200px' }}>
-                              Features
+                            <th scope="col" className="border-end bg-white sticky-column" style={{ width: '150px', minWidth: '150px' }}>
+                              <strong>Thông số</strong>
                             </th>
-                            {compareProducts.map(product => (
-                              <th key={product.id} scope="col" className="text-center position-relative">
+                            {compareProducts.map((product, index) => (
+                              <th key={product.id} scope="col" className="text-center position-relative" style={{ width: `${Math.floor(75 / compareProducts.length)}%`, minWidth: '180px' }}>
                                 <button
-                                  className="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2"
+                                  className="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-1"
                                   onClick={() => removeFromCompare(product.id)}
                                   style={{ zIndex: 10 }}
                                 >
-                                  <X size={14} />
+                                  <X size={12} />
                                 </button>
-                                <div className="pt-4">
-                                  Product {compareProducts.indexOf(product) + 1}
+                                <div className="pt-3 pb-1">
+                                  <small className="text-muted">Sản phẩm {index + 1}</small>
                                 </div>
                               </th>
                             ))}
@@ -405,11 +407,11 @@ const CompareProduct = () => {
                         <tbody>
                           {getComparisonFeatures().map(feature => (
                             <tr key={feature.key}>
-                              <td className="fw-semibold border-end bg-light">
+                              <td className="fw-semibold border-end bg-light sticky-column" style={{ fontSize: '0.9rem' }}>
                                 {feature.label}
                               </td>
                               {compareProducts.map(product => (
-                                <td key={product.id} className="text-center align-middle">
+                                <td key={product.id} className="text-center align-middle" style={{ padding: '0.5rem', fontSize: '0.85rem' }}>
                                   {renderFeatureValue(product, feature)}
                                 </td>
                               ))}
@@ -418,18 +420,15 @@ const CompareProduct = () => {
                           
                           {/* Action Row */}
                           <tr className="table-light">
-                            <td className="fw-semibold border-end">
-                              Actions
+                            <td className="fw-semibold border-end bg-light sticky-column">
+                              <strong>Thao tác</strong>
                             </td>
                             {compareProducts.map(product => (
-                              <td key={product.id} className="text-center">
-                                <div className="d-flex flex-column gap-2">
-
-                                  <button className="btn btn-sm btn-outline-primary">
-                                    <Eye size={14} className="me-1" />
-                                    View Details
-                                  </button>
-                                </div>
+                              <td key={product.id} className="text-center" style={{ padding: '0.5rem' }}>
+                                <button className="btn btn-sm btn-outline-primary">
+                                  <Eye size={12} className="me-1" />
+                                  Xem chi tiết
+                                </button>
                               </td>
                             ))}
                           </tr>
@@ -446,9 +445,9 @@ const CompareProduct = () => {
               <div className="col-12">
                 <div className="text-center py-5">
                   <Package size={64} className="text-muted mb-3" />
-                  <h4 className="text-muted mb-3">No Products to Compare</h4>
+                  <h4 className="text-muted mb-3">Chưa có sản phẩm để so sánh</h4>
                   <p className="text-muted mb-4">
-                    Start by searching and adding products to compare their features side by side.
+                    Bắt đầu bằng cách tìm kiếm và thêm sản phẩm để so sánh các tính năng của chúng.
                   </p>
                   <div className="row justify-content-center">
                     <div className="col-md-6">
@@ -456,13 +455,13 @@ const CompareProduct = () => {
                         <div className="card-body">
                           <h6 className="card-title">
                             <CheckCircle size={20} className="text-success me-2" />
-                            How to Compare Products
+                            Cách so sánh sản phẩm
                           </h6>
                           <ol className="text-start mb-0">
-                            <li>Use the search bar above to find products</li>
-                            <li>Click on products from the dropdown to add them</li>
-                            <li>Compare up to {MAX_COMPARE_PRODUCTS} products at once</li>
-                            <li>View detailed comparisons in the table below</li>
+                            <li>Sử dụng thanh tìm kiếm phía trên để tìm sản phẩm</li>
+                            <li>Nhấp vào sản phẩm từ menu thả xuống để thêm chúng</li>
+                            <li>So sánh tối đa {MAX_COMPARE_PRODUCTS} sản phẩm cùng lúc</li>
+                            <li>Xem bảng so sánh chi tiết bên dưới</li>
                           </ol>
                         </div>
                       </div>
@@ -476,6 +475,55 @@ const CompareProduct = () => {
 
         <ChatWidget />
         <Footer />
+
+        {/* Custom CSS for sticky column and compact table */}
+        <style jsx>{`
+          .sticky-column {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background-color: #f8f9fa !important;
+            border-right: 2px solid #dee2e6 !important;
+          }
+          
+          .table-sm td,
+          .table-sm th {
+            padding: 0.4rem 0.6rem;
+            font-size: 0.875rem;
+          }
+          
+          .table th {
+            vertical-align: middle;
+            border-bottom: 2px solid #dee2e6;
+          }
+          
+          .table td {
+            vertical-align: middle;
+            border-bottom: 1px solid #dee2e6;
+          }
+          
+          .table-responsive {
+            border-radius: 0.375rem;
+          }
+          
+          .hover-bg-light:hover {
+            background-color: #f8f9fa !important;
+            transition: background-color 0.15s ease-in-out;
+          }
+          
+          @media (max-width: 768px) {
+            .sticky-column {
+              min-width: 120px !important;
+              width: 120px !important;
+            }
+            
+            .table-sm td,
+            .table-sm th {
+              padding: 0.3rem 0.4rem;
+              font-size: 0.8rem;
+            }
+          }
+        `}</style>
       </div>
     </HelmetProvider>
   );

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
@@ -359,87 +360,148 @@ const ProductBrowse = () => {
     </div>
   );
 
-  const ProductCard = ({ product }) => (
-    <div className={`product-card ${viewMode === 'list' ? 'product-card-list' : ''} mb-4`}>
-      <div className={`card h-100 ${viewMode === 'list' ? 'flex-row' : ''}`}>
-        <div className={`position-relative ${viewMode === 'list' ? 'flex-shrink-0' : ''}`}>
-          <img
-            src={product.image || './styles/images/product-thumb-1.png'}
-            className={`card-img-top ${viewMode === 'list' ? 'card-img-list' : ''}`}
-            alt={product.name}
-            style={{ 
-              height: viewMode === 'list' ? '150px' : '200px',
-              width: viewMode === 'list' ? '150px' : '100%',
-              objectFit: 'cover'
-            }}
-          />
-          {product.discount && product.discount > 0 && (
-            <span className="badge bg-danger position-absolute top-0 start-0 m-2">
-              -{product.discount}%
-            </span>
-          )}
-          {product.quantity <= 0 && (
-            <span className="badge bg-secondary position-absolute top-0 end-0 m-2">
-              Out of Stock
-            </span>
-          )}
-        </div>
-        <div className="card-body d-flex flex-column">
-          <div className="mb-2">
-            <small className="text-muted">{product.brand || 'No Brand'}</small>
-            {product.category && (
-              <small className="text-muted ms-2">• {product.category}</small>
-            )}
-          </div>
-          <h6 className="card-title">{product.name || 'Unnamed Product'}</h6>
-          
-          {product.rating && (
-            <div className="mb-2">
-              <span className="text-warning me-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    size={14} 
-                    fill={i < Math.floor(product.rating) ? 'currentColor' : 'none'}
-                  />
-                ))}
-              </span>
-              <small className="text-muted">({product.rating})</small>
-            </div>
-          )}
-          
-          <div className="price-section mb-3">
-            <span className="h6 text-primary">
-              {product.price 
-                ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND`
-                : 'Price not available'
-              }
-            </span>
-            {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-muted text-decoration-line-through ms-2">
-                {parseFloat(product.originalPrice).toLocaleString('vi-VN')} VND
-              </span>
-            )}
-          </div>
+  const ProductCard = ({ product }) => {
+    // Xử lý hình ảnh với fallback tốt hơn
+    const getProductImage = (product) => {
+      if (product.image) {
+        if (Array.isArray(product.image) && product.image.length > 0) {
+          return product.image[0];
+        } else if (typeof product.image === 'string') {
+          return product.image;
+        }
+      }
+      // Fallback image
+      return './styles/images/product-thumb-1.png';
+    };
 
-          {product.capacity && (
-            <div className="mb-2">
-              <small className="text-muted">Capacity: {product.capacity} kg</small>
-            </div>
-          )}
+    const handleImageError = (e) => {
+      e.target.src = './styles/images/product-thumb-1.png';
+      e.target.alt = 'product placeholder';
+    };
+
+    return (
+      <div className={`product-card ${viewMode === 'list' ? 'product-card-list' : ''} mb-4`}>
+        <div className={`card h-100 ${viewMode === 'list' ? 'flex-row' : ''}`}>
+          <div className={`position-relative image-container ${viewMode === 'list' ? 'flex-shrink-0' : ''}`}>
+            <img
+              src={getProductImage(product)}
+              className={`card-img-top ${viewMode === 'list' ? 'card-img-list' : ''}`}
+              alt={product.name || 'Product'}
+              onError={handleImageError}
+              loading="lazy"
+            />
+            
+            {/* Discount Badge */}
+            {product.discount && product.discount > 0 && (
+              <span className="badge bg-danger position-absolute top-0 start-0 m-2">
+                -{product.discount}%
+              </span>
+            )}
+            
+            {/* Stock Badge */}
+            {product.quantity <= 0 && (
+              <span className="badge bg-secondary position-absolute top-0 end-0 m-2">
+                Out of Stock
+              </span>
+            )}
+            
+            {/* New Badge */}
+            {product.isNew && (
+              <span className="badge bg-success position-absolute bottom-0 start-0 m-2">
+                New
+              </span>
+            )}
+          </div>
           
-          <div className="mt-auto">
-            <button 
-              className={`btn btn-sm w-100 ${product.quantity > 0 ? 'btn-outline-primary' : 'btn-secondary'}`}
-              disabled={product.quantity <= 0}
-            >
-              {product.quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
-            </button>
+          <div className="card-body d-flex flex-column">
+            {/* Brand và Category */}
+            <div className="mb-2">
+              <small className="text-muted">{product.brand || 'No Brand'}</small>
+              {product.category && (
+                <small className="text-muted ms-2">• {product.category}</small>
+              )}
+            </div>
+            
+            {/* Product Name */}
+            <h6 className="card-title" title={product.name}>
+              {product.name || 'Unnamed Product'}
+            </h6>
+            
+            {/* Rating */}
+            {product.rating && (
+              <div className="mb-2">
+                <span className="text-warning me-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      size={14} 
+                      fill={i < Math.floor(product.rating) ? 'currentColor' : 'none'}
+                      className={i < Math.floor(product.rating) ? 'text-warning' : 'text-muted'}
+                    />
+                  ))}
+                </span>
+                <small className="text-muted">({typeof product.rating === 'number' ? product.rating.toFixed(1) : product.rating})</small>
+              </div>
+            )}
+            
+            {/* Price Section */}
+            <div className="price-section mb-3">
+              <div className="d-flex align-items-center gap-2">
+                <span className="h6 text-primary mb-0">
+                  {product.price 
+                    ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND`
+                    : 'Price not available'
+                  }
+                </span>
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <span className="small text-muted text-decoration-line-through">
+                    {parseFloat(product.originalPrice).toLocaleString('vi-VN')} VND
+                  </span>
+                )}
+              </div>
+              
+              {/* Discount percentage */}
+              {product.originalPrice && product.originalPrice > product.price && (
+                <small className="text-success">
+                  Save {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                </small>
+              )}
+            </div>
+
+            {/* Additional Info */}
+            {product.capacity && (
+              <div className="mb-2">
+                <small className="text-muted">
+                  <Package size={12} className="me-1" />
+                  Capacity: {product.capacity} kg
+                </small>
+              </div>
+            )}
+            
+            {/* Stock Info */}
+            <div className="mb-3">
+              <small className={`${product.quantity > 0 ? 'text-success' : 'text-danger'}`}>
+                {product.quantity > 0 
+                  ? `${product.quantity} in stock` 
+                  : 'Out of stock'
+                }
+              </small>
+            </div>
+            
+            {/* Action Button */}
+            <div className="mt-auto">
+              <button 
+                className={`btn btn-sm w-100 ${product.quantity > 0 ? 'btn-outline-primary' : 'btn-secondary'}`}
+                disabled={product.quantity <= 0}
+              >
+                {product.quantity > 0 ? 'Xem chi tiết' : 'Hết hàng'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -492,6 +554,143 @@ const ProductBrowse = () => {
             integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
             crossOrigin="anonymous"
           ></script>
+          <style>
+            {`
+              /* CSS cho đồng nhất kích thước hình ảnh */
+              .product-card .card-img-top {
+                width: 100%;
+                height: 250px;
+                object-fit: cover;
+                object-position: center;
+                transition: transform 0.3s ease;
+              }
+
+              .product-card:hover .card-img-top {
+                transform: scale(1.05);
+              }
+
+              .product-card-list .card-img-list {
+                width: 200px;
+                height: 150px;
+                object-fit: cover;
+                object-position: center;
+              }
+
+              .product-card .image-container {
+                overflow: hidden;
+                border-radius: 0.375rem 0.375rem 0 0;
+              }
+
+              .product-card-list .image-container {
+                overflow: hidden;
+                border-radius: 0.375rem 0 0 0.375rem;
+              }
+
+              .product-card .card {
+                height: 100%;
+                transition: box-shadow 0.3s ease;
+                border: 1px solid #e9ecef;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              }
+
+              .product-card:hover .card {
+                box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+                border-color: #007bff;
+              }
+
+              .product-card {
+                transition: transform 0.2s ease-in-out;
+              }
+
+              .product-card:hover {
+                transform: translateY(-2px);
+              }
+
+              .product-card .card-title {
+                font-size: 1rem;
+                font-weight: 600;
+                line-height: 1.3;
+                margin-bottom: 0.5rem;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+              }
+
+              .product-card .badge {
+                z-index: 10;
+                font-size: 0.75rem;
+              }
+
+              .product-card .card-body {
+                padding: 1rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+              }
+
+              .cursor-pointer {
+                cursor: pointer;
+              }
+
+              /* Responsive */
+              @media (max-width: 768px) {
+                .product-card .card-img-top {
+                  height: 200px;
+                }
+                
+                .product-card-list .card-img-list {
+                  width: 120px;
+                  height: 100px;
+                }
+              }
+
+              @media (max-width: 480px) {
+                .product-card .card-img-top {
+                  height: 180px;
+                }
+                
+                .product-card-list .card-img-list {
+                  width: 80px;
+                  height: 100px;
+                }
+                
+                .product-card .card-body {
+                  padding: 0.75rem;
+                }
+                
+                .product-card .card-title {
+                  font-size: 0.9rem;
+                }
+              }
+
+              @media (min-width: 1200px) {
+                .product-card .card-img-top {
+                  height: 280px;
+                }
+              }
+
+              /* Loading skeleton */
+              .product-card .card-img-top[alt="product placeholder"] {
+                background-color: #f8f9fa;
+                border: 2px dashed #dee2e6;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+              }
+
+              .product-card .card-img-top[alt="product placeholder"]::before {
+                content: "📦";
+                font-size: 3rem;
+                color: #6c757d;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+              }
+            `}
+          </style>
         </Helmet>
 
         {/* Cart Offcanvas */}
