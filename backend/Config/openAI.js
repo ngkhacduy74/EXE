@@ -2,15 +2,24 @@ const axios = require("axios");
 const env = require("dotenv");
 env.config();
 
-async function getChatResponse(messages) {
+async function getChatResponse(userPrompt) {
   const API_KEY = process.env.OPENAI_API_KEY;
   try {
     const response = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         model: "llama3-70b-8192",
-        messages: messages,
-        max_tokens: 2048,
+        messages: [
+          {
+            role: "system",
+            content: process.env.BUSINESS_KNOWLEDGE,
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+        max_tokens: 8192,
       },
       {
         headers: {
@@ -19,7 +28,6 @@ async function getChatResponse(messages) {
         },
       }
     );
-
     return response.data.choices[0].message.content;
   } catch (err) {
     console.error("Lỗi Groq:", err.response?.data || err.message);
