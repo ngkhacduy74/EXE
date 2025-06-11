@@ -355,7 +355,7 @@ const ManagePost = () => {
         </Col>
         <Col style={{ marginLeft: "10px" }} className="p-4">
           {/* Token Status Display */}
-          <div className="mb-3">
+          {/* <div className="mb-3">
             <div className={`alert alert-${tokens.accessToken && tokens.refreshToken ? 'success' : 'warning'} py-2`}>
               <Row>
                 <Col md={6}>
@@ -387,7 +387,7 @@ const ManagePost = () => {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
 
           <div id="manage-posts" className="mb-5">
             {/* Error Alert */}

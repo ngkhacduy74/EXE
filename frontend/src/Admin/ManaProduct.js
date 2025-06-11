@@ -300,7 +300,7 @@ const ManageProduct = () => {
 
   // Handle toggle status with authentication
   const handleToggleStatus = async (productId, currentStatus) => {
-    const newStatus = currentStatus === "New" ? "Second Hand" : "New";
+    const newStatus = currentStatus === "New" ? "SecondHand" : "New";
     try {
       await makeAuthenticatedRequest({
         method: 'PUT',
@@ -401,7 +401,7 @@ const ManageProduct = () => {
         </Col>
         <Col style={{ marginLeft: "10px" }} className="p-4">
           {/* Token Status Display - Similar to AdminDashboard */}
-          <div className="mb-3">
+          {/* <div className="mb-3">
             <div className={`alert alert-${tokens.accessToken && tokens.refreshToken ? 'success' : 'warning'} py-2`}>
               <Row>
                 <Col md={6}>
@@ -433,7 +433,7 @@ const ManageProduct = () => {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
 
           <div id="manage-products" className="mb-5">
             {/* Error Alert */}
@@ -482,7 +482,7 @@ const ManageProduct = () => {
                   <Form.Select value={statusFilter} onChange={handleStatusChange}>
                     <option value="All">All</option>
                     <option value="New">New</option>
-                    <option value="Second Hand">Second Hand</option>
+                    <option value="SecondHand">Second Hand</option>
                   </Form.Select>
                 </Form.Group>
               </Col>

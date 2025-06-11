@@ -1,14 +1,13 @@
-// src/Pages/ProductDetail.jsx
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { Container, Row, Col, Button, Badge, Alert, Card, Carousel, Modal } from "react-bootstrap";
-import HeaderAdmin from "../Components/HeaderAdmin";
-import Sidebar from "../Components/Sidebar";
-import ErrorPage from "../Components/ErrorPage";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Container, Row, Col, Button, Badge, Alert, Card, Modal, Spinner } from 'react-bootstrap';
+import HeaderAdmin from '../Components/HeaderAdmin';
+import Sidebar from '../Components/Sidebar';
+import ErrorPage from '../Components/ErrorPage';
 
 const api = axios.create({
-  baseURL: "http://localhost:4000",
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:4000',
   timeout: 5000,
 });
 
@@ -19,147 +18,165 @@ const ProductDetail = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showVideoModal, setShowVideoModal] = useState(false);
-  const [selectedVideo, setSelectedVideo] = useState("");
+  const [selectedVideo, setSelectedVideo] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Authentication token not found. Redirecting to login...');
+        setTimeout(() => navigate('/login'), 2000);
+        return;
+      }
+
+      if (!productId) {
+        setError('Product ID is missing from the URL.');
+        return;
+      }
+
+      const response = await api.get(`/product/${productId}`, {
+        headers: {
+          token,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const productData = response.data.data || response.data.product || response.data;
+      setProduct(productData);
+    } catch (err) {
+      if (err.response) {
+        switch (err.response.status) {
+          case 401:
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            setError('Session expired. Redirecting to login...');
+            setTimeout(() => navigate('/login'), 2000);
+            break;
+          case 403:
+            setError('Access denied. You don’t have permission to view this product.');
+            break;
+          case 404:
+            setError('Product not found. It may have been deleted or the ID is incorrect.');
+            break;
+          case 500:
+            setError('Server error. Please try again later.');
+            break;
+          default:
+            setError(`Error ${err.response.status}: ${err.response.data?.message || 'Unknown error occurred'}`);
+        }
+      } else if (err.request) {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const token = localStorage.getItem("token");
-
-        console.log("📦 Product ID:", productId);
-        console.log("🔑 Token from localStorage:", token ? "Token exists" : "No token found");
-
-        if (!token) {
-          setError("Authentication token not found. Please log in again.");
-          setLoading(false);
-          return;
-        }
-
-        if (!productId) {
-          setError("Product ID is missing from the URL.");
-          setLoading(false);
-          return;
-        }
-
-        const response = await api.get(`/product/${productId}`, {
-          headers: {
-            token,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        console.log("✅ Product fetched successfully:", response.data);
-
-        if (response.data.data) {
-          setProduct(response.data.data);
-        } else if (response.data.product) {
-          setProduct(response.data.product);
-        } else {
-          setProduct(response.data);
-        }
-
-      } catch (err) {
-        console.error("❌ Error fetching product:", err);
-
-        if (err.response) {
-          switch (err.response.status) {
-            case 401:
-              localStorage.removeItem("token");
-              localStorage.removeItem("refreshToken");
-              setError("Session expired. Please log in again.");
-              break;
-            case 403:
-              setError("Access denied. You don't have permission to view this product.");
-              break;
-            case 404:
-              setError("Product not found. It may have been deleted or the ID is incorrect.");
-              break;
-            case 500:
-              setError("Server error. Please try again later.");
-              break;
-            default:
-              setError(`Error ${err.response.status}: ${err.response.data?.message || 'Unknown error occurred'}`);
-          }
-        } else if (err.request) {
-          setError("Network error. Please check your connection and try again.");
-        } else {
-          setError("An unexpected error occurred. Please try again.");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProduct();
   }, [productId, navigate]);
 
-  const getQuantityStatus = (quantity) => {
-    if (quantity === undefined || quantity === null) return { variant: "secondary", text: "Unknown" };
-    if (quantity === 0) return { variant: "danger", text: "Out of Stock" };
-    if (quantity < 10) return { variant: "warning", text: "Low Stock" };
-    return { variant: "success", text: "In Stock" };
-  };
+  const getQuantityStatus = useCallback((quantity) => {
+    if (quantity === undefined || quantity === null) return { variant: 'secondary', text: 'Unknown' };
+    if (quantity === 0) return { variant: 'danger', text: 'Out of Stock' };
+    if (quantity < 10) return { variant: 'warning', text: 'Low Stock' };
+    return { variant: 'success', text: 'In Stock' };
+  }, []);
 
-  const formatPrice = (price) => {
-    if (!price) return "N/A";
+  const formatPrice = useCallback((price) => {
+    if (!price) return 'Liên hệ';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'VND'
+      currency: 'VND',
     }).format(price);
-  };
+  }, []);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = useCallback((status) => {
     switch (status?.toLowerCase()) {
       case 'new': return 'success';
       case 'used': return 'warning';
       case 'refurbished': return 'info';
+      case 'second hand': return 'warning';
       default: return 'secondary';
     }
+  }, []);
+
+  const getProductImages = useCallback((product) => {
+    if (Array.isArray(product?.image) && product.image.length > 0) {
+      return product.image.filter(img => img && typeof img === 'string');
+    } else if (typeof product?.image === 'string' && product.image) {
+      return [product.image];
+    }
+    return ['https://via.placeholder.com/500x500?text=No+Image'];
+  }, []);
+
+  const handleImageError = (e) => {
+    e.target.src = 'https://via.placeholder.com/500x500?text=No+Image';
   };
 
   const handleVideoPlay = (videoUrl) => {
-    setSelectedVideo(videoUrl);
-    setShowVideoModal(true);
+    if (videoUrl && typeof videoUrl === 'string') {
+      setSelectedVideo(videoUrl);
+      setShowVideoModal(true);
+    }
   };
 
-  if (error) {
-    return <ErrorPage message={error} />;
-  }
+  const handleQuantityChange = (change) => {
+    setQuantity(prev => Math.max(1, prev + change));
+  };
+
+  const handleAddToCart = () => {
+    if (product) {
+      // Placeholder for cart logic
+      alert(`Đã thêm ${quantity} sản phẩm "${product.name}" vào giỏ hàng!`);
+    }
+  };
 
   if (loading) {
     return (
-      <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+      <Container fluid className="bg-light" style={{ minHeight: '100vh' }}>
         <HeaderAdmin />
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
-          <div className="text-center">
-            <div className="spinner-border text-primary mb-3" role="status" style={{ width: "3rem", height: "3rem" }}>
-              <span className="visually-hidden">Loading...</span>
-            </div>
-            <h5 className="text-muted">Loading product details...</h5>
-          </div>
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+          <Card className="shadow-sm w-100" style={{ maxWidth: '600px' }}>
+            <Card.Body>
+              <div className="placeholder-glow">
+                <div className="placeholder col-6 mb-3" style={{ height: '30px' }}></div>
+                <div className="placeholder col-12 mb-3" style={{ height: '200px' }}></div>
+                <div className="placeholder col-4" style={{ height: '20px' }}></div>
+              </div>
+            </Card.Body>
+          </Card>
         </div>
       </Container>
     );
+  }
+
+  if (error) {
+    return <ErrorPage message={error} />;
   }
 
   if (!product) {
     return <ErrorPage message="No product data available." />;
   }
 
+  const images = getProductImages(product);
   const quantityStatus = getQuantityStatus(product.quantity);
 
   return (
-    <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+    <Container fluid className="bg-light" style={{ minHeight: '100vh' }}>
       <HeaderAdmin />
       <Row>
-        <Col md="auto" style={{ width: "250px", background: "#2c3e50", color: "white", padding: 0 }}>
+        <Col md="auto" style={{ width: '250px', background: '#2c3e50', color: 'white', padding: 0 }}>
           <Sidebar />
         </Col>
         <Col className="p-4">
-          {/* Breadcrumb */}
           <nav aria-label="breadcrumb" className="mb-4">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
@@ -173,12 +190,11 @@ const ProductDetail = () => {
             </ol>
           </nav>
 
-          {/* Header Section */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h2 className="mb-2 text-primary">{product.name || 'Unnamed Product'}</h2>
               <div className="d-flex align-items-center gap-3">
-                <p className="text-muted mb-0">ID: {product.Id || product.id || productId}</p>
+                <p className="text-muted mb-0">ID: {product.id || productId}</p>
                 {product.brand && (
                   <Badge bg="outline-primary" className="px-3 py-1">
                     <i className="fas fa-tag me-1"></i>
@@ -194,75 +210,59 @@ const ProductDetail = () => {
             </div>
             <div className="d-flex gap-2">
               <Button variant="outline-primary" onClick={() => navigate(`/products/edit/${productId}`)}>
-                <i className="fas fa-edit me-1"></i>
-                Edit Product
+                <i className="fas fa-edit me-1"></i> Edit Product
               </Button>
               <Button variant="outline-secondary" onClick={() => navigate(-1)}>
-                <i className="fas fa-arrow-left me-1"></i>
-                Back
+                <i className="fas fa-arrow-left me-1"></i> Back
               </Button>
             </div>
           </div>
 
           <Row>
-            {/* Media Section */}
             <Col lg={5}>
-              {/* Images Carousel */}
-              {product.image && product.image.length > 0 && (
-                <Card className="shadow-sm mb-4">
-                  <Card.Header className="bg-white border-bottom d-flex justify-content-between align-items-center">
-                    <h6 className="mb-0">
-                      <i className="fas fa-images text-primary me-2"></i>
-                      Product Images
-                    </h6>
-                    {/* <small className="text-muted">
-                      {Math.min(product.image.length, 3)} of {product.image.length} images
-                    </small> */}
-                  </Card.Header>
-                  <Card.Body className="p-0">
-                    <Carousel
-                      indicators={Math.min(product.image.length, 3) > 1}
-                      controls={Math.min(product.image.length, 3) > 1}
-                      interval={4000}
-                      pause="hover"
-                    >
-                      {product.image && Array.isArray(product.image) && product.image.length > 0 ? (
-                        product.image.slice(0, 3).map((img, index) => (
-                          <Carousel.Item key={img || index}>
-                            <div className="position-relative">
-                              <img
-                                className="d-block w-100"
-                                src={img}
-                                alt={`${product.name} - Image ${index + 1}`}
-                                style={{ width: '100px', height: 'auto', objectFit: 'cover' }}
-                              />
-                              <div className="position-absolute bottom-0 start-0 end-0 bg-gradient-dark text-white p-2">
-                                <small className="fw-bold">Image {index + 1} of {Math.min(product.image.length, 3)}</small>
-                              </div>
-                            </div>
-                          </Carousel.Item>
-                        ))
-                      ) : null}
-                    </Carousel>
-                    {product.image.length > 3 && (
-                      <div className="p-3 bg-light border-top text-center">
-                        <small className="text-muted">
-                          <i className="fas fa-info-circle me-1"></i>
-                          Showing first 3 images. Total: {product.image.length} images available.
-                        </small>
-                      </div>
+              <Card className="shadow-sm mb-4">
+                <Card.Body className="p-0">
+                  <div className="position-relative">
+                    <img
+                      src={images[selectedImageIndex]}
+                      alt={`${product.name} - Image ${selectedImageIndex + 1}`}
+                      className="img-fluid rounded"
+                      style={{ width: '100%', maxHeight: '300px', objectFit: 'cover' }}
+                      onError={handleImageError}
+                      loading="lazy"
+                    />
+                    {product.discount && (
+                      <Badge bg="success" className="position-absolute top-0 start-0 m-3 fs-6">
+                        -{product.discount}%
+                      </Badge>
                     )}
-                  </Card.Body>
-                </Card>
-              )}
+                  </div>
+                  {images.length > 1 && (
+                    <div className="d-flex gap-2 flex-wrap mt-3 p-3">
+                      {images.map((image, index) => (
+                        <img
+                          key={index}
+                          src={image}
+                          alt={`${product.name} ${index + 1}`}
+                          className={`img-thumbnail ${selectedImageIndex === index ? 'border-primary' : ''}`}
+                          style={{ width: '80px', height: '80px', objectFit: 'cover', cursor: 'pointer' }}
+                          onClick={() => setSelectedImageIndex(index)}
+                          onError={handleImageError}
+                          loading="lazy"
+                          role="button"
+                          aria-label={`Select image ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
 
-              {/* Videos */}
-              {product.video && product.video.length > 0 && (
+              {product.video && Array.isArray(product.video) && product.video.length > 0 && (
                 <Card className="shadow-sm mb-4">
                   <Card.Header className="bg-white border-bottom">
                     <h6 className="mb-0">
-                      <i className="fas fa-video text-primary me-2"></i>
-                      Product Videos
+                      <i className="fas fa-video text-primary me-2"></i> Product Videos
                     </h6>
                   </Card.Header>
                   <Card.Body>
@@ -271,13 +271,15 @@ const ProductDetail = () => {
                         <Col key={index} xs={6} className="mb-3">
                           <div
                             className="position-relative bg-dark rounded overflow-hidden"
-                            style={{ height: "120px", cursor: "pointer" }}
+                            style={{ height: '120px', cursor: 'pointer' }}
                             onClick={() => handleVideoPlay(vid)}
+                            role="button"
+                            aria-label={`Play video ${index + 1}`}
                           >
                             <div className="position-absolute top-50 start-50 translate-middle text-white">
-                              <i className="fas fa-play-circle" style={{ fontSize: "3rem" }}></i>
+                              <i className="fas fa-play-circle" style={{ fontSize: '3rem' }}></i>
                             </div>
-                            <div className="position-absolute bottom-0 start-0 end-0 bg-gradient text-white p-2">
+                            <div className="position-absolute bottom-0 start-0 end-0 bg-gradient-dark text-white p-2">
                               <small>Video {index + 1}</small>
                             </div>
                           </div>
@@ -289,13 +291,11 @@ const ProductDetail = () => {
               )}
             </Col>
 
-            {/* Main Product Info */}
             <Col lg={7}>
               <Card className="shadow-sm mb-4">
                 <Card.Header className="bg-white border-bottom">
                   <h5 className="mb-0">
-                    <i className="fas fa-info-circle text-primary me-2"></i>
-                    Product Information
+                    <i className="fas fa-info-circle text-primary me-2"></i> Product Information
                   </h5>
                 </Card.Header>
                 <Card.Body>
@@ -305,29 +305,21 @@ const ProductDetail = () => {
                         <label className="form-label text-muted small fw-bold">PRODUCT NAME</label>
                         <p className="fs-5 mb-0">{product.name || 'N/A'}</p>
                       </div>
-
                       <div className="mb-3">
                         <label className="form-label text-muted small fw-bold">BRAND</label>
                         <p className="mb-0">{product.brand || 'N/A'}</p>
                       </div>
-
                       <div className="mb-3">
                         <label className="form-label text-muted small fw-bold">PRICE</label>
-                        <p className="fs-4 fw-bold text-success mb-0">
-                          {formatPrice(product.price)}
-                        </p>
+                        <p className="fs-4 fw-bold text-success mb-0">{formatPrice(product.price)}</p>
                       </div>
-
                       <div className="mb-3">
                         <label className="form-label text-muted small fw-bold">STATUS</label>
-                        <div>
-                          <Badge bg={getStatusColor(product.status)} className="fs-6 px-3 py-2">
-                            {product.status || 'Unknown'}
-                          </Badge>
-                        </div>
+                        <Badge bg={getStatusColor(product.status)} className="fs-6 px-3 py-2">
+                          {product.status || 'Unknown'}
+                        </Badge>
                       </div>
                     </Col>
-
                     <Col md={6}>
                       <div className="mb-3">
                         <label className="form-label text-muted small fw-bold">QUANTITY STATUS</label>
@@ -340,17 +332,10 @@ const ProductDetail = () => {
                           </span>
                         </div>
                       </div>
-
                       <div className="mb-3">
-                        <label className="form-label text-muted small fw-bold">DIMENSIONS</label>
-                        <p className="mb-0">{product.size || 'N/A'}</p>
+                        <label className="form-label text-muted small fw-bold">CATEGORY</label>
+                        <p className="mb-0">{product.category || 'N/A'}</p>
                       </div>
-
-                      <div className="mb-3">
-                        <label className="form-label text-muted small fw-bold">WEIGHT</label>
-                        <p className="mb-0">{product.weight ? `${product.weight} kg` : 'N/A'}</p>
-                      </div>
-
                       <div className="mb-3">
                         <label className="form-label text-muted small fw-bold">WARRANTY</label>
                         <p className="mb-0">{product.warranty_period ? `${product.warranty_period} months` : 'N/A'}</p>
@@ -369,36 +354,6 @@ const ProductDetail = () => {
                     </div>
                   </div>
 
-                  {/* Technical Specifications */}
-                  <div className="mb-4">
-                    <label className="form-label text-muted small fw-bold">TECHNICAL SPECIFICATIONS</label>
-                    <div className="bg-light p-3 rounded">
-                      <Row>
-                        {product.capacity && (
-                          <Col md={6} className="mb-2">
-                            <strong>Capacity:</strong> {product.capacity}L
-                          </Col>
-                        )}
-                        {product.voltage && (
-                          <Col md={6} className="mb-2">
-                            <strong>Voltage:</strong> {product.voltage}
-                          </Col>
-                        )}
-                        {product.weight && (
-                          <Col md={6} className="mb-2">
-                            <strong>Weight:</strong> {product.weight} kg
-                          </Col>
-                        )}
-                        {product.size && (
-                          <Col md={6} className="mb-2">
-                            <strong>Dimensions:</strong> {product.size}
-                          </Col>
-                        )}
-                      </Row>
-                    </div>
-                  </div>
-
-                  {/* Features */}
                   {product.features && product.features.length > 0 && (
                     <div>
                       <label className="form-label text-muted small fw-bold">KEY FEATURES</label>
@@ -420,45 +375,70 @@ const ProductDetail = () => {
                 </Card.Body>
               </Card>
 
-              {/* Quick Stats */}
               <Card className="shadow-sm mb-4">
                 <Card.Header className="bg-white border-bottom">
                   <h6 className="mb-0">
-                    <i className="fas fa-chart-bar text-primary me-2"></i>
-                    Quick Stats
+                    <i className="fas fa-cart-plus text-primary me-2"></i> Purchase Options
                   </h6>
                 </Card.Header>
                 <Card.Body>
+                  <Row className="align-items-center mb-4">
+                    <Col sm={6}>
+                      <label className="form-label fw-medium">Quantity:</label>
+                      <div className="input-group" style={{ width: '150px' }}>
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary"
+                          onClick={() => handleQuantityChange(-1)}
+                          aria-label="Decrease quantity"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="text"
+                          className="form-control text-center fw-medium"
+                          value={quantity}
+                          readOnly
+                          aria-label="Current quantity"
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary"
+                          onClick={() => handleQuantityChange(1)}
+                          aria-label="Increase quantity"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </Col>
+                  </Row>
                   <Row>
-                    <Col md={3} className="text-center mb-3">
-                      <div className="bg-primary text-white rounded p-3">
-                        <h4 className="mb-1">{product.quantity || 0}</h4>
-                        <small>Quantity</small>
-                      </div>
-                    </Col>
-                    <Col md={3} className="text-center mb-3">
-                      <div className="bg-success text-white rounded p-3">
-                        <h4 className="mb-1">{formatPrice(product.price).replace('₫', '')}</h4>
-                        <small>Price (VND)</small>
-                      </div>
-                    </Col>
-                    <Col md={3} className="text-center mb-3">
-                      <div className="bg-info text-white rounded p-3">
-                        <h4 className="mb-1">{product.warranty_period || 0}</h4>
-                        <small>Warranty (months)</small>
-                      </div>
-                    </Col>
-                    <Col md={3} className="text-center mb-3">
-                      <div className="bg-warning text-white rounded p-3">
-                        <h4 className="mb-1">{product.weight || 0}</h4>
-                        <small>Weight (kg)</small>
-                      </div>
+                    <Col sm={12}>
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        className="w-100 mb-3 py-3 fw-medium"
+                        onClick={handleAddToCart}
+                        disabled={product.quantity === 0}
+                      >
+                        <i className="fas fa-shopping-cart me-2"></i>
+                        Add to Cart
+                      </Button>
+                      <Button
+                        variant="success"
+                        size="lg"
+                        className="w-100 py-3 fw-medium"
+                        onClick={() => alert('Proceeding to checkout...')}
+                        disabled={product.quantity === 0}
+                      >
+                        <i className="fas fa-bolt me-2"></i>
+                        Buy Now
+                      </Button>
                     </Col>
                   </Row>
                 </Card.Body>
               </Card>
 
-              {/* Low Quantity Alert */}
               {product.quantity !== undefined && product.quantity < 10 && (
                 <Alert variant="warning" className="mb-4">
                   <Alert.Heading className="h6">
@@ -466,19 +446,15 @@ const ProductDetail = () => {
                     Low Quantity Alert
                   </Alert.Heading>
                   <p className="mb-0 small">
-                    This product is running low on quantity ({product.quantity} units remaining).
-                    Consider restocking soon.
+                    This product is running low on quantity ({product.quantity} units remaining). Consider restocking soon.
                   </p>
                 </Alert>
               )}
             </Col>
           </Row>
-
-
         </Col>
       </Row>
 
-      {/* Video Modal */}
       <Modal show={showVideoModal} onHide={() => setShowVideoModal(false)} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Product Video</Modal.Title>
@@ -488,8 +464,9 @@ const ProductDetail = () => {
             <video
               controls
               className="w-100"
-              style={{ maxHeight: "400px" }}
+              style={{ maxHeight: '400px' }}
               src={selectedVideo}
+              aria-label="Product video playback"
             >
               Your browser does not support the video tag.
             </video>

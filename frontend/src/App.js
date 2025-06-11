@@ -51,7 +51,7 @@ const App = () => {
           <Route path="/otp" element={<OTP />} />
           <Route path="/newPost" element={<NewPostForm />} />
           <Route path="/profile" element={<Profile />} />
-            <Route path="/productView/:id" element={<ProductView />} />
+            <Route path="/productView/:productId" element={<ProductView />} />
           {/* UI ADMIN */}
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/manaAccount" element={<ManaAccount />} />

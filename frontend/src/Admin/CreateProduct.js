@@ -360,7 +360,7 @@ const CreateProduct = () => {
                           <Form.Label>Tình trạng</Form.Label>
                           <Form.Select name="status" value={formData.status} onChange={handleInputChange}>
                             <option value="New">Mới</option>
-                            <option value="Second Hand">Đã qua sử dụng</option>
+                            <option value="SecondHand">Đã qua sử dụng</option>
                           </Form.Select>
                         </Form.Group>
                       </Col>
