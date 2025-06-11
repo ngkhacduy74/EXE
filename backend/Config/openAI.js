@@ -2,7 +2,7 @@ const axios = require("axios");
 const env = require("dotenv");
 env.config();
 
-async function getChatResponse(messages) {
+async function getChatResponse(userMessages) {
   const API_KEY = process.env.OPENAI_API_KEY;
 
   try {
@@ -10,7 +10,13 @@ async function getChatResponse(messages) {
       "https://api.groq.com/openai/v1/chat/completions",
       {
         model: "llama3-70b-8192",
-        messages: messages,
+        messages: [
+          {
+            role: "system",
+            content: process.env.BUSINESS_KNOWLEDGE, // ✅ Nhồi kiến thức nền từ .env
+          },
+          ...userMessages,
+        ],
         max_tokens: 8192,
       },
       {
