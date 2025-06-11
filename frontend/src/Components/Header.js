@@ -57,6 +57,20 @@ function Header() {
     fetchAllProducts();
   }, []);
 
+  // Function to get first image safely
+const getFirstImage = (product) => {
+  // Kiểm tra nếu có mảng images và có ít nhất 1 ảnh
+  if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+    return product.images[0];
+  }
+  // Fallback về image đơn lẻ nếu có
+  if (product.image) {
+    return product.image;
+  }
+  // Fallback về ảnh mặc định
+  return './styles/images/product-thumb-1.png';
+};
+
   // Enhanced debounced search suggestions
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -116,7 +130,7 @@ function Header() {
           brand: product.brand,
           category: product.category,
           price: product.price,
-          image: product.images?.[0] || product.image,
+          image: getFirstImage(product),
           rating: product.rating,
           quantity: product.quantity,
           description: product.description,
@@ -466,7 +480,7 @@ function Header() {
                               onMouseLeave={(e) => e.target.closest('div').classList.remove('bg-light')}
                             >
                               {/* Product Image */}
-                              <div className="me-3 flex-shrink-0">
+                              {/* <div className="me-3 flex-shrink-0">
                                 <img
                                   src={suggestion.image || './styles/images/product-thumb-1.png'}
                                   alt={suggestion.name}
@@ -478,7 +492,7 @@ function Header() {
                                     border: '1px solid #e9ecef'
                                   }}
                                 />
-                              </div>
+                              </div> */}
                               
                               {/* Product Info */}
                               <div className="flex-grow-1 min-w-0">
