@@ -40,11 +40,16 @@ const BestSellingCarousel = () => {
           ? response.data.data
           : [];
 
-        if (productData.length === 0) {
-          throw new Error('No products found.');
+        // Filter products to only include those with status "New"
+        const newProducts = productData.filter(product => 
+          product.status === "New"
+        );
+
+        if (newProducts.length === 0) {
+          throw new Error('No new products found.');
         }
 
-        setProducts(productData);
+        setProducts(newProducts);
       } catch (err) {
         console.error('Error fetching products:', err);
         setError(err.message || 'Failed to fetch products.');
@@ -93,7 +98,7 @@ const BestSellingCarousel = () => {
     e.target.src = 'https://via.placeholder.com/240x240?text=No+Image';
   };
 
-  // Filter products by category/brand for tabs
+  // Filter products by category/brand for tabs (only from new products)
   const allProducts = products;
   const fushimavinaProducts = products.filter(
     (product) => product.brand === 'Fushimavina'
@@ -139,6 +144,10 @@ const BestSellingCarousel = () => {
            e.currentTarget.style.boxShadow = '';
          }}>
       <div className="position-relative">
+        {/* Add "NEW" badge for new products */}
+        <span className="badge bg-danger position-absolute top-0 end-0 m-2 z-index-1 fs-7">
+          NEW
+        </span>
         {product.discount && (
           <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1 fs-7">
             -{product.discount}%
@@ -267,7 +276,7 @@ const BestSellingCarousel = () => {
         ) : (
           <SwiperSlide>
             <div className="text-center p-5">
-              <p className="text-muted">No products available.</p>
+              <p className="text-muted">No new products available.</p>
             </div>
           </SwiperSlide>
         )}

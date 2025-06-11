@@ -42,7 +42,7 @@ const Product2Carousel = () => {
 
         // Filter products to only show "Second Hand" status
         const secondHandProducts = productData.filter(
-          product => product.status === "Second Hand"
+          product => product.status === "SecondHand"
         );
 
         setProducts(secondHandProducts);
