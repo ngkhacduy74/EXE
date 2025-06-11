@@ -21,15 +21,17 @@ function containsSmartKeyword(text) {
     text.toLowerCase().includes(keyword.toLowerCase())
   );
 }
+
 let chatHistory = [];
 
 router.post("/ask", async (req, res) => {
   const { prompt } = req.body;
 
   if (!prompt) {
-    return res
-      .status(400)
-      .json({ success: false, error: "Thiếu prompt đầu vào" });
+    return res.status(400).json({
+      success: false,
+      error: "Thiếu prompt đầu vào",
+    });
   }
 
   try {
@@ -39,26 +41,31 @@ router.post("/ask", async (req, res) => {
     if (containsSmartKeyword(prompt)) {
       const links = await searchLinks(prompt);
       if (!links.length) {
-        return res
-          .status(404)
-          .json({ success: false, error: "Không tìm thấy nguồn phù hợp" });
+        return res.status(404).json({
+          success: false,
+          error: "Không tìm thấy nguồn phù hợp",
+        });
       }
 
       const contents = await Promise.all(links.map(crawlWebsite));
       const mergedText = contents.join("\n---\n").slice(0, 8000);
-
-      finalPrompt = `Hãy phân tích nội dung dưới đây liên quan đến "${prompt}":\n\n${mergedText}`;
+      finalPrompt = `Bạn là một trợ lý AI thông minh, hãy trả lời bằng ngôn ngữ tiếng Việt. Dưới đây là nội dung cần xử lý liên quan đến: "${prompt}"\n\n${mergedText}`;
       usedSources = links;
     } else {
-      finalPrompt = prompt;
+      finalPrompt = `Bạn là một trợ lý AI thông minh, hãy trả lời bằng tiếng Việt. Câu hỏi: ${prompt}`;
     }
 
-    chatHistory.push({ role: "user", content: prompt });
+    chatHistory.push({ role: "user", content: finalPrompt });
 
-    const groqPayload = [
-      ...chatHistory.slice(-20),
-      { role: "user", content: finalPrompt },
-    ];
+    const groqPayload = chatHistory
+      .slice(-20)
+      .filter(
+        (m) =>
+          m &&
+          typeof m === "object" &&
+          typeof m.role === "string" &&
+          typeof m.content === "string"
+      );
 
     const answer = await getChatResponse(groqPayload);
 
@@ -70,8 +77,11 @@ router.post("/ask", async (req, res) => {
       sources: usedSources,
     });
   } catch (err) {
-    console.error("Lỗi /ask:", err.message);
-    res.status(500).json({ success: false, error: "Lỗi server hoặc AI" });
+    console.error("Lỗi /ask:", err.response?.data || err.message);
+    res.status(500).json({
+      success: false,
+      error: "Lỗi server hoặc AI",
+    });
   }
 });
 
