@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit, LogOut, LogIn, Copy, ChevronDown, Search, Menu, X } from 'lucide-react';
+import { Edit, LogOut, LogIn, Copy, ChevronDown, Search, Menu, X, Star, Plus } from 'lucide-react';
 import axios from 'axios';
 
 function Header() {
@@ -15,11 +15,12 @@ function Header() {
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [showBrandsDropdown, setShowBrandsDropdown] = useState(false);
   
-  // New states for product suggestions
+  // Enhanced states for product suggestions
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
   
   const searchRef = useRef(null);
   const suggestionsRef = useRef(null);
@@ -27,7 +28,7 @@ function Header() {
 
   // Load recent searches from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('recentsearches');
+    const saved = localStorage.getItem('recentSearches');
     if (saved) {
       try {
         setRecentSearches(JSON.parse(saved));
@@ -37,11 +38,30 @@ function Header() {
     }
   }, []);
 
-  // Debounced search suggestions
+  // Fetch all products for better search
+  useEffect(() => {
+    const fetchAllProducts = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/product/`
+        );
+        
+        const productData = Array.isArray(response.data.data) ? response.data.data : [];
+        setAllProducts(productData);
+      } catch (error) {
+        console.error('Error fetching all products:', error);
+        setAllProducts([]);
+      }
+    };
+
+    fetchAllProducts();
+  }, []);
+
+  // Enhanced debounced search suggestions
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchTerm.trim() && searchTerm.length >= 2) {
-        fetchSuggestions(searchTerm);
+        fetchEnhancedSuggestions(searchTerm);
       } else {
         setSuggestions([]);
         setShowSuggestions(false);
@@ -49,7 +69,7 @@ function Header() {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, selectedCategory, allProducts]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -70,61 +90,73 @@ function Header() {
     };
   }, []);
 
-  // Fetch product suggestions
-  const fetchSuggestions = async (query) => {
+  // Enhanced product suggestions with detailed info
+  const fetchEnhancedSuggestions = async (query) => {
     try {
       setLoadingSuggestions(true);
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/product/search/suggestions`,
-        {
-          params: {
-            q: query,
-            limit: 8,
-            category: selectedCategory !== 'all' ? selectedCategory : undefined
-          }
-        }
-      );
+      
+      // Filter products locally for faster response
+      const filteredProducts = allProducts
+        .filter(product => {
+          const matchesSearch = 
+            product.name?.toLowerCase().includes(query.toLowerCase()) ||
+            product.brand?.toLowerCase().includes(query.toLowerCase()) ||
+            product.category?.toLowerCase().includes(query.toLowerCase()) ||
+            product.description?.toLowerCase().includes(query.toLowerCase());
+          
+          const matchesCategory = selectedCategory === 'all' || 
+            product.category?.toLowerCase() === selectedCategory.toLowerCase();
+          
+          return matchesSearch && matchesCategory;
+        })
+        .slice(0, 8)
+        .map(product => ({
+          id: product._id || product.id,
+          name: product.name,
+          brand: product.brand,
+          category: product.category,
+          price: product.price,
+          image: product.images?.[0] || product.image,
+          rating: product.rating,
+          quantity: product.quantity,
+          description: product.description,
+          type: 'product'
+        }));
 
-      if (response.data && response.data.suggestions) {
-        setSuggestions(response.data.suggestions);
-        setShowSuggestions(true);
-      }
+      setSuggestions(filteredProducts);
+      setShowSuggestions(filteredProducts.length > 0);
     } catch (error) {
       console.error('Error fetching suggestions:', error);
-      // Fallback: search in existing products
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/product/`
-        );
-        
-        const productData = Array.isArray(response.data.data) ? response.data.data : [];
-        const filtered = productData
-          .filter(product => 
-            product.name.toLowerCase().includes(query.toLowerCase()) ||
-            product.brand.toLowerCase().includes(query.toLowerCase()) ||
-            product.category.toLowerCase().includes(query.toLowerCase())
-          )
-          .slice(0, 8)
-          .map(product => ({
-            id: product._id,
-            name: product.name,
-            brand: product.brand,
-            category: product.category,
-            price: product.price,
-            image: product.images?.[0],
-            type: 'product'
-          }));
-
-        setSuggestions(filtered);
-        setShowSuggestions(filtered.length > 0);
-      } catch (fallbackError) {
-        console.error('Fallback search failed:', fallbackError);
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
+      setSuggestions([]);
+      setShowSuggestions(false);
     } finally {
       setLoadingSuggestions(false);
     }
+  };
+
+  // Format price like in Compare Product
+  const formatPrice = (price) => {
+    if (!price) return 'Chưa có giá';
+    return `${parseFloat(price).toLocaleString('vi-VN')} VND`;
+  };
+
+  // Render star rating like in Compare Product
+  const renderStars = (rating) => {
+    if (!rating) return <span className="text-muted small">Chưa đánh giá</span>;
+    
+    return (
+      <div className="d-flex align-items-center">
+        {[...Array(5)].map((_, i) => (
+          <Star 
+            key={i} 
+            size={12} 
+            fill={i < Math.floor(rating) ? 'currentColor' : 'none'}
+            className="text-warning"
+          />
+        ))}
+        <span className="ms-1 small text-muted">({rating})</span>
+      </div>
+    );
   };
 
   // Save search term to recent searches
@@ -326,7 +358,7 @@ function Header() {
             </div>
           </div>
 
-          {/* Search Bar - Desktop */}
+          {/* Enhanced Search Bar - Desktop */}
           <div className="col-lg-6 d-none d-lg-block position-relative">
             <div className="search-bar" ref={searchRef}>
               <form onSubmit={handleSearch}>
@@ -365,31 +397,31 @@ function Header() {
                 </div>
               </form>
 
-              {/* Search Suggestions Dropdown */}
+              {/* Enhanced Search Suggestions Dropdown */}
               {showSuggestions && (
                 <div 
                   ref={suggestionsRef}
                   className="position-absolute w-100 bg-white shadow-lg border rounded mt-1"
                   style={{ 
                     zIndex: 1050,
-                    maxHeight: '400px',
+                    maxHeight: '500px',
                     overflowY: 'auto',
                     top: '100%'
                   }}
                 >
                   {loadingSuggestions ? (
-                    <div className="p-3 text-center">
+                    <div className="p-4 text-center">
                       <div className="spinner-border spinner-border-sm text-primary" role="status">
                         <span className="visually-hidden">Loading...</span>
                       </div>
-                      <div className="mt-2 text-muted small">Đang tìm kiếm...</div>
+                      <div className="mt-2 text-muted small">Đang tìm kiếm sản phẩm...</div>
                     </div>
                   ) : (
                     <>
                       {/* Recent Searches */}
                       {recentSearches.length > 0 && !searchTerm.trim() && (
-                        <div className="p-2 border-bottom">
-                          <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div className="border-bottom">
+                          <div className="d-flex justify-content-between align-items-center p-3 pb-2">
                             <small className="text-muted fw-bold">Tìm kiếm gần đây</small>
                             <button 
                               className="btn btn-sm btn-link text-muted p-0"
@@ -411,56 +443,106 @@ function Header() {
                               onMouseLeave={(e) => e.target.classList.remove('bg-light')}
                             >
                               <Search size={14} className="text-muted me-2" />
-                              <span>{term}</span>
+                              <span className="small">{term}</span>
                             </div>
                           ))}
                         </div>
                       )}
 
-                      {/* Product Suggestions */}
+                      {/* Enhanced Product Suggestions */}
                       {suggestions.length > 0 && (
                         <div className="p-2">
-                          <small className="text-muted fw-bold mb-2 d-block">Sản phẩm gợi ý</small>
+                          <div className="d-flex justify-content-between align-items-center mb-2 px-2">
+                            <small className="text-muted fw-bold">Sản phẩm gợi ý</small>
+                            <small className="text-muted">{suggestions.length} kết quả</small>
+                          </div>
                           {suggestions.map((suggestion) => (
                             <div
                               key={suggestion.id}
-                              className="d-flex align-items-center py-2 px-3 cursor-pointer rounded"
+                              className="d-flex align-items-center p-3 cursor-pointer rounded hover-bg-light border-bottom"
                               onClick={() => handleSuggestionClick(suggestion)}
-                              style={{ cursor: 'pointer' }}
+                              style={{ cursor: 'pointer', transition: 'background-color 0.15s ease' }}
                               onMouseEnter={(e) => e.target.closest('div').classList.add('bg-light')}
                               onMouseLeave={(e) => e.target.closest('div').classList.remove('bg-light')}
                             >
-                              {suggestion.image && (
+                              {/* Product Image */}
+                              <div className="me-3 flex-shrink-0">
                                 <img
-                                  src={suggestion.image}
+                                  src={suggestion.image || './styles/images/product-thumb-1.png'}
                                   alt={suggestion.name}
-                                  className="me-3 rounded"
-                                  style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                  className="rounded"
+                                  style={{ 
+                                    width: '60px', 
+                                    height: '60px', 
+                                    objectFit: 'cover',
+                                    border: '1px solid #e9ecef'
+                                  }}
                                 />
-                              )}
-                              <div className="flex-grow-1">
-                                <div className="fw-medium text-truncate" style={{ maxWidth: '300px' }}>
+                              </div>
+                              
+                              {/* Product Info */}
+                              <div className="flex-grow-1 min-w-0">
+                                <div className="fw-semibold text-truncate mb-1" style={{ maxWidth: '300px' }}>
                                   {suggestion.name}
                                 </div>
-                                <div className="small text-muted">
-                                  {suggestion.brand} • {suggestion.category}
-                                  {suggestion.price && (
-                                    <span className="text-primary fw-bold ms-2">
-                                      {suggestion.price.toLocaleString('vi-VN')}đ
-                                    </span>
+                                
+                                <div className="small text-muted mb-1">
+                                  <span className="badge bg-light text-dark me-2">{suggestion.brand}</span>
+                                  <span className="text-muted">{suggestion.category}</span>
+                                </div>
+                                
+                                {/* Price and Rating */}
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <div className="text-primary fw-bold small">
+                                    {formatPrice(suggestion.price)}
+                                  </div>
+                                  
+                                  {suggestion.rating && (
+                                    <div className="small">
+                                      {renderStars(suggestion.rating)}
+                                    </div>
                                   )}
+                                </div>
+                                
+                                {/* Stock Status */}
+                                {suggestion.quantity !== undefined && (
+                                  <div className="mt-1">
+                                    <span className={`badge ${suggestion.quantity > 0 ? 'bg-success' : 'bg-danger'} small`}>
+                                      {suggestion.quantity > 0 ? `Còn hàng (${suggestion.quantity})` : 'Hết hàng'}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Action Icon */}
+                              <div className="ms-2 flex-shrink-0">
+                                <div className="text-primary">
+                                  <Search size={16} />
                                 </div>
                               </div>
                             </div>
                           ))}
+                          
+                          {/* View All Results */}
+                          <div className="p-2 border-top bg-light">
+                            <button
+                              className="btn btn-sm btn-outline-primary w-100"
+                              onClick={() => handleSearch(null, searchTerm)}
+                            >
+                              Xem tất cả kết quả cho "{searchTerm}"
+                            </button>
+                          </div>
                         </div>
                       )}
 
                       {/* No results */}
                       {searchTerm.trim() && suggestions.length === 0 && !loadingSuggestions && (
-                        <div className="p-3 text-center text-muted">
-                          <div>Không tìm thấy sản phẩm phù hợp</div>
-                          <small>Thử tìm kiếm với từ khóa khác</small>
+                        <div className="p-4 text-center text-muted">
+                          <div className="mb-2">
+                            <Search size={32} className="text-muted opacity-50" />
+                          </div>
+                          <div className="fw-semibold mb-1">Không tìm thấy sản phẩm</div>
+                          <small>Thử tìm kiếm với từ khóa khác hoặc kiểm tra chính tả</small>
                         </div>
                       )}
                     </>
@@ -512,13 +594,6 @@ function Header() {
                   )}
                 </ul>
               </div>
-
-              {/* Create Post - Only for logged in users */}
-              {/* {user && (
-                <a href="/newPost" className="btn btn-light rounded-circle p-2" title="Tạo bài viết">
-                  <Edit size={20} />
-                </a>
-              )} */}
 
               {/* Compare Products - Only for logged in users */}
               {user && (
