@@ -13,7 +13,7 @@ async function getChatResponse(userMessages) {
         messages: [
           {
             role: "system",
-            content: process.env.BUSINESS_KNOWLEDGE, // ✅ Nhồi kiến thức nền từ .env
+            content: process.env.BUSINESS_KNOWLEDGE,
           },
           ...userMessages,
         ],
