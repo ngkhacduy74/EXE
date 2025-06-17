@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Camera, Upload } from 'lucide-react';
+import { Camera, Upload, Link as LinkIcon } from 'lucide-react';
+import axios from 'axios';
 
 export default function NewPostForm() {
   const [formData, setFormData] = useState({
@@ -8,13 +9,17 @@ export default function NewPostForm() {
     status: 'New',
     address: '',
     description: '',
-    condition: 'pending',
-    createdAt: null,
-    image: null
+    condition: 'Pending',
+    user_position: 'Newbie',
+    image: null,
+    video: null,
+    mediaUrl: ''
   });
   
   const [previewUrl, setPreviewUrl] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [uploadMethod, setUploadMethod] = useState('file'); // 'file' or 'url'
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -27,233 +32,400 @@ export default function NewPostForm() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Create a preview URL for the selected image
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
       setFormData({
         ...formData,
-        image: file
+        image: file,
+        mediaUrl: '' // Clear URL when file is selected
       });
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Set the createdAt timestamp at submission time
-    const submissionData = {
+  const handleUrlChange = (e) => {
+    const url = e.target.value;
+    setFormData({
       ...formData,
-      createdAt: new Date().toISOString()
-    };
+      mediaUrl: url,
+      image: null // Clear file when URL is entered
+    });
     
-    console.log('Form submitted with data:', submissionData);
-    setSubmitted(true);
+    if (url) {
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Bạn cần đăng nhập để tạo bài viết!');
+      setLoading(false);
+      return;
+    }
+
+    let submissionData;
+    let headers = { token };
+    if (formData.image) {
+      submissionData = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) submissionData.append(key, value);
+      });
+      headers['Content-Type'] = 'multipart/form-data';
+    } else {
+      submissionData = {
+        ...formData,
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    try {
+      const response = await axios.post(
+        'http://localhost:4000/post/createPost',
+        submissionData,
+        { headers }
+      );
+      alert('Tạo bài viết thành công!');
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Error creating post:', error);
+      alert('Tạo bài viết thất bại! ' + (error.response?.data?.message || ''));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      category: 'A',
+      status: 'New',
+      address: '',
+      description: '',
+      condition: 'Pending',
+      user_position: 'Newbie',
+      image: null,
+      video: null,
+      mediaUrl: ''
+    });
+    setPreviewUrl(null);
+    setSubmitted(false);
+    setUploadMethod('file');
   };
 
   if (submitted) {
     return (
-      <div className="max-w-2xl mx-auto my-8 p-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-green-600 mb-4">Post Submitted Successfully!</h2>
-        <p className="mb-4">Your product has been posted and is pending review.</p>
-        <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-60 text-sm">
-          {JSON.stringify(
-            {
-              ...formData,
-              image: formData.image ? formData.image.name : null,
-              createdAt: new Date().toISOString()
-            }, 
-            null, 2
-          )}
-        </pre>
-        <button 
-          className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={() => {
-            setFormData({
-              title: '',
-              category: 'A',
-              status: 'New',
-              address: '',
-              description: '',
-              condition: 'pending',
-              createdAt: null,
-              image: null
-            });
-            setPreviewUrl(null);
-            setSubmitted(false);
-          }}
-        >
-          Create Another Post
-        </button>
+      <div className="container mt-4">
+        <div className="row justify-content-center">
+          <div className="col-lg-8">
+            <div className="card shadow">
+              <div className="card-body">
+                <h2 className="card-title text-success mb-3">
+                  <i className="bi bi-check-circle me-2"></i>
+                  Post Submitted Successfully!
+                </h2>
+                <p className="card-text mb-3">Your product has been posted and is pending review.</p>
+                <div className="bg-light p-3 rounded">
+                  <pre className="mb-0" style={{fontSize: '0.875rem', maxHeight: '300px', overflow: 'auto'}}>
+                    {JSON.stringify(
+                      {
+                        ...formData,
+                        image: formData.image ? formData.image.name : null,
+                        createdAt: new Date().toISOString()
+                      }, 
+                      null, 2
+                    )}
+                  </pre>
+                </div>
+                <button 
+                  className="btn btn-primary mt-3"
+                  onClick={resetForm}
+                >
+                  Create Another Post
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto my-8 bg-white rounded-lg shadow-lg overflow-hidden">
-      <div className="bg-blue-600 p-4">
-        <h1 className="text-xl font-bold text-white">Create New Product Post</h1>
-      </div>
-      
-      <div className="p-6">
-        {/* Image Upload */}
-        <div className="mb-6">
-          <label className="block text-gray-700 font-medium mb-2">
-            Product Image or Video
-          </label>
-          <div 
-            className={`border-2 border-dashed rounded-lg p-4 text-center ${
-              previewUrl ? 'border-green-400' : 'border-gray-300 hover:border-blue-400'
-            } transition-colors`}
-          >
-            {previewUrl ? (
-              <div className="relative">
-                <img 
-                  src={previewUrl} 
-                  alt="Product preview" 
-                  className="max-h-64 mx-auto rounded"
-                />
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setPreviewUrl(null);
-                    setFormData({...formData, image: null});
-                  }}
-                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
-                >
-                  ✕
-                </button>
+    <>
+      {/* Bootstrap CSS */}
+      <link 
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" 
+        rel="stylesheet" 
+      />
+      <link 
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" 
+        rel="stylesheet" 
+      />
+      <div className="container mt-4">
+        <div className="row justify-content-center">
+          <div className="col-lg-8">
+            <div className="card shadow">
+              <div className="card-header bg-primary text-white">
+                <h1 className="card-title h4 mb-0">Create New Product Post</h1>
               </div>
-            ) : (
-              <div className="py-8">
-                <div className="flex justify-center mb-2">
-                  <Camera size={48} className="text-gray-400" />
-                </div>
-                <p className="text-gray-500 mb-2">Drag and drop your image here or click to browse</p>
-                <div className="flex justify-center">
-                  <label className="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 inline-flex items-center">
-                    <Upload size={16} className="mr-1" />
-                    Select File
-                    <input 
-                      type="file" 
-                      accept="image/*,video/*" 
-                      className="hidden" 
-                      onChange={handleImageChange}
+              <div className="card-body">
+                <form onSubmit={handleSubmit}>
+                  {/* Media Upload Section */}
+                  <div className="mb-4">
+                    <label className="form-label fw-semibold">
+                      Product Image or Video
+                    </label>
+                    {/* Upload Method Tabs */}
+                    <ul className="nav nav-tabs mb-3" role="tablist">
+                      <li className="nav-item" role="presentation">
+                        <button 
+                          className={`nav-link ${uploadMethod === 'file' ? 'active' : ''}`}
+                          type="button"
+                          onClick={() => setUploadMethod('file')}
+                        >
+                          <Upload size={16} className="me-1" />
+                          Upload File
+                        </button>
+                      </li>
+                      <li className="nav-item" role="presentation">
+                        <button 
+                          className={`nav-link ${uploadMethod === 'url' ? 'active' : ''}`}
+                          type="button"
+                          onClick={() => setUploadMethod('url')}
+                        >
+                          <LinkIcon size={16} className="me-1" />
+                          Use URL
+                        </button>
+                      </li>
+                    </ul>
+                    {/* File Upload Tab */}
+                    {uploadMethod === 'file' && (
+                      <div className={`border border-2 border-dashed rounded p-4 text-center ${
+                        previewUrl && !formData.mediaUrl ? 'border-success' : 'border-secondary'
+                      }`}>
+                        {previewUrl && !formData.mediaUrl ? (
+                          <div className="position-relative">
+                            {formData.image?.type?.startsWith('video/') ? (
+                              <video 
+                                src={previewUrl} 
+                                controls
+                                className="img-fluid rounded"
+                                style={{maxHeight: '300px'}}
+                              />
+                            ) : (
+                              <img 
+                                src={previewUrl} 
+                                alt="Product preview" 
+                                className="img-fluid rounded"
+                                style={{maxHeight: '300px'}}
+                              />
+                            )}
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setPreviewUrl(null);
+                                setFormData({...formData, image: null});
+                              }}
+                              className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="py-4">
+                            <div className="mb-3">
+                              <Camera size={48} className="text-muted" />
+                            </div>
+                            <p className="text-muted mb-3">Drag and drop your image/video here or click to browse</p>
+                            <label className="btn btn-primary">
+                              <Upload size={16} className="me-2" />
+                              Select File
+                              <input 
+                                type="file" 
+                                accept="image/*,video/*" 
+                                className="d-none" 
+                                onChange={handleImageChange}
+                              />
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {/* URL Input Tab */}
+                    {uploadMethod === 'url' && (
+                      <div>
+                        <div className="mb-3">
+                          <input
+                            type="url"
+                            className="form-control"
+                            placeholder="Enter image or video URL (e.g., https://example.com/image.jpg)"
+                            value={formData.mediaUrl}
+                            onChange={handleUrlChange}
+                          />
+                          <div className="form-text">
+                            Enter a direct link to an image (jpg, png, gif) or video (mp4, webm)
+                          </div>
+                        </div>
+                        {previewUrl && formData.mediaUrl && (
+                          <div className="border rounded p-3">
+                            <div className="position-relative">
+                              {formData.mediaUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+                                <video 
+                                  src={previewUrl} 
+                                  controls
+                                  className="img-fluid rounded"
+                                  style={{maxHeight: '300px'}}
+                                  onError={() => {
+                                    setPreviewUrl(null);
+                                    alert('Could not load video from this URL');
+                                  }}
+                                />
+                              ) : (
+                                <img 
+                                  src={previewUrl} 
+                                  alt="Product preview" 
+                                  className="img-fluid rounded"
+                                  style={{maxHeight: '300px'}}
+                                  onError={() => {
+                                    setPreviewUrl(null);
+                                    alert('Could not load image from this URL');
+                                  }}
+                                />
+                              )}
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  setPreviewUrl(null);
+                                  setFormData({...formData, mediaUrl: ''});
+                                }}
+                                className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {/* Title */}
+                  <div className="mb-3">
+                    <label htmlFor="title" className="form-label fw-semibold">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="title"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      required
                     />
-                  </label>
-                </div>
+                  </div>
+                  {/* Category */}
+                  <div className="mb-3">
+                    <label htmlFor="category" className="form-label fw-semibold">
+                      Category
+                    </label>
+                    <select
+                      className="form-select"
+                      id="category"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                    >
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                    </select>
+                  </div>
+                  {/* Status */}
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Status</label>
+                    <div className="d-flex gap-4">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="status"
+                          id="statusNew"
+                          value="New"
+                          checked={formData.status === "New"}
+                          onChange={handleInputChange}
+                        />
+                        <label className="form-check-label" htmlFor="statusNew">
+                          New
+                        </label>
+                      </div>
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="status"
+                          id="statusSecondHand"
+                          value="SecondHand"
+                          checked={formData.status === "SecondHand"}
+                          onChange={handleInputChange}
+                        />
+                        <label className="form-check-label" htmlFor="statusSecondHand">
+                          SecondHand
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Address */}
+                  <div className="mb-3">
+                    <label htmlFor="address" className="form-label fw-semibold">
+                      Address
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  {/* Description */}
+                  <div className="mb-4">
+                    <label htmlFor="description" className="form-label fw-semibold">
+                      Description
+                    </label>
+                    <textarea
+                      className="form-control"
+                      id="description"
+                      name="description"
+                      rows="4"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  {/* Submit Button */}
+                  <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-lg"
+                      disabled={loading}
+                    >
+                      {loading ? 'Đang gửi...' : 'Submit Post'}
+                    </button>
+                  </div>
+                </form>
               </div>
-            )}
+            </div>
           </div>
-        </div>
-
-        {/* Title */}
-        <div className="mb-4">
-          <label htmlFor="title" className="block text-gray-700 font-medium mb-2">
-            Title
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        {/* Category */}
-        <div className="mb-4">
-          <label htmlFor="category" className="block text-gray-700 font-medium mb-2">
-            Category
-          </label>
-          <select
-            id="category"
-            name="category"
-            value={formData.category}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-          </select>
-        </div>
-
-        {/* Status */}
-        <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">
-            Status
-          </label>
-          <div className="flex space-x-4">
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="status"
-                value="New"
-                checked={formData.status === "New"}
-                onChange={handleInputChange}
-                className="form-radio h-4 w-4 text-blue-600"
-              />
-              <span className="ml-2">New</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="status"
-                value="SecondHand"
-                checked={formData.status === "SecondHand"}
-                onChange={handleInputChange}
-                className="form-radio h-4 w-4 text-blue-600"
-              />
-              <span className="ml-2">SecondHand</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Address */}
-        <div className="mb-4">
-          <label htmlFor="address" className="block text-gray-700 font-medium mb-2">
-            Address
-          </label>
-          <input
-            type="text"
-            id="address"
-            name="address"
-            value={formData.address}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        {/* Description */}
-        <div className="mb-6">
-          <label htmlFor="description" className="block text-gray-700 font-medium mb-2">
-            Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            rows="4"
-            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        {/* Submit Button */}
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Submit Post
-          </button>
         </div>
       </div>
-    </div>
+      {/* Bootstrap JS */}
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    </>
   );
-}
+} 

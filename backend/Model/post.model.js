@@ -29,7 +29,8 @@ const postSchema = new mongoose.Schema(
     condition: {
       type: String,
       require: false,
-      enum: ["Pending", "Active", "Reject"],
+      enum: ["Pending", "Active", "Inactive", "Reject"],
+      default: "Pending"
     },
   },
   {

@@ -112,36 +112,33 @@ const updatePost = async (params) => {
 };
 const changePostCondition = async (condition, id, token) => {
   try {
-    const change = await Post.findOneAndUpdate(
-      { id: id },
+    console.log('Attempting to change condition for post:', { id, condition });
+    
+    const change = await Post.findByIdAndUpdate(
+      id,
       {
-        $set: {
-          condition: condition,
-          seller: {
-            id: token.user.id,
-            fullname: token.user.fullname,
-            email: token.user.email,
-            phone: token.user.phone,
-            address: token.user.address,
-            gender: token.user.gender,
-          },
-        },
+        condition: condition
       },
       { new: true }
     );
 
     if (!change) {
+      console.log('Post not found with id:', id);
       return {
         success: false,
-        message: "Can't change the condition of this post",
+        message: "Can't change the condition of this post - Post not found",
         description: "func changePostCondition",
       };
     }
+    
+    console.log('Successfully updated post:', change);
     return {
       success: true,
       message: "Change this post successfully",
+      data: change
     };
   } catch (err) {
+    console.error("Error in changePostCondition:", err);
     return {
       success: false,
       message: "Change post unsuccessfully",

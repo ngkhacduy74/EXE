@@ -18,6 +18,7 @@ import UserDetails from "./Admin/UserDetails";
 import ManaProduct from "./Admin/ManaProduct";
 import ProductDetails from "./Admin/ProductDetail";
 import ManaPost from "./Admin/ManaPost";
+import PostDetails from "./Admin/PostDetatil";
 // import ProductDetail from "./Pages/ProductDetail";
 import ErrorPage from "./Components/ErrorPage";
 import NewPostForm from "./Components/NewPost";
@@ -60,10 +61,10 @@ const App = () => {
           <Route path="/manaProduct" element={<ManaProduct />} />
           <Route path="/manaPost" element={<ManaPost />} />
           <Route path="/multiProductViewer" element={<MultiProductViewer />} />
-          
+          <Route path="/post/:postId" element={<PostDetails />} />
           {/* Error Page */}
           <Route path="/product/:productId" element={<ProductDetails />} />
-          {/* <Route path="/product/:productId" element={<ProductDetail />} /> */}
+          
           
           <Route path="/create-product" element={<CreateProduct />} />
           <Route path="/product-browser" element={<ProductBrowser />} />

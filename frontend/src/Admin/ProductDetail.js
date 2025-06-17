@@ -11,6 +11,8 @@ const api = axios.create({
   timeout: 5000,
 });
 
+
+
 const ProductDetail = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -114,11 +116,11 @@ const ProductDetail = () => {
     } else if (typeof product?.image === 'string' && product.image) {
       return [product.image];
     }
-    return ['https://via.placeholder.com/500x500?text=No+Image'];
+    return ['https://fushimavina.com/data/data/files/test/may-lam-da-100kg.jpg'];
   }, []);
 
   const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/500x500?text=No+Image';
+    e.target.src = 'https://fushimavina.com/data/data/files/test/may-lam-da-100kg.jpg';
   };
 
   const handleVideoPlay = (videoUrl) => {

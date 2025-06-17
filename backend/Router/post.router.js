@@ -21,16 +21,30 @@ router.get("/user-post", async (req, res) => {
   res.status(200).json(result);
 });
 //verify admin
-router.get("/change-condition/:condition/:id", async (req, res) => {
-  const { condition, id } = req.params;
-  const authHeader = req.headers.token;
-  const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
-  console.log("jhs", decoded);
-  const result = await changePostCondition(condition, id, decoded);
-  if (result.success === false) {
-    return res.status(500).json(result);
+router.put("/change-condition/:condition/:id", async (req, res) => {
+  try {
+    const { condition, id } = req.params;
+    const authHeader = req.headers.token;
+    if (!authHeader) {
+      return res.status(401).json({ success: false, message: "No token provided" });
+    }
+    
+    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
+    console.log("Token decoded:", decoded);
+    
+    const result = await changePostCondition(condition, id, decoded);
+    if (result.success === false) {
+      return res.status(400).json(result);
+    }
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Error in change-condition route:", err);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error",
+      error: err.message 
+    });
   }
-  res.status(200).json(result);
 });
 router.post("/createPost", postMiddleware.postMiddleware, async (req, res) => {
   const authHeader = req.headers.token;

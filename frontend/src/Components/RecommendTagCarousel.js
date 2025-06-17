@@ -30,8 +30,8 @@ const RecommendTagCarousel = () => {
                 </div>
                 <div class="col-md-10">
                   <div class="card-body p-0">
-                    <h5>Free delivery</h5>
-                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipi elit.</p>
+                    <h5>Mua sắm dễ dàng</h5>
+                    <p class="card-text">Dễ dàng tìm kiếm sản phẩm</p>
                   </div>
                 </div>
               </div>
@@ -45,8 +45,8 @@ const RecommendTagCarousel = () => {
                 </div>
                 <div class="col-md-10">
                   <div class="card-body p-0">
-                    <h5>100% secure payment</h5>
-                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipi elit.</p>
+                    <h5>Tính bảo mật cao</h5>
+                    <p class="card-text">Xác thực email mỗi lần đăng nhập</p>
                   </div>
                 </div>
               </div>
@@ -60,8 +60,8 @@ const RecommendTagCarousel = () => {
                 </div>
                 <div class="col-md-10">
                   <div class="card-body p-0">
-                    <h5>Quality guarantee</h5>
-                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipi elit.</p>
+                    <h5>Tích hợp</h5>
+                    <p class="card-text">Kiếm soát chất lượng qua từng sản phẩm</p>
                   </div>
                 </div>
               </div>
@@ -75,8 +75,8 @@ const RecommendTagCarousel = () => {
                 </div>
                 <div class="col-md-10">
                   <div class="card-body p-0">
-                    <h5>guaranteed savings</h5>
-                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipi elit.</p>
+                    <h5>Tích hợp AI</h5>
+                    <p class="card-text">AI giúp bạn trả lời các câu hỏi về sản phẩm</p>
                   </div>
                 </div>
               </div>
@@ -90,8 +90,8 @@ const RecommendTagCarousel = () => {
                 </div>
                 <div class="col-md-10">
                   <div class="card-body p-0">
-                    <h5>Daily offers</h5>
-                    <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipi elit.</p>
+                    <h5>So sánh sản phẩm</h5>
+                    <p class="card-text">Hỗ trợ so sánh các sản phẩm</p>
                   </div>
                 </div>
               </div>

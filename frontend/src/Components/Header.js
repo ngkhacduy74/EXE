@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Edit, LogOut, LogIn, Copy, ChevronDown, Search, Menu, X, Star, Plus } from 'lucide-react';
 import axios from 'axios';
 
@@ -125,7 +125,7 @@ const getFirstImage = (product) => {
         })
         .slice(0, 8)
         .map(product => ({
-          id: product._id || product.id,
+          id: product.id ,
           name: product.name,
           brand: product.brand,
           category: product.category,
@@ -187,6 +187,8 @@ const getFirstImage = (product) => {
     setRecentSearches([]);
     localStorage.removeItem('recentSearches');
   };
+
+  
 
   // Fetch categories and brands from products
   useEffect(() => {
@@ -609,11 +611,16 @@ const getFirstImage = (product) => {
                 </ul>
               </div>
 
-              {/* Compare Products - Only for logged in users */}
+              {/* Compare Products & New Post - Only for logged in users */}
               {user && (
-                <a href="/compare-product" className="btn btn-light rounded-circle p-2" title="So sánh sản phẩm">
-                  <Copy size={20} />
-                </a>
+                <>
+                  <Link to="/newPost" className="btn btn-light rounded-circle p-2" title="Tạo bài viết mới">
+                    <Plus size={20} />
+                  </Link>
+                  <Link to="/compare-product" className="btn btn-light rounded-circle p-2" title="So sánh sản phẩm">
+                    <Copy size={20} />
+                  </Link>
+                </>
               )}
 
               {/* Mobile Menu Toggle */}
