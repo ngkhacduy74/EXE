@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import { Container, Spinner } from 'react-bootstrap';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import { Container, Spinner } from "react-bootstrap";
 const backUpImg = "/images/frigde.png"; // Ảnh từ thư mục public/images/
 const BestSellingCarousel = () => {
   const [products, setProducts] = useState([]);
@@ -18,7 +18,7 @@ const BestSellingCarousel = () => {
   useEffect(() => {
     if (products.length > 0) {
       const initialQuantities = {};
-      products.forEach(product => {
+      products.forEach((product) => {
         initialQuantities[product.id] = 1;
       });
       setQuantities(initialQuantities);
@@ -32,37 +32,37 @@ const BestSellingCarousel = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/product/`
+          `${process.env.REACT_APP_API_URL}/product/`
         );
 
-        console.log('=== API RESPONSE ===');
-        console.log('Full response:', response);
-        console.log('Response data:', response.data);
-        console.log('Response data.data:', response.data.data);
+        console.log("=== API RESPONSE ===");
+        console.log("Full response:", response);
+        console.log("Response data:", response.data);
+        console.log("Response data.data:", response.data.data);
 
         // Handle different response structures
         const productData = Array.isArray(response.data.data)
           ? response.data.data
           : [];
 
-        console.log('Product data after processing:', productData);
+        console.log("Product data after processing:", productData);
 
         // Filter products to only include those with status "New"
-        const newProducts = productData.filter(product => 
-          product.status === "New"
+        const newProducts = productData.filter(
+          (product) => product.status === "New"
         );
 
-        console.log('New products after filtering:', newProducts);
-        console.log('Sample product structure:', newProducts[0]);
+        console.log("New products after filtering:", newProducts);
+        console.log("Sample product structure:", newProducts[0]);
 
         if (newProducts.length === 0) {
-          throw new Error('No new products found.');
+          throw new Error("No new products found.");
         }
 
         setProducts(newProducts);
       } catch (err) {
-        console.error('Error fetching products:', err);
-        setError(err.message || 'Failed to fetch products.');
+        console.error("Error fetching products:", err);
+        setError(err.message || "Failed to fetch products.");
         setProducts([]);
       } finally {
         setLoading(false);
@@ -79,16 +79,16 @@ const BestSellingCarousel = () => {
 
   // Handle quantity change
   const handleQuantityChange = (productId, change) => {
-    setQuantities(prev => ({
+    setQuantities((prev) => ({
       ...prev,
-      [productId]: Math.max(1, (prev[productId] || 1) + change)
+      [productId]: Math.max(1, (prev[productId] || 1) + change),
     }));
   };
 
   // Handle Add to Cart
   const handleAddToCart = (productId) => {
     const quantity = quantities[productId] || 1;
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     console.log(`Xem chi tiết: ${product?.name} - Quantity: ${quantity}`);
     // Implement your cart logic here
   };
@@ -105,112 +105,122 @@ const BestSellingCarousel = () => {
 
   // Get product image (handle array format)
   const getProductImage = (product) => {
-    console.log('=== DEBUG getProductImage ===');
-    console.log('Product name:', product.name);
-    console.log('Product image data:', product.image);
-    console.log('Product image type:', typeof product.image);
-    console.log('Is array:', Array.isArray(product.image));
-    
+    console.log("=== DEBUG getProductImage ===");
+    console.log("Product name:", product.name);
+    console.log("Product image data:", product.image);
+    console.log("Product image type:", typeof product.image);
+    console.log("Is array:", Array.isArray(product.image));
+
     if (product.image) {
       if (Array.isArray(product.image) && product.image.length > 0) {
         const firstImage = product.image[0];
-        console.log('First image from array:', firstImage);
-        
+        console.log("First image from array:", firstImage);
+
         // Check if URL is valid
-        if (firstImage && firstImage.trim() !== '') {
+        if (firstImage && firstImage.trim() !== "") {
           // If it's a relative URL, make it absolute
-          if (firstImage.startsWith('/') || firstImage.startsWith('./')) {
-            const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-            const fullUrl = firstImage.startsWith('/') 
-              ? `${baseUrl}${firstImage}` 
-              : `${baseUrl}/${firstImage.replace('./', '')}`;
-            console.log('Converted relative URL to:', fullUrl);
+          if (firstImage.startsWith("/") || firstImage.startsWith("./")) {
+            const baseUrl =
+              process.env.REACT_APP_API_URL || "http://localhost:4000";
+            const fullUrl = firstImage.startsWith("/")
+              ? `${baseUrl}${firstImage}`
+              : `${baseUrl}/${firstImage.replace("./", "")}`;
+            console.log("Converted relative URL to:", fullUrl);
             return fullUrl;
           }
-          
+
           // If it's already a full URL (http/https), use it directly
-          if (firstImage.startsWith('http://') || firstImage.startsWith('https://')) {
-            console.log('Returning absolute URL:', firstImage);
+          if (
+            firstImage.startsWith("http://") ||
+            firstImage.startsWith("https://")
+          ) {
+            console.log("Returning absolute URL:", firstImage);
             return firstImage;
           }
-          
+
           // If it's a Cloudinary URL or other image service, use it directly
-          if (firstImage.includes('cloudinary.com') || 
-              firstImage.includes('res.cloudinary.com') ||
-              firstImage.includes('imgur.com') ||
-              firstImage.includes('unsplash.com')) {
-            console.log('Returning image service URL:', firstImage);
+          if (
+            firstImage.includes("cloudinary.com") ||
+            firstImage.includes("res.cloudinary.com") ||
+            firstImage.includes("imgur.com") ||
+            firstImage.includes("unsplash.com")
+          ) {
+            console.log("Returning image service URL:", firstImage);
             return firstImage;
           }
-          
-          console.log('Returning image URL:', firstImage);
+
+          console.log("Returning image URL:", firstImage);
           return firstImage;
         }
-      } else if (typeof product.image === 'string') {
-        console.log('Using image as string:', product.image);
-        
-        if (product.image.trim() !== '') {
+      } else if (typeof product.image === "string") {
+        console.log("Using image as string:", product.image);
+
+        if (product.image.trim() !== "") {
           // If it's a relative URL, make it absolute
-          if (product.image.startsWith('/') || product.image.startsWith('./')) {
-            const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-            const fullUrl = product.image.startsWith('/') 
-              ? `${baseUrl}${product.image}` 
-              : `${baseUrl}/${product.image.replace('./', '')}`;
-            console.log('Converted relative URL to:', fullUrl);
+          if (product.image.startsWith("/") || product.image.startsWith("./")) {
+            const baseUrl =
+              process.env.REACT_APP_API_URL || "http://localhost:4000";
+            const fullUrl = product.image.startsWith("/")
+              ? `${baseUrl}${product.image}`
+              : `${baseUrl}/${product.image.replace("./", "")}`;
+            console.log("Converted relative URL to:", fullUrl);
             return fullUrl;
           }
-          
+
           // If it's already a full URL (http/https), use it directly
-          if (product.image.startsWith('http://') || product.image.startsWith('https://')) {
-            console.log('Returning absolute URL:', product.image);
+          if (
+            product.image.startsWith("http://") ||
+            product.image.startsWith("https://")
+          ) {
+            console.log("Returning absolute URL:", product.image);
             return product.image;
           }
-          
+
           // If it's a Cloudinary URL or other image service, use it directly
-          if (product.image.includes('cloudinary.com') || 
-              product.image.includes('res.cloudinary.com') ||
-              product.image.includes('imgur.com') ||
-              product.image.includes('unsplash.com')) {
-            console.log('Returning image service URL:', product.image);
+          if (
+            product.image.includes("cloudinary.com") ||
+            product.image.includes("res.cloudinary.com") ||
+            product.image.includes("imgur.com") ||
+            product.image.includes("unsplash.com")
+          ) {
+            console.log("Returning image service URL:", product.image);
             return product.image;
           }
-          
-          console.log('Returning image URL:', product.image);
+
+          console.log("Returning image URL:", product.image);
           return product.image;
         }
       }
     }
     // Fallback image
-    console.log('Using fallback image:', backUpImg);
+    console.log("Using fallback image:", backUpImg);
     return backUpImg;
   };
 
   // Handle image load error
   const handleImageError = (e) => {
-    console.log('=== IMAGE ERROR ===');
-    console.log('Failed to load image:', e.target.src);
-    console.log('Product name:', e.target.alt);
-    console.log('Setting fallback to:', backUpImg);
-    
+    console.log("=== IMAGE ERROR ===");
+    console.log("Failed to load image:", e.target.src);
+    console.log("Product name:", e.target.alt);
+    console.log("Setting fallback to:", backUpImg);
+
     // Prevent infinite loop
     if (e.target.src === backUpImg) {
-      console.log('Already using fallback image, not changing');
+      console.log("Already using fallback image, not changing");
       return;
     }
-    
+
     e.target.src = backUpImg;
-    e.target.alt = 'product placeholder';
+    e.target.alt = "product placeholder";
     e.target.onerror = null; // Prevent infinite loop
   };
 
   // Filter products by category/brand for tabs (only from new products)
   const allProducts = products;
   const fushimavinaProducts = products.filter(
-    (product) => product.brand === 'Fushimavina'
+    (product) => product.brand === "Fushimavina"
   );
-  const ababaProducts = products.filter(
-    (product) => product.brand === 'ABABA'
-  );
+  const ababaProducts = products.filter((product) => product.brand === "ABABA");
 
   // Hide component on error or if no products
   if (error || products.length === 0) {
@@ -228,7 +238,12 @@ const BestSellingCarousel = () => {
                   </div>
                 ) : (
                   <div className="text-center py-5">
-                    <div className="text-muted mb-3" style={{ fontSize: '3rem' }}>📦</div>
+                    <div
+                      className="text-muted mb-3"
+                      style={{ fontSize: "3rem" }}
+                    >
+                      📦
+                    </div>
                     <h5 className="text-muted">Chưa có sản phẩm mới</h5>
                     <p className="text-muted">Vui lòng quay lại sau</p>
                   </div>
@@ -246,7 +261,7 @@ const BestSellingCarousel = () => {
     return (
       <Container
         className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: '50vh' }}
+        style={{ minHeight: "50vh" }}
       >
         <Spinner animation="border" role="status">
           <span className="visually-hidden">Loading...</span>
@@ -258,20 +273,22 @@ const BestSellingCarousel = () => {
 
   // Render product item
   const renderProductItem = (product) => (
-    <div className="product-item card h-100 border-0 shadow-sm" 
-         style={{ 
-           minHeight: '420px',
-           maxWidth: '100%',
-           transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out'
-         }}
-         onMouseEnter={(e) => {
-           e.currentTarget.style.transform = 'translateY(-5px)';
-           e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
-         }}
-         onMouseLeave={(e) => {
-           e.currentTarget.style.transform = 'translateY(0)';
-           e.currentTarget.style.boxShadow = '';
-         }}>
+    <div
+      className="product-item card h-100 border-0 shadow-sm"
+      style={{
+        minHeight: "420px",
+        maxWidth: "100%",
+        transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-5px)";
+        e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.15)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "";
+      }}
+    >
       <div className="position-relative">
         {/* Add "NEW" badge for new products */}
         <span className="badge bg-danger position-absolute top-0 end-0 m-2 z-index-1 fs-7">
@@ -282,64 +299,75 @@ const BestSellingCarousel = () => {
             -{product.discount}%
           </span>
         )}
-        <div 
+        <div
           className="card-img-top"
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
           onClick={() => handleProductClick(product.id)}
         >
           <img
             src={getProductImage(product)}
             className="img-fluid rounded-top"
-            alt={product.name || 'Product'}
+            alt={product.name || "Product"}
             onError={handleImageError}
-            onLoad={() => console.log('Image loaded successfully:', product.name, 'URL:', getProductImage(product))}
+            onLoad={() =>
+              console.log(
+                "Image loaded successfully:",
+                product.name,
+                "URL:",
+                getProductImage(product)
+              )
+            }
             loading="lazy"
-            style={{ 
-              height: '240px', 
-              width: '100%', 
-              objectFit: 'cover',
-              display: 'block'
+            style={{
+              height: "240px",
+              width: "100%",
+              objectFit: "cover",
+              display: "block",
             }}
           />
         </div>
       </div>
-      
+
       <div className="card-body d-flex flex-column p-3">
         <div className="mb-auto">
-          <h6 className="card-title fw-bold mb-2 fs-6" 
-              style={{ 
-                lineHeight: '1.3',
-                height: '2.6em',
-                overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical'
-              }}>
-            {product.name || 'N/A'}
+          <h6
+            className="card-title fw-bold mb-2 fs-6"
+            style={{
+              lineHeight: "1.3",
+              height: "2.6em",
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {product.name || "N/A"}
           </h6>
-          <p className="text-muted mb-2 small fw-medium">{product.brand || 'N/A'}</p>
+          <p className="text-muted mb-2 small fw-medium">
+            {product.brand || "N/A"}
+          </p>
           <div className="d-flex align-items-center mb-2">
             <span className="text-warning me-1 fs-7">★★★★☆</span>
             <small className="text-muted">(4.0)</small>
           </div>
           <div className="h6 text-success fw-bold mb-3">
             {product.price
-              ? new Intl.NumberFormat('vi-VN', { 
-                  style: 'currency', 
-                  currency: 'VND' 
+              ? new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
                 }).format(product.price)
-              : 'Liên hệ'}
+              : "Liên hệ"}
           </div>
         </div>
-        
+
         <div className="mt-auto">
           <div className="d-flex align-items-center justify-content-center mb-3">
-            <div className="input-group" style={{ width: '130px' }}>
+            <div className="input-group" style={{ width: "130px" }}>
               <button
                 type="button"
                 className="btn btn-outline-secondary btn-sm px-2"
                 onClick={() => handleQuantityChange(product.id, -1)}
-                style={{ fontSize: '14px' }}
+                style={{ fontSize: "14px" }}
               >
                 −
               </button>
@@ -348,25 +376,25 @@ const BestSellingCarousel = () => {
                 className="form-control form-control-sm text-center fw-medium"
                 value={quantities[product.id] || 1}
                 readOnly
-                style={{ maxWidth: '60px' }}
+                style={{ maxWidth: "60px" }}
               />
               <button
                 type="button"
                 className="btn btn-outline-secondary btn-sm px-2"
                 onClick={() => handleQuantityChange(product.id, 1)}
-                style={{ fontSize: '14px' }}
+                style={{ fontSize: "14px" }}
               >
                 +
               </button>
             </div>
           </div>
-          
+
           <button
             onClick={() => handleAddToCart(product.id)}
             className="btn btn-primary btn-sm w-100 py-2 fw-medium"
-            style={{ 
-              transition: 'all 0.2s ease-in-out',
-              fontSize: '14px'
+            style={{
+              transition: "all 0.2s ease-in-out",
+              fontSize: "14px",
             }}
           >
             <i className="fas fa-shopping-cart me-1"></i>
@@ -407,7 +435,9 @@ const BestSellingCarousel = () => {
         ) : (
           <SwiperSlide>
             <div className="text-center p-5">
-              <div className="text-muted mb-3" style={{ fontSize: '3rem' }}>📦</div>
+              <div className="text-muted mb-3" style={{ fontSize: "3rem" }}>
+                📦
+              </div>
               <h5 className="text-muted">Không có sản phẩm</h5>
               <p className="text-muted">Vui lòng thử lại sau</p>
             </div>
@@ -482,7 +512,11 @@ const BestSellingCarousel = () => {
               <div className="tabs-header d-flex justify-content-between border-bottom mb-4 pb-3">
                 <h3 className="fw-bold mb-0">Các sản phẩm mới</h3>
                 <nav>
-                  <div className="nav nav-tabs border-0" id="nav-tab" role="tablist">
+                  <div
+                    className="nav nav-tabs border-0"
+                    id="nav-tab"
+                    role="tablist"
+                  >
                     <button
                       className="nav-link text-uppercase fs-6 active fw-medium px-4"
                       id="nav-all-tab"
@@ -516,7 +550,7 @@ const BestSellingCarousel = () => {
                   </div>
                 </nav>
               </div>
-              
+
               <div className="tab-content" id="nav-tabContent">
                 {/* Tab Pane: All */}
                 <div
@@ -527,7 +561,7 @@ const BestSellingCarousel = () => {
                 >
                   {renderSwiper(allProducts)}
                 </div>
-                
+
                 {/* Tab Pane: Fushimavina */}
                 <div
                   className="tab-pane fade"
@@ -537,7 +571,7 @@ const BestSellingCarousel = () => {
                 >
                   {renderSwiper(fushimavinaProducts)}
                 </div>
-                
+
                 {/* Tab Pane: ABABA */}
                 <div
                   className="tab-pane fade"

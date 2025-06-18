@@ -57,9 +57,9 @@ const BestSellingCarousel = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL || "http://localhost:4000"}/product/`
+          `${process.env.REACT_APP_API_URL}/product/`
         );
-
+        console.log("kjqekqwe", response);
         // Handle different response structures
         const productData = Array.isArray(response.data.data)
           ? response.data.data

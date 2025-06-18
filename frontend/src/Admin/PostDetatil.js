@@ -1,14 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Button, Badge, Alert, Spinner } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Badge,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, Edit, Trash2, FileText, Calendar, User, Tag } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  FileText,
+  Calendar,
+  User,
+  Tag,
+} from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
 
 const api = axios.create({
-  baseURL: 'http://localhost:4000',
+  baseURL: process.env.REACT_APP_API_URL,
   timeout: 5000,
 });
 
@@ -16,27 +33,29 @@ const PostDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id: postId } = useParams();
-  
+
   // Token state management - similar to ManagePost
   const [tokens, setTokens] = useState(() => {
     // First try to get from location state
     const locationToken = location.state?.token;
     const locationRefreshToken = location.state?.refresh_token;
-    
+
     if (locationToken && locationRefreshToken) {
       return {
         accessToken: locationToken,
-        refreshToken: locationRefreshToken
+        refreshToken: locationRefreshToken,
       };
     }
-    
+
     // Fallback to localStorage
     try {
       const accessToken = localStorage.getItem("token");
-      const refreshToken = localStorage.getItem("refreshToken") || localStorage.getItem("refresh_token");
+      const refreshToken =
+        localStorage.getItem("refreshToken") ||
+        localStorage.getItem("refresh_token");
       return {
         accessToken: accessToken || null,
-        refreshToken: refreshToken || null
+        refreshToken: refreshToken || null,
       };
     } catch (error) {
       console.error("Error accessing localStorage:", error);
@@ -57,16 +76,22 @@ const PostDetail = () => {
   useEffect(() => {
     const locationToken = location.state?.token;
     const locationRefreshToken = location.state?.refresh_token;
-    
+
     if (locationToken && locationRefreshToken) {
-      console.log("✅ Token from location:", locationToken.substring(0, 15) + "...");
-      console.log("🔄 Refresh Token from location:", locationRefreshToken.substring(0, 15) + "...");
-      
+      console.log(
+        "✅ Token from location:",
+        locationToken.substring(0, 15) + "..."
+      );
+      console.log(
+        "🔄 Refresh Token from location:",
+        locationRefreshToken.substring(0, 15) + "..."
+      );
+
       setTokens({
         accessToken: locationToken,
-        refreshToken: locationRefreshToken
+        refreshToken: locationRefreshToken,
       });
-      
+
       // Optionally save to localStorage for persistence
       try {
         localStorage.setItem("token", locationToken);
@@ -82,44 +107,44 @@ const PostDetail = () => {
   // Token refresh function
   const refreshAccessToken = async () => {
     if (!tokens.refreshToken) {
-      console.error('No refresh token available');
-      throw new Error('No refresh token available');
+      console.error("No refresh token available");
+      throw new Error("No refresh token available");
     }
 
     try {
-      console.log('Attempting to refresh token...');
+      console.log("Attempting to refresh token...");
 
-      const response = await api.post('/auth/refresh-token', {
+      const response = await api.post("/auth/refresh-token", {
         refresh_token: tokens.refreshToken,
       });
 
       const { token, refresh_token } = response.data;
       if (!token || !refresh_token) {
-        throw new Error('Invalid refresh token response');
+        throw new Error("Invalid refresh token response");
       }
 
       const newTokens = {
         accessToken: token,
-        refreshToken: refresh_token
+        refreshToken: refresh_token,
       };
 
       // Update localStorage
       try {
-        localStorage.setItem('token', token);
-        localStorage.setItem('refreshToken', refresh_token);
+        localStorage.setItem("token", token);
+        localStorage.setItem("refreshToken", refresh_token);
       } catch (error) {
         console.error("Error saving refreshed tokens:", error);
       }
 
       setTokens(newTokens);
-      console.log('✅ Tokens refreshed successfully');
+      console.log("✅ Tokens refreshed successfully");
       return token;
     } catch (err) {
-      console.error('Error refreshing token:', err);
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('refresh_token');
-      window.location.href = '/login';
+      console.error("Error refreshing token:", err);
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("refresh_token");
+      window.location.href = "/login";
       throw err;
     }
   };
@@ -128,7 +153,7 @@ const PostDetail = () => {
   const makeAuthenticatedRequest = async (config, retryCount = 0) => {
     try {
       if (!tokens.accessToken) {
-        throw new Error('No access token available');
+        throw new Error("No access token available");
       }
 
       const requestConfig = {
@@ -142,18 +167,24 @@ const PostDetail = () => {
       const response = await api.request(requestConfig);
       return response;
     } catch (err) {
-      if (err.response?.status === 401 && retryCount === 0 && tokens.refreshToken) {
-        console.warn('Access token expired. Attempting to refresh...');
+      if (
+        err.response?.status === 401 &&
+        retryCount === 0 &&
+        tokens.refreshToken
+      ) {
+        console.warn("Access token expired. Attempting to refresh...");
         try {
           await refreshAccessToken();
           return makeAuthenticatedRequest(config, 1); // Retry once
         } catch (refreshErr) {
-          throw new Error('Session expired. Please log in again.');
+          throw new Error("Session expired. Please log in again.");
         }
       } else if (err.response?.status === 429) {
-        throw new Error('Too many requests. Please try again later.');
+        throw new Error("Too many requests. Please try again later.");
       } else if (!err.response) {
-        throw new Error('Server connection error. Please check your connection.');
+        throw new Error(
+          "Server connection error. Please check your connection."
+        );
       }
       throw err;
     }
@@ -165,7 +196,7 @@ const PostDetail = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Check if we have tokens and postId
         if (!tokens.accessToken) {
           console.log("No access token available");
@@ -179,9 +210,9 @@ const PostDetail = () => {
           setLoading(false);
           return;
         }
-        
+
         const response = await makeAuthenticatedRequest({
-          method: 'GET',
+          method: "GET",
           url: `/post/${postId}`,
         });
 
@@ -194,13 +225,15 @@ const PostDetail = () => {
         }
       } catch (err) {
         console.error("Fetch Error:", err);
-        setError(err.message || "Failed to fetch post details. Please try again later.");
+        setError(
+          err.message || "Failed to fetch post details. Please try again later."
+        );
         setPost(null);
       } finally {
         setLoading(false);
       }
     };
-    
+
     // Only fetch if we have access token and postId
     if (tokens.accessToken && postId) {
       fetchPostDetail();
@@ -209,11 +242,11 @@ const PostDetail = () => {
 
   // Handle back to posts list
   const handleBackToList = () => {
-    navigate('/manage-posts', {
+    navigate("/manage-posts", {
       state: {
         token: tokens.accessToken,
-        refresh_token: tokens.refreshToken
-      }
+        refresh_token: tokens.refreshToken,
+      },
     });
   };
 
@@ -222,38 +255,44 @@ const PostDetail = () => {
     navigate(`/edit-post/${postId}`, {
       state: {
         token: tokens.accessToken,
-        refresh_token: tokens.refreshToken
-      }
+        refresh_token: tokens.refreshToken,
+      },
     });
   };
 
   // Handle delete post
   const handleDeletePost = async () => {
-    if (!window.confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this post? This action cannot be undone."
+      )
+    ) {
       return;
     }
 
     setActionLoading(true);
     try {
       const response = await makeAuthenticatedRequest({
-        method: 'DELETE',
+        method: "DELETE",
         url: `/post/${postId}`,
       });
 
       if (response.data.success) {
         alert("Post deleted successfully!");
-        navigate('/manage-posts', {
+        navigate("/manage-posts", {
           state: {
             token: tokens.accessToken,
-            refresh_token: tokens.refreshToken
-          }
+            refresh_token: tokens.refreshToken,
+          },
         });
       } else {
-        throw new Error(response.data.message || 'Failed to delete post');
+        throw new Error(response.data.message || "Failed to delete post");
       }
     } catch (err) {
       console.error("Delete Error:", err);
-      setError(err.response?.data?.message || err.message || "Failed to delete post.");
+      setError(
+        err.response?.data?.message || err.message || "Failed to delete post."
+      );
       setTimeout(() => setError(null), 5000);
     } finally {
       setActionLoading(false);
@@ -266,28 +305,32 @@ const PostDetail = () => {
 
     const newCondition = post.condition === "Active" ? "Inactive" : "Active";
     setActionLoading(true);
-    
+
     try {
       const response = await makeAuthenticatedRequest({
-        method: 'PUT',
+        method: "PUT",
         url: `/post/change-condition/${newCondition}/${postId}`,
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       });
 
       if (response.data.success) {
-        setPost(prevPost => ({
+        setPost((prevPost) => ({
           ...prevPost,
-          condition: newCondition
+          condition: newCondition,
         }));
-        console.log('Post condition updated successfully');
+        console.log("Post condition updated successfully");
       } else {
-        throw new Error(response.data.message || 'Failed to update condition');
+        throw new Error(response.data.message || "Failed to update condition");
       }
     } catch (err) {
       console.error("Error updating post condition:", err);
-      setError(err.response?.data?.message || err.message || "Failed to update post condition.");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to update post condition."
+      );
       setTimeout(() => setError(null), 5000);
     } finally {
       setActionLoading(false);
@@ -298,12 +341,12 @@ const PostDetail = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch (error) {
       return "Invalid Date";
@@ -318,7 +361,10 @@ const PostDetail = () => {
     return (
       <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
         <HeaderAdmin />
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "50vh" }}
+        >
           <div className="text-center">
             <Spinner animation="border" variant="primary" />
             <p className="mt-2">Loading post details...</p>
@@ -354,8 +400,8 @@ const PostDetail = () => {
           {/* Header with back button */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div className="d-flex align-items-center">
-              <Button 
-                variant="outline-secondary" 
+              <Button
+                variant="outline-secondary"
                 onClick={handleBackToList}
                 className="me-3"
               >
@@ -421,7 +467,7 @@ const PostDetail = () => {
                     {/* Post Content */}
                     <div className="mb-4">
                       <h6 className="text-muted mb-2">Content:</h6>
-                      <div 
+                      <div
                         className="border rounded p-3 bg-light"
                         style={{ minHeight: "200px", whiteSpace: "pre-wrap" }}
                       >
@@ -440,7 +486,11 @@ const PostDetail = () => {
                                 src={image}
                                 alt={`Post image ${index + 1}`}
                                 className="img-fluid rounded shadow-sm"
-                                style={{ width: "100%", height: "200px", objectFit: "cover" }}
+                                style={{
+                                  width: "100%",
+                                  height: "200px",
+                                  objectFit: "cover",
+                                }}
                                 onError={(e) => {
                                   e.target.style.display = "none";
                                 }}
@@ -485,8 +535,8 @@ const PostDetail = () => {
                       <div className="d-flex align-items-center mb-2">
                         <strong>Status:</strong>
                       </div>
-                      <Badge 
-                        bg={post.status === "New" ? "success" : "danger"} 
+                      <Badge
+                        bg={post.status === "New" ? "success" : "danger"}
                         className="ms-4"
                       >
                         {post.status || "N/A"}
@@ -497,8 +547,10 @@ const PostDetail = () => {
                       <div className="d-flex align-items-center mb-2">
                         <strong>Condition:</strong>
                       </div>
-                      <Badge 
-                        bg={post.condition === "Active" ? "success" : "secondary"} 
+                      <Badge
+                        bg={
+                          post.condition === "Active" ? "success" : "secondary"
+                        }
                         className="ms-4"
                       >
                         {post.condition || "N/A"}
@@ -564,7 +616,11 @@ const PostDetail = () => {
                         Edit Post
                       </Button>
                       <Button
-                        variant={post.condition === "Active" ? "outline-warning" : "outline-success"}
+                        variant={
+                          post.condition === "Active"
+                            ? "outline-warning"
+                            : "outline-success"
+                        }
                         onClick={handleToggleCondition}
                         disabled={actionLoading}
                       >
@@ -572,7 +628,10 @@ const PostDetail = () => {
                           <Spinner size="sm" animation="border" />
                         ) : (
                           <>
-                            {post.condition === "Active" ? "Deactivate" : "Activate"} Post
+                            {post.condition === "Active"
+                              ? "Deactivate"
+                              : "Activate"}{" "}
+                            Post
                           </>
                         )}
                       </Button>
