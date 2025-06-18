@@ -34,7 +34,7 @@ function Login() {
     setLoading(true);
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_API}/auth/login`,
+        `http://localhost:4000/auth/login`,
         {
           email,
           password,

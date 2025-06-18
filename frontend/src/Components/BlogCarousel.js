@@ -26,7 +26,7 @@ const BlogCarousel = () => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_API}/post/`
+          `${"http://localhost:4000"}/post/`
         );
         const postData = Array.isArray(response.data.data)
           ? response.data.data

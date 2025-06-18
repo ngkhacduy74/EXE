@@ -88,7 +88,7 @@ export default function NewPostForm() {
 
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_API}/post/createPost`,
+        `${"http://localhost:4000"}/post/createPost`,
         submissionData,
         { headers }
       );

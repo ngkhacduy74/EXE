@@ -32,7 +32,7 @@ const Product2Carousel = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/product/`
+          `http://localhost:4000/product/`
         );
 
         // Handle different response structures

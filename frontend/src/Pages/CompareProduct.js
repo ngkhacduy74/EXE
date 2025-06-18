@@ -39,7 +39,7 @@ const CompareProduct = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_API}/product/`
+          `${"http://localhost:4000"}/product/`
         );
         console.log("API Response:", response.data);
 

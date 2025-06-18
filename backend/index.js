@@ -6,8 +6,13 @@ const app = express();
 const configs = require("./Config/index");
 
 const corsOptions = {
-  origin: "https://exe-frontend-ou98.onrender.com", // Thay thế bằng URL frontend của bạn trên Render
-  methods: ["GET", "POST"], // Thêm phương thức cho phép nếu cần thiết
+  origin: [
+    "http://localhost:3000", // Frontend local development
+    "https://exe-frontend-ou98.onrender.com" // Production URL
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  credentials: true,
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));

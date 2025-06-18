@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:8080",
+  "proxy": "http://localhost:4000",
   "dependencies": {
     "@livechat/ui-kit": "^0.5.0-34",
     "@redux-saga/delay-p": "^1.2.1",

@@ -32,7 +32,7 @@ const BestSellingCarousel = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/product/`
+          `http://localhost:4000/product/`
         );
 
         console.log("=== API RESPONSE ===");
@@ -120,7 +120,7 @@ const BestSellingCarousel = () => {
         if (firstImage && firstImage.trim() !== "") {
           // If it's a relative URL, make it absolute
           if (firstImage.startsWith("/") || firstImage.startsWith("./")) {
-            const baseUrl = process.env.REACT_APP_API_URL;
+            const baseUrl = "http://localhost:4000";
             const fullUrl = firstImage.startsWith("/")
               ? `${baseUrl}${firstImage}`
               : `${baseUrl}/${firstImage.replace("./", "")}`;
@@ -157,7 +157,7 @@ const BestSellingCarousel = () => {
         if (product.image.trim() !== "") {
           // If it's a relative URL, make it absolute
           if (product.image.startsWith("/") || product.image.startsWith("./")) {
-            const baseUrl = process.env.REACT_APP_API_URL;
+            const baseUrl = "http://localhost:4000";
             const fullUrl = product.image.startsWith("/")
               ? `${baseUrl}${product.image}`
               : `${baseUrl}/${product.image.replace("./", "")}`;

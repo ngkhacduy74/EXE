@@ -23,7 +23,7 @@ function Register() {
 
     try {
       const res = await axios.post(
-        `${process.env.REACT_APP_BACKEND_API}/file/upload-file`,
+        `${"http://localhost:4000"}/file/upload-file`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -84,7 +84,7 @@ function Register() {
       };
 
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_API}/auth/register`,
+        `${"http://localhost:4000"}/auth/register`,
         user
       );
 

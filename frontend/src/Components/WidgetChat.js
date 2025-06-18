@@ -301,7 +301,7 @@ export default function ChatWidget() {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_API}/chat/ask/`,
+        `${"http://localhost:4000"}/chat/ask/`,
         {
           method: "POST",
           headers: {

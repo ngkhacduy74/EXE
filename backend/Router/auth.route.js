@@ -8,11 +8,23 @@ const {
 } = require("../Controller/auth.controller");
 
 router.post("/login", async (req, res) => {
-  const result = await Login(req.body);
-  if (!result) {
-    res.status(500).json(result);
+  try {
+    console.log("Login request body:", req.body);
+    const result = await Login(req.body);
+    console.log("Login result:", result);
+    
+    if (result.success) {
+      res.status(200).json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Đăng nhập thất bại, vui lòng thử lại."
+    });
   }
-  res.status(200).json(result);
 });
 
 router.post("/register", authMiddleware.validateUser, async (req, res) => {
