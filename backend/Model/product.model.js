@@ -29,7 +29,7 @@ const ProductSchema = new mongoose.Schema(
       phone: { type: String, require: true },
       email: { type: String, require: true },
     },
->>>>>>> 6316d98a4a6119aac433ead086ab454a91ef1dec
+
   },
   {
     timestamps: true,

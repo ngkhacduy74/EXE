@@ -11,7 +11,14 @@ const api = axios.create({
   timeout: 5000,
 });
 
-
+const convertToEmbedUrl = (url) => {
+  const videoIdMatch = url.match(
+    /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?]+)/
+  );
+  return videoIdMatch
+    ? `https://www.youtube.com/embed/${videoIdMatch[1]}`
+    : url;
+};
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -21,6 +28,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState('');
+  const [selectedVideoType, setSelectedVideoType] = useState(''); // 'youtube' or 'direct'
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
@@ -60,7 +68,7 @@ const ProductDetail = () => {
             setTimeout(() => navigate('/login'), 2000);
             break;
           case 403:
-            setError('Access denied. You don’t have permission to view this product.');
+            setError('Access denied. You dont have permission to view this product.');
             break;
           case 404:
             setError('Product not found. It may have been deleted or the ID is incorrect.');
@@ -126,6 +134,12 @@ const ProductDetail = () => {
   const handleVideoPlay = (videoUrl) => {
     if (videoUrl && typeof videoUrl === 'string') {
       setSelectedVideo(videoUrl);
+      // Kiểm tra xem có phải YouTube video không
+      if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be")) {
+        setSelectedVideoType('youtube');
+      } else {
+        setSelectedVideoType('direct');
+      }
       setShowVideoModal(true);
     }
   };
@@ -229,7 +243,7 @@ const ProductDetail = () => {
                       src={images[selectedImageIndex]}
                       alt={`${product.name} - Image ${selectedImageIndex + 1}`}
                       className="img-fluid rounded"
-                      style={{ width: '100%', maxHeight: '300px', objectFit: 'cover' }}
+                      style={{ width: '100%', maxHeight: 'fit-content', objectFit: 'cover' }}
                       onError={handleImageError}
                       loading="lazy"
                     />
@@ -271,20 +285,55 @@ const ProductDetail = () => {
                     <Row>
                       {product.video.map((vid, index) => (
                         <Col key={index} xs={6} className="mb-3">
-                          <div
-                            className="position-relative bg-dark rounded overflow-hidden"
-                            style={{ height: '120px', cursor: 'pointer' }}
-                            onClick={() => handleVideoPlay(vid)}
-                            role="button"
-                            aria-label={`Play video ${index + 1}`}
-                          >
-                            <div className="position-absolute top-50 start-50 translate-middle text-white">
-                              <i className="fas fa-play-circle" style={{ fontSize: '3rem' }}></i>
+                          {vid.includes("youtube.com") || vid.includes("youtu.be") ? (
+                            <div 
+                              className="ratio ratio-16x9 position-relative"
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleVideoPlay(vid)}
+                            >
+                              <iframe
+                                src={convertToEmbedUrl(vid)}
+                                title={`YouTube video ${index + 1}`}
+                                allowFullScreen
+                                className="rounded"
+                                style={{ pointerEvents: 'none' }}
+                              ></iframe>
+                              <div 
+                                className="position-absolute top-50 start-50 translate-middle"
+                                style={{ 
+                                  background: 'rgba(0,0,0,0.7)', 
+                                  borderRadius: '50%', 
+                                  padding: '15px',
+                                  color: 'white',
+                                  fontSize: '24px'
+                                }}
+                              >
+                                <i className="fas fa-expand-alt"></i>
+                              </div>
                             </div>
-                            <div className="position-absolute bottom-0 start-0 end-0 bg-gradient-dark text-white p-2">
-                              <small>Video {index + 1}</small>
+                          ) : (
+                            <div className="position-relative" style={{ cursor: 'pointer' }}>
+                              <video
+                                src={vid}
+                                className="w-100 rounded"
+                                style={{ height: "200px", objectFit: "cover" }}
+                                onClick={() => handleVideoPlay(vid)}
+                              ></video>
+                              <div 
+                                className="position-absolute top-50 start-50 translate-middle"
+                                style={{ 
+                                  background: 'rgba(0,0,0,0.7)', 
+                                  borderRadius: '50%', 
+                                  padding: '15px',
+                                  color: 'white',
+                                  fontSize: '24px',
+                                  pointerEvents: 'none'
+                                }}
+                              >
+                                <i className="fas fa-play"></i>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </Col>
                       ))}
                     </Row>
@@ -457,23 +506,48 @@ const ProductDetail = () => {
         </Col>
       </Row>
 
-      <Modal show={showVideoModal} onHide={() => setShowVideoModal(false)} size="lg" centered>
+      {/* Video Modal */}
+      <Modal show={showVideoModal} onHide={() => setShowVideoModal(false)} size="xl" centered>
         <Modal.Header closeButton>
-          <Modal.Title>Product Video</Modal.Title>
+          <Modal.Title>
+            <i className="fas fa-video me-2"></i>
+            {product.name} - Product Video
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-0">
-          {selectedVideo && (
+          {selectedVideo && selectedVideoType === 'youtube' ? (
+            <div className="ratio ratio-16x9">
+              <iframe
+                src={convertToEmbedUrl(selectedVideo)}
+                title="Product video"
+                allowFullScreen
+                className="w-100"
+                style={{ minHeight: '400px' }}
+              ></iframe>
+            </div>
+          ) : selectedVideo && selectedVideoType === 'direct' ? (
             <video
               controls
+              autoPlay
               className="w-100"
-              style={{ maxHeight: '400px' }}
+              style={{ maxHeight: '600px' }}
               src={selectedVideo}
               aria-label="Product video playback"
             >
               Your browser does not support the video tag.
             </video>
+          ) : (
+            <div className="text-center p-4">
+              <p>Video không thể tải được.</p>
+            </div>
           )}
         </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowVideoModal(false)}>
+            <i className="fas fa-times me-2"></i>
+            Close
+          </Button>
+        </Modal.Footer>
       </Modal>
     </Container>
   );

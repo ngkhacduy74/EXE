@@ -31,15 +31,15 @@ const ProductSchema = Joi.object({
     )
     .required(),
 
-  video: Joi.array()
+    video: Joi.array()
     .items(
       Joi.string()
         .uri()
-        .pattern(/\.(mp4|mov|webm)$/i)
-        .message("URL video không hợp lệ")
+        .pattern(/^(https?:\/\/)?(www\.youtube\.com|youtu\.be)\/.+$/)
+        .message("URL video YouTube không hợp lệ")
     )
     .optional(),
-
+  
   name: Joi.string().required(),
   brand: Joi.string().required(),
 

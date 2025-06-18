@@ -60,7 +60,7 @@ const Product2Carousel = () => {
 
   // Handle navigation to product details
   const handleProductClick = (productId) => {
-    navigate(`/product/${productId}`);
+    navigate(`/productView/${productId}`);
   };
 
   // Handle quantity change

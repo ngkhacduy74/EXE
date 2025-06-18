@@ -6,14 +6,34 @@ import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Container, Spinner } from 'react-bootstrap';
+import { loadRecentlyViewed, addToRecentlyViewed, clearRecentlyViewed } from '../utils/recentlyViewed';
 const backUpImg = "/images/frigde.png"; 
 
 const BestSellingCarousel = () => {
   const [products, setProducts] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantities, setQuantities] = useState({});
   const navigate = useNavigate();
+
+  // Load recently viewed products from localStorage
+  useEffect(() => {
+    const recentlyViewedProducts = loadRecentlyViewed();
+    setRecentlyViewed(recentlyViewedProducts);
+  }, []);
+
+  // Add product to recently viewed
+  const handleAddToRecentlyViewed = (product) => {
+    const updatedRecentlyViewed = addToRecentlyViewed(product);
+    setRecentlyViewed(updatedRecentlyViewed);
+  };
+
+  // Clear recently viewed products
+  const handleClearRecentlyViewed = () => {
+    clearRecentlyViewed();
+    setRecentlyViewed([]);
+  };
 
   // Initialize quantities for each product
   useEffect(() => {
@@ -60,7 +80,11 @@ const BestSellingCarousel = () => {
 
   // Handle navigation to product details
   const handleProductClick = (productId) => {
-    navigate(`/product/${productId}`);
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      handleAddToRecentlyViewed(product);
+    }
+    navigate(`/productView/${productId}`);
   };
 
   // Handle quantity change
@@ -316,6 +340,19 @@ const BestSellingCarousel = () => {
                     >
                       ABABA
                     </button>
+                    <button
+                      className="nav-link text-uppercase fs-6 fw-medium px-4"
+                      id="nav-recent-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#nav-recent"
+                      type="button"
+                      role="tab"
+                    >
+                      Đã xem
+                      {recentlyViewed.length > 0 && (
+                        <span className="badge bg-primary ms-1">{recentlyViewed.length}</span>
+                      )}
+                    </button>
                   </div>
                 </nav>
               </div>
@@ -349,6 +386,38 @@ const BestSellingCarousel = () => {
                   aria-labelledby="nav-ababa-tab"
                 >
                   {renderSwiper(ababaProducts)}
+                </div>
+
+                {/* Tab Pane: Recently Viewed */}
+                <div
+                  className="tab-pane fade"
+                  id="nav-recent"
+                  role="tabpanel"
+                  aria-labelledby="nav-recent-tab"
+                >
+                  {recentlyViewed.length > 0 ? (
+                    <div>
+                      <div className="d-flex justify-content-between align-items-center mb-3">
+                        <p className="text-muted mb-0">
+                          Sản phẩm bạn đã xem gần đây ({recentlyViewed.length} sản phẩm)
+                        </p>
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={handleClearRecentlyViewed}
+                        >
+                          <i className="fas fa-trash me-1"></i>
+                          Xóa lịch sử
+                        </button>
+                      </div>
+                      {renderSwiper(recentlyViewed)}
+                    </div>
+                  ) : (
+                    <div className="text-center py-5">
+                      <div className="text-muted mb-3" style={{ fontSize: '3rem' }}>👁️</div>
+                      <h5 className="text-muted">Chưa có sản phẩm đã xem</h5>
+                      <p className="text-muted">Khi bạn xem sản phẩm, chúng sẽ xuất hiện ở đây</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

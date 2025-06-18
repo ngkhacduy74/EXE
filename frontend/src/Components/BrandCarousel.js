@@ -35,15 +35,25 @@ const BestSellingCarousel = () => {
           `${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/product/`
         );
 
+        console.log('=== API RESPONSE ===');
+        console.log('Full response:', response);
+        console.log('Response data:', response.data);
+        console.log('Response data.data:', response.data.data);
+
         // Handle different response structures
         const productData = Array.isArray(response.data.data)
           ? response.data.data
           : [];
 
+        console.log('Product data after processing:', productData);
+
         // Filter products to only include those with status "New"
         const newProducts = productData.filter(product => 
           product.status === "New"
         );
+
+        console.log('New products after filtering:', newProducts);
+        console.log('Sample product structure:', newProducts[0]);
 
         if (newProducts.length === 0) {
           throw new Error('No new products found.');
@@ -64,7 +74,7 @@ const BestSellingCarousel = () => {
 
   // Handle navigation to product details
   const handleProductClick = (productId) => {
-    navigate(`/product/${productId}`);
+    navigate(`/productView/${productId}`);
   };
 
   // Handle quantity change
@@ -83,19 +93,114 @@ const BestSellingCarousel = () => {
     // Implement your cart logic here
   };
 
+  // Test if image URL is accessible
+  const testImageUrl = (url) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
+  };
+
   // Get product image (handle array format)
   const getProductImage = (product) => {
-    if (Array.isArray(product.image) && product.image.length > 0) {
-      return product.image[0];
-    } else if (typeof product.image === 'string') {
-      return product.image;
+    console.log('=== DEBUG getProductImage ===');
+    console.log('Product name:', product.name);
+    console.log('Product image data:', product.image);
+    console.log('Product image type:', typeof product.image);
+    console.log('Is array:', Array.isArray(product.image));
+    
+    if (product.image) {
+      if (Array.isArray(product.image) && product.image.length > 0) {
+        const firstImage = product.image[0];
+        console.log('First image from array:', firstImage);
+        
+        // Check if URL is valid
+        if (firstImage && firstImage.trim() !== '') {
+          // If it's a relative URL, make it absolute
+          if (firstImage.startsWith('/') || firstImage.startsWith('./')) {
+            const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+            const fullUrl = firstImage.startsWith('/') 
+              ? `${baseUrl}${firstImage}` 
+              : `${baseUrl}/${firstImage.replace('./', '')}`;
+            console.log('Converted relative URL to:', fullUrl);
+            return fullUrl;
+          }
+          
+          // If it's already a full URL (http/https), use it directly
+          if (firstImage.startsWith('http://') || firstImage.startsWith('https://')) {
+            console.log('Returning absolute URL:', firstImage);
+            return firstImage;
+          }
+          
+          // If it's a Cloudinary URL or other image service, use it directly
+          if (firstImage.includes('cloudinary.com') || 
+              firstImage.includes('res.cloudinary.com') ||
+              firstImage.includes('imgur.com') ||
+              firstImage.includes('unsplash.com')) {
+            console.log('Returning image service URL:', firstImage);
+            return firstImage;
+          }
+          
+          console.log('Returning image URL:', firstImage);
+          return firstImage;
+        }
+      } else if (typeof product.image === 'string') {
+        console.log('Using image as string:', product.image);
+        
+        if (product.image.trim() !== '') {
+          // If it's a relative URL, make it absolute
+          if (product.image.startsWith('/') || product.image.startsWith('./')) {
+            const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+            const fullUrl = product.image.startsWith('/') 
+              ? `${baseUrl}${product.image}` 
+              : `${baseUrl}/${product.image.replace('./', '')}`;
+            console.log('Converted relative URL to:', fullUrl);
+            return fullUrl;
+          }
+          
+          // If it's already a full URL (http/https), use it directly
+          if (product.image.startsWith('http://') || product.image.startsWith('https://')) {
+            console.log('Returning absolute URL:', product.image);
+            return product.image;
+          }
+          
+          // If it's a Cloudinary URL or other image service, use it directly
+          if (product.image.includes('cloudinary.com') || 
+              product.image.includes('res.cloudinary.com') ||
+              product.image.includes('imgur.com') ||
+              product.image.includes('unsplash.com')) {
+            console.log('Returning image service URL:', product.image);
+            return product.image;
+          }
+          
+          console.log('Returning image URL:', product.image);
+          return product.image;
+        }
+      }
     }
-    return backUpImg; // Fallback image
+    // Fallback image
+    console.log('Using fallback image:', backUpImg);
+    return backUpImg;
   };
 
   // Handle image load error
   const handleImageError = (e) => {
+    console.log('=== IMAGE ERROR ===');
+    console.log('Failed to load image:', e.target.src);
+    console.log('Product name:', e.target.alt);
+    console.log('Setting fallback to:', backUpImg);
+    
+    // Prevent infinite loop
+    if (e.target.src === backUpImg) {
+      console.log('Already using fallback image, not changing');
+      return;
+    }
+    
     e.target.src = backUpImg;
+    e.target.alt = 'product placeholder';
+    e.target.onerror = null; // Prevent infinite loop
   };
 
   // Filter products by category/brand for tabs (only from new products)
@@ -109,7 +214,31 @@ const BestSellingCarousel = () => {
 
   // Hide component on error or if no products
   if (error || products.length === 0) {
-    return null;
+    return (
+      <section className="py-5">
+        <div className="container-fluid px-4">
+          <div className="row">
+            <div className="col-md-12">
+              <div className="text-center">
+                <h3 className="fw-bold mb-3">Các sản phẩm mới</h3>
+                {error ? (
+                  <div className="alert alert-warning" role="alert">
+                    <i className="fas fa-exclamation-triangle me-2"></i>
+                    {error}
+                  </div>
+                ) : (
+                  <div className="text-center py-5">
+                    <div className="text-muted mb-3" style={{ fontSize: '3rem' }}>📦</div>
+                    <h5 className="text-muted">Chưa có sản phẩm mới</h5>
+                    <p className="text-muted">Vui lòng quay lại sau</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   // Show loading spinner
@@ -161,8 +290,10 @@ const BestSellingCarousel = () => {
           <img
             src={getProductImage(product)}
             className="img-fluid rounded-top"
-            alt={product.name}
+            alt={product.name || 'Product'}
             onError={handleImageError}
+            onLoad={() => console.log('Image loaded successfully:', product.name, 'URL:', getProductImage(product))}
+            loading="lazy"
             style={{ 
               height: '240px', 
               width: '100%', 
@@ -276,7 +407,9 @@ const BestSellingCarousel = () => {
         ) : (
           <SwiperSlide>
             <div className="text-center p-5">
-              <p className="text-muted">No new products available.</p>
+              <div className="text-muted mb-3" style={{ fontSize: '3rem' }}>📦</div>
+              <h5 className="text-muted">Không có sản phẩm</h5>
+              <p className="text-muted">Vui lòng thử lại sau</p>
             </div>
           </SwiperSlide>
         )}
@@ -286,6 +419,62 @@ const BestSellingCarousel = () => {
 
   return (
     <section className="py-5">
+      <style>
+        {`
+          /* CSS cho đồng nhất kích thước hình ảnh */
+          .product-item .card-img-top {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.3s ease;
+          }
+
+          .product-item:hover .card-img-top {
+            transform: scale(1.05);
+          }
+
+          .product-item .card {
+            height: 100%;
+            transition: box-shadow 0.3s ease;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+
+          .product-item:hover .card {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #007bff;
+          }
+
+          .product-item {
+            transition: transform 0.2s ease-in-out;
+          }
+
+          .product-item:hover {
+            transform: translateY(-2px);
+          }
+
+          /* Loading skeleton */
+          .product-item .card-img-top[alt="product placeholder"] {
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+          }
+
+          .product-item .card-img-top[alt="product placeholder"]::before {
+            content: "📦";
+            font-size: 3rem;
+            color: #6c757d;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+        `}
+      </style>
       <div className="container-fluid px-4">
         <div className="row">
           <div className="col-md-12">
