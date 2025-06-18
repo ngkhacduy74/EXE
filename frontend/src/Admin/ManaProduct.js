@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Table, Button, Form, Modal } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Table,
+  Button,
+  Form,
+  Modal,
+} from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { Plus, Eye, EyeOff, Check, Package, Trash2 } from "lucide-react";
@@ -8,34 +16,36 @@ import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
 
 const api = axios.create({
-  baseURL: 'http://localhost:4000',
+  baseURL: process.env.REACT_APP_API_URL, // Sử dụng trực tiếp biến môi trường mà không cần dấu $ và {}
   timeout: 5000,
 });
 
 const ManageProduct = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Token state management - similar to AdminDashboard
   const [tokens, setTokens] = useState(() => {
     // First try to get from location state
     const locationToken = location.state?.token;
     const locationRefreshToken = location.state?.refresh_token;
-    
+
     if (locationToken && locationRefreshToken) {
       return {
         accessToken: locationToken,
-        refreshToken: locationRefreshToken
+        refreshToken: locationRefreshToken,
       };
     }
-    
+
     // Fallback to localStorage
     try {
       const accessToken = localStorage.getItem("token");
-      const refreshToken = localStorage.getItem("refreshToken") || localStorage.getItem("refresh_token");
+      const refreshToken =
+        localStorage.getItem("refreshToken") ||
+        localStorage.getItem("refresh_token");
       return {
         accessToken: accessToken || null,
-        refreshToken: refreshToken || null
+        refreshToken: refreshToken || null,
       };
     } catch (error) {
       console.error("Error accessing localStorage:", error);
@@ -53,7 +63,7 @@ const ManageProduct = () => {
   const [brands, setBrands] = useState([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  
+
   // Delete modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
@@ -66,16 +76,22 @@ const ManageProduct = () => {
   useEffect(() => {
     const locationToken = location.state?.token;
     const locationRefreshToken = location.state?.refresh_token;
-    
+
     if (locationToken && locationRefreshToken) {
-      console.log("✅ Token from location:", locationToken.substring(0, 15) + "...");
-      console.log("🔄 Refresh Token from location:", locationRefreshToken.substring(0, 15) + "...");
-      
+      console.log(
+        "✅ Token from location:",
+        locationToken.substring(0, 15) + "..."
+      );
+      console.log(
+        "🔄 Refresh Token from location:",
+        locationRefreshToken.substring(0, 15) + "..."
+      );
+
       setTokens({
         accessToken: locationToken,
-        refreshToken: locationRefreshToken
+        refreshToken: locationRefreshToken,
       });
-      
+
       // Optionally save to localStorage for persistence
       try {
         localStorage.setItem("token", locationToken);
@@ -91,44 +107,44 @@ const ManageProduct = () => {
   // Token refresh function
   const refreshAccessToken = async () => {
     if (!tokens.refreshToken) {
-      console.error('No refresh token available');
-      throw new Error('No refresh token available');
+      console.error("No refresh token available");
+      throw new Error("No refresh token available");
     }
 
     try {
-      console.log('Attempting to refresh token...');
+      console.log("Attempting to refresh token...");
 
-      const response = await api.post('/auth/refresh-token', {
+      const response = await api.post("/auth/refresh-token", {
         refresh_token: tokens.refreshToken,
       });
 
       const { token, refresh_token } = response.data;
       if (!token || !refresh_token) {
-        throw new Error('Invalid refresh token response');
+        throw new Error("Invalid refresh token response");
       }
 
       const newTokens = {
         accessToken: token,
-        refreshToken: refresh_token
+        refreshToken: refresh_token,
       };
 
       // Update localStorage
       try {
-        localStorage.setItem('token', token);
-        localStorage.setItem('refreshToken', refresh_token);
+        localStorage.setItem("token", token);
+        localStorage.setItem("refreshToken", refresh_token);
       } catch (error) {
         console.error("Error saving refreshed tokens:", error);
       }
 
       setTokens(newTokens);
-      console.log('✅ Tokens refreshed successfully');
+      console.log("✅ Tokens refreshed successfully");
       return token;
     } catch (err) {
-      console.error('Error refreshing token:', err);
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('refresh_token'); // Clean up old key too
-      window.location.href = '/login';
+      console.error("Error refreshing token:", err);
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("refresh_token"); // Clean up old key too
+      window.location.href = "/login";
       throw err;
     }
   };
@@ -137,7 +153,7 @@ const ManageProduct = () => {
   const makeAuthenticatedRequest = async (config, retryCount = 0) => {
     try {
       if (!tokens.accessToken) {
-        throw new Error('No access token available');
+        throw new Error("No access token available");
       }
 
       const requestConfig = {
@@ -151,18 +167,24 @@ const ManageProduct = () => {
       const response = await api.request(requestConfig);
       return response;
     } catch (err) {
-      if (err.response?.status === 401 && retryCount === 0 && tokens.refreshToken) {
-        console.warn('Access token expired. Attempting to refresh...');
+      if (
+        err.response?.status === 401 &&
+        retryCount === 0 &&
+        tokens.refreshToken
+      ) {
+        console.warn("Access token expired. Attempting to refresh...");
         try {
           await refreshAccessToken();
           return makeAuthenticatedRequest(config, 1); // Retry once
         } catch (refreshErr) {
-          throw new Error('Session expired. Please log in again.');
+          throw new Error("Session expired. Please log in again.");
         }
       } else if (err.response?.status === 429) {
-        throw new Error('Too many requests. Please try again later.');
+        throw new Error("Too many requests. Please try again later.");
       } else if (!err.response) {
-        throw new Error('Server connection error. Please check your connection.');
+        throw new Error(
+          "Server connection error. Please check your connection."
+        );
       }
       throw err;
     }
@@ -174,7 +196,7 @@ const ManageProduct = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Check if we have tokens
         if (!tokens.accessToken) {
           console.log("No access token available");
@@ -182,10 +204,10 @@ const ManageProduct = () => {
           setLoading(false);
           return;
         }
-        
+
         const response = await makeAuthenticatedRequest({
-          method: 'GET',
-          url: '/product/',
+          method: "GET",
+          url: "/product/",
         });
 
         console.log("API Response:", response.data);
@@ -198,18 +220,22 @@ const ManageProduct = () => {
         setFilteredProducts(productData);
 
         // Extract unique brands
-        const uniqueBrands = [...new Set(productData.map((p) => p.brand).filter(Boolean))];
+        const uniqueBrands = [
+          ...new Set(productData.map((p) => p.brand).filter(Boolean)),
+        ];
         setBrands(uniqueBrands);
       } catch (err) {
         console.error("Fetch Error:", err);
-        setError(err.message || "Failed to fetch products. Please try again later.");
+        setError(
+          err.message || "Failed to fetch products. Please try again later."
+        );
         setProducts([]);
         setFilteredProducts([]);
       } finally {
         setLoading(false);
       }
     };
-    
+
     // Only fetch if we have access token
     if (tokens.accessToken) {
       fetchProducts();
@@ -234,7 +260,9 @@ const ManageProduct = () => {
 
     // Filter by brands
     if (selectedBrands.length > 0) {
-      result = result.filter((product) => selectedBrands.includes(product.brand));
+      result = result.filter((product) =>
+        selectedBrands.includes(product.brand)
+      );
     }
 
     // Filter by price range
@@ -263,9 +291,7 @@ const ManageProduct = () => {
   // Handle brand checkbox change
   const handleBrandChange = (brand) => {
     setSelectedBrands((prev) =>
-      prev.includes(brand)
-        ? prev.filter((b) => b !== brand)
-        : [...prev, brand]
+      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
     );
   };
 
@@ -303,7 +329,7 @@ const ManageProduct = () => {
     const newStatus = currentStatus === "New" ? "SecondHand" : "New";
     try {
       await makeAuthenticatedRequest({
-        method: 'PUT',
+        method: "PUT",
         url: `/product/${productId}`,
         data: {
           status: newStatus,
@@ -316,7 +342,7 @@ const ManageProduct = () => {
           product.id === productId ? { ...product, status: newStatus } : product
         )
       );
-      
+
       console.log(`Product ${productId} status updated to ${newStatus}`);
     } catch (err) {
       console.error("Error updating product status:", err);
@@ -337,19 +363,20 @@ const ManageProduct = () => {
     try {
       setDeleteLoading(true);
       await makeAuthenticatedRequest({
-        method: 'DELETE',
+        method: "DELETE",
         url: `/product/${productToDelete.id}`,
       });
 
       // Remove product from local state
-      setProducts(products.filter(product => product.id !== productToDelete.id));
-      
+      setProducts(
+        products.filter((product) => product.id !== productToDelete.id)
+      );
+
       console.log(`Product ${productToDelete.id} deleted successfully`);
-      
+
       // Close modal and reset state
       setShowDeleteModal(false);
       setProductToDelete(null);
-      
     } catch (err) {
       console.error("Error deleting product:", err);
       setError(err.message || "Failed to delete product.");
@@ -372,7 +399,10 @@ const ManageProduct = () => {
     return (
       <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
         <HeaderAdmin />
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "50vh" }}
+        >
           <div className="text-center">
             <div className="spinner-border text-primary" role="status">
               <span className="visually-hidden">Loading...</span>
@@ -440,8 +470,8 @@ const ManageProduct = () => {
             {error && !error.includes("Session expired") && (
               <div className="alert alert-warning mb-3" role="alert">
                 <strong>Warning:</strong> {error}
-                <button 
-                  className="btn btn-link btn-sm ms-2" 
+                <button
+                  className="btn btn-link btn-sm ms-2"
                   onClick={() => window.location.reload()}
                 >
                   Retry
@@ -452,8 +482,8 @@ const ManageProduct = () => {
             {/* Header with title and Create button */}
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h3 className="mb-0">Manage Products</h3>
-              <Button 
-                variant="success" 
+              <Button
+                variant="success"
                 size="lg"
                 onClick={handleCreateProduct}
                 className="d-flex align-items-center"
@@ -479,7 +509,10 @@ const ManageProduct = () => {
               <Col md={2}>
                 <Form.Group>
                   <Form.Label>Filter by Status</Form.Label>
-                  <Form.Select value={statusFilter} onChange={handleStatusChange}>
+                  <Form.Select
+                    value={statusFilter}
+                    onChange={handleStatusChange}
+                  >
                     <option value="All">All</option>
                     <option value="New">New</option>
                     <option value="SecondHand">Second Hand</option>
@@ -548,8 +581,8 @@ const ManageProduct = () => {
                 <Package size={48} className="text-muted mb-3" />
                 <p className="text-muted">No products found.</p>
                 {products.length === 0 && !error && (
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     onClick={handleCreateProduct}
                     className="mt-2"
                   >
@@ -584,14 +617,20 @@ const ManageProduct = () => {
                       <td>{product.brand || "N/A"}</td>
                       <td>
                         {product.price
-                          ? `${parseFloat(product.price).toLocaleString("vi-VN")} VND`
+                          ? `${parseFloat(product.price).toLocaleString(
+                              "vi-VN"
+                            )} VND`
                           : "N/A"}
                       </td>
-                      <td>{product.capacity ? `${product.capacity} kg` : "N/A"}</td>
                       <td>
-                        <span 
+                        {product.capacity ? `${product.capacity} kg` : "N/A"}
+                      </td>
+                      <td>
+                        <span
                           className={`badge ${
-                            product.status === "New" ? "bg-success" : "bg-warning"
+                            product.status === "New"
+                              ? "bg-success"
+                              : "bg-warning"
                           }`}
                         >
                           {product.status || "N/A"}
@@ -608,12 +647,24 @@ const ManageProduct = () => {
                             <Eye size={16} />
                           </Button>
                           <Button
-                            variant={product.status === "New" ? "danger" : "success"}
+                            variant={
+                              product.status === "New" ? "danger" : "success"
+                            }
                             size="sm"
-                            onClick={() => handleToggleStatus(product.id, product.status)}
-                            title={product.status === "New" ? "Mark as Second Hand" : "Mark as New"}
+                            onClick={() =>
+                              handleToggleStatus(product.id, product.status)
+                            }
+                            title={
+                              product.status === "New"
+                                ? "Mark as Second Hand"
+                                : "Mark as New"
+                            }
                           >
-                            {product.status === "New" ? <EyeOff size={16} /> : <Check size={16} />}
+                            {product.status === "New" ? (
+                              <EyeOff size={16} />
+                            ) : (
+                              <Check size={16} />
+                            )}
                           </Button>
                           <Button
                             variant="danger"
@@ -653,29 +704,41 @@ const ManageProduct = () => {
                 <strong>{productToDelete.name}</strong>
                 <br />
                 <small className="text-muted">
-                  Brand: {productToDelete.brand} | 
-                  Price: {productToDelete.price ? `${parseFloat(productToDelete.price).toLocaleString("vi-VN")} VND` : "N/A"}
+                  Brand: {productToDelete.brand} | Price:{" "}
+                  {productToDelete.price
+                    ? `${parseFloat(productToDelete.price).toLocaleString(
+                        "vi-VN"
+                      )} VND`
+                    : "N/A"}
                 </small>
               </div>
             )}
             <div className="alert alert-warning mt-3">
-              <strong>Warning:</strong> This action cannot be undone. The product will be permanently deleted from the system.
+              <strong>Warning:</strong> This action cannot be undone. The
+              product will be permanently deleted from the system.
             </div>
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={cancelDelete} disabled={deleteLoading}>
+          <Button
+            variant="secondary"
+            onClick={cancelDelete}
+            disabled={deleteLoading}
+          >
             Cancel
           </Button>
-          <Button 
-            variant="danger" 
-            onClick={confirmDeleteProduct} 
+          <Button
+            variant="danger"
+            onClick={confirmDeleteProduct}
             disabled={deleteLoading}
             className="d-flex align-items-center"
           >
             {deleteLoading ? (
               <>
-                <div className="spinner-border spinner-border-sm me-2" role="status">
+                <div
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                >
                   <span className="visually-hidden">Loading...</span>
                 </div>
                 Deleting...

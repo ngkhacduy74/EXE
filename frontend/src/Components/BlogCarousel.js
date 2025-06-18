@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import Swiper from 'swiper';
-import { Navigation } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import Swiper from "swiper";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import axios from "axios";
 
 // Utility function to format createdAt date
 const formatDate = (dateString) => {
-  if (!dateString) return 'N/A';
+  if (!dateString) return "N/A";
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   }); // e.g., "22 Aug 2021"
 };
 
@@ -25,19 +25,23 @@ const BlogCarousel = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/post/');
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_API}/post/`
+        );
         const postData = Array.isArray(response.data.data)
           ? response.data.data
           : Array.isArray(response.data)
           ? response.data
           : [];
         // Filter posts where condition is "Approved"
-        const approvedPosts = postData.filter((post) => post.condition === 'Approved');
+        const approvedPosts = postData.filter(
+          (post) => post.condition === "Approved"
+        );
         setPosts(approvedPosts);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching posts:', err);
-        setError('Failed to load posts. Please try again.');
+        console.error("Error fetching posts:", err);
+        setError("Failed to load posts. Please try again.");
         setLoading(false);
       }
     };
@@ -48,14 +52,14 @@ const BlogCarousel = () => {
   // Initialize Swiper after posts are loaded
   useEffect(() => {
     if (!loading && posts.length > 0) {
-      new Swiper('.blog-carousel', {
+      new Swiper(".blog-carousel", {
         modules: [Navigation],
         slidesPerView: 3,
         spaceBetween: 30,
         speed: 500,
         navigation: {
-          nextEl: '.blog-carousel-next',
-          prevEl: '.blog-carousel-prev',
+          nextEl: ".blog-carousel-next",
+          prevEl: ".blog-carousel-prev",
         },
         breakpoints: {
           0: { slidesPerView: 1 },
@@ -70,7 +74,7 @@ const BlogCarousel = () => {
     <article className="post-item card border-0 shadow-sm p-3">
       <div className="image-holder zoom-effect">
         <a href="#">
-          <img src={image} alt={title || 'post'} className="card-img-top" />
+          <img src={image} alt={title || "post"} className="card-img-top" />
         </a>
       </div>
       <div className="card-body">
@@ -78,13 +82,13 @@ const BlogCarousel = () => {
           <div className="meta-date">
             <svg width="16" height="16">
               <use href="#calendar" />
-            </svg>{' '}
+            </svg>{" "}
             {date}
           </div>
           <div className="meta-categories">
             <svg width="16" height="16">
               <use href="#category" />
-            </svg>{' '}
+            </svg>{" "}
             {category}
           </div>
         </div>
@@ -129,7 +133,7 @@ const BlogCarousel = () => {
               <h2 className="section-title">Our Recent Blog</h2>
               <div className="btn-wrap align-right">
                 <a href="#" className="d-flex align-items-center nav-link">
-                  Read All Articles{' '}
+                  Read All Articles{" "}
                   <svg width="24" height="24">
                     <use href="#arrow-right" />
                   </svg>
@@ -151,7 +155,7 @@ const BlogCarousel = () => {
             <h2 className="section-title">Our Recent Blog</h2>
             <div className="btn-wrap align-right">
               <a href="#" className="d-flex align-items-center nav-link">
-                Read All Articles{' '}
+                Read All Articles{" "}
                 <svg width="24" height="24">
                   <use href="#arrow-right" />
                 </svg>
@@ -166,18 +170,24 @@ const BlogCarousel = () => {
                 {posts.map((post) => (
                   <div className="swiper-slide" key={post._id}>
                     <BlogPost
-                      image={post.image || '/images/default-post.jpg'}
+                      image={post.image || "/images/default-post.jpg"}
                       date={formatDate(post.createdAt)}
-                      category={post.category || 'N/A'}
-                      title={post.title || 'Untitled'}
-                      description={post.description || 'No description available.'}
+                      category={post.category || "N/A"}
+                      title={post.title || "Untitled"}
+                      description={
+                        post.description || "No description available."
+                      }
                     />
                   </div>
                 ))}
               </div>
               <div className="swiper-buttons d-flex justify-content-center mt-3">
-                <button className="swiper-prev blog-carousel-prev btn btn-yellow">❮</button>
-                <button className="swiper-next blog-carousel-next btn btn-yellow">❯</button>
+                <button className="swiper-prev blog-carousel-prev btn btn-yellow">
+                  ❮
+                </button>
+                <button className="swiper-next blog-carousel-next btn btn-yellow">
+                  ❯
+                </button>
               </div>
             </div>
           </div>

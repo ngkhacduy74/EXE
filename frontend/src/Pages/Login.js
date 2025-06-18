@@ -33,10 +33,13 @@ function Login() {
 
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:4000/auth/login", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_API}/auth/login`,
+        {
+          email,
+          password,
+        }
+      );
       console.log("Full login response:", response);
       console.log("Response data:", response.data);
 
@@ -47,14 +50,15 @@ function Login() {
 
         localStorage.setItem("token", token); // Save token
         navigate("/otp", { state: { email } });
-
       } else {
         throw new Error(response.data.message || "Đăng nhập thất bại.");
       }
     } catch (error) {
       console.error("Login error:", error);
       console.error("Error response:", error.response?.data);
-      alert(error.response?.data?.message || "Đăng nhập thất bại, vui lòng thử lại.");
+      alert(
+        error.response?.data?.message || "Đăng nhập thất bại, vui lòng thử lại."
+      );
     } finally {
       setLoading(false);
     }
@@ -206,7 +210,9 @@ function Login() {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  {modalType === "terms" ? "Điều khoản dịch vụ" : "Chính sách khách hàng"}
+                  {modalType === "terms"
+                    ? "Điều khoản dịch vụ"
+                    : "Chính sách khách hàng"}
                 </h5>
               </div>
               <div
@@ -225,7 +231,8 @@ function Login() {
                 {!canClose && (
                   <div className="text-center mt-3">
                     <small className="text-muted">
-                      <i className="fas fa-arrow-down"></i> Vui lòng lướt xuống cuối để tiếp tục
+                      <i className="fas fa-arrow-down"></i> Vui lòng lướt xuống
+                      cuối để tiếp tục
                     </small>
                   </div>
                 )}
