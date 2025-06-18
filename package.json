@@ -1,19 +1,7 @@
 {
-  "dependencies": {
-    "bcrypt": "^5.1.1",
-    "dotenv": "^16.4.7",
-    "ejs": "^3.1.10",
-    "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.5",
-    "multer": "^1.4.5-lts.1",
-    "multer-storage-cloudinary": "^4.0.0",
-    "uuid": "^11.0.5"
-  },
   "name": "exe",
   "version": "1.0.0",
   "main": "index.js",
-  "devDependencies": {},
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd backend && nodemon index.js",
@@ -23,17 +11,32 @@
     "@livechat/livechat-visitor-sdk": "^0.36.2",
     "@redux-saga/delay-p": "^1.2.1",
     "axios": "^1.7.9",
+    "bcrypt": "^5.1.1",
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.9",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
     "google-search-results-nodejs": "^2.1.0",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.511.0",
+    "mongoose": "^8.9.5",
+    "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "react": "^18.3.1",
     "react-chartjs-2": "^5.3.0",
+    "react-dom": "^18.3.1",
     "react-helmet-async": "^2.0.5",
     "react-icons": "^5.5.0",
     "react-scripts": "^5.0.1",
     "recharts": "^2.15.3",
     "redux-create-reducer": "^2.0.1",
     "redux-persist": "^6.0.0",
-    "swiper": "^11.2.6"
+    "swiper": "^11.2.6",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "concurrently": "^7.0.0",
+    "nodemon": "^2.0.15"
   }
 }
