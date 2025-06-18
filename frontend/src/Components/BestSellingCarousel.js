@@ -1,17 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import { Container, Spinner } from "react-bootstrap";
-import {
-  loadRecentlyViewed,
-  addToRecentlyViewed,
-  clearRecentlyViewed,
-} from "../utils/recentlyViewed";
-const backUpImg = "/images/frigde.png";
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import { Container, Spinner } from 'react-bootstrap';
+import { loadRecentlyViewed, addToRecentlyViewed, clearRecentlyViewed } from '../utils/recentlyViewed';
+const backUpImg = "/images/frigde.png"; 
 
 const BestSellingCarousel = () => {
   const [products, setProducts] = useState([]);
@@ -43,7 +39,7 @@ const BestSellingCarousel = () => {
   useEffect(() => {
     if (products.length > 0) {
       const initialQuantities = {};
-      products.forEach((product) => {
+      products.forEach(product => {
         initialQuantities[product.id] = 1;
       });
       setQuantities(initialQuantities);
@@ -57,22 +53,22 @@ const BestSellingCarousel = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/product/`
+          `${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/product/`
         );
-        console.log("kjqekqwe", response);
+
         // Handle different response structures
         const productData = Array.isArray(response.data.data)
           ? response.data.data
           : [];
 
         if (productData.length === 0) {
-          throw new Error("No products found.");
+          throw new Error('No products found.');
         }
 
         setProducts(productData);
       } catch (err) {
-        console.error("Error fetching products:", err);
-        setError(err.message || "Failed to fetch products.");
+        console.error('Error fetching products:', err);
+        setError(err.message || 'Failed to fetch products.');
         setProducts([]);
       } finally {
         setLoading(false);
@@ -84,7 +80,7 @@ const BestSellingCarousel = () => {
 
   // Handle navigation to product details
   const handleProductClick = (productId) => {
-    const product = products.find((p) => p.id === productId);
+    const product = products.find(p => p.id === productId);
     if (product) {
       handleAddToRecentlyViewed(product);
     }
@@ -93,16 +89,16 @@ const BestSellingCarousel = () => {
 
   // Handle quantity change
   const handleQuantityChange = (productId, change) => {
-    setQuantities((prev) => ({
+    setQuantities(prev => ({
       ...prev,
-      [productId]: Math.max(1, (prev[productId] || 1) + change),
+      [productId]: Math.max(1, (prev[productId] || 1) + change)
     }));
   };
 
   // Handle Add to Cart
   const handleAddToCart = (productId) => {
     const quantity = quantities[productId] || 1;
-    const product = products.find((p) => p.id === productId);
+    const product = products.find(p => p.id === productId);
     console.log(`Xem chi tiết: ${product?.name} - Quantity: ${quantity}`);
     // Implement your cart logic here
   };
@@ -111,7 +107,7 @@ const BestSellingCarousel = () => {
   const getProductImage = (product) => {
     if (Array.isArray(product.image) && product.image.length > 0) {
       return product.image[0];
-    } else if (typeof product.image === "string") {
+    } else if (typeof product.image === 'string') {
       return product.image;
     }
     return backUpImg;
@@ -125,9 +121,11 @@ const BestSellingCarousel = () => {
   // Filter products by category/brand for tabs
   const allProducts = products;
   const fushimavinaProducts = products.filter(
-    (product) => product.brand === "Fushimavina"
+    (product) => product.brand === 'Fushimavina'
   );
-  const ababaProducts = products.filter((product) => product.brand === "ABABA");
+  const ababaProducts = products.filter(
+    (product) => product.brand === 'ABABA'
+  );
 
   // Hide component on error or if no products
   if (error || products.length === 0) {
@@ -139,7 +137,7 @@ const BestSellingCarousel = () => {
     return (
       <Container
         className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: "50vh" }}
+        style={{ minHeight: '50vh' }}
       >
         <Spinner animation="border" role="status">
           <span className="visually-hidden">Loading...</span>
@@ -151,31 +149,29 @@ const BestSellingCarousel = () => {
 
   // Render product item
   const renderProductItem = (product) => (
-    <div
-      className="product-item card h-100 border-0 shadow-sm"
-      style={{
-        minHeight: "420px",
-        maxWidth: "100%",
-        transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-5px)";
-        e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.15)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "";
-      }}
-    >
+    <div className="product-item card h-100 border-0 shadow-sm" 
+         style={{ 
+           minHeight: '420px',
+           maxWidth: '100%',
+           transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out'
+         }}
+         onMouseEnter={(e) => {
+           e.currentTarget.style.transform = 'translateY(-5px)';
+           e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+         }}
+         onMouseLeave={(e) => {
+           e.currentTarget.style.transform = 'translateY(0)';
+           e.currentTarget.style.boxShadow = '';
+         }}>
       <div className="position-relative">
         {product.discount && (
           <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1 fs-7">
             -{product.discount}%
           </span>
         )}
-        <div
+        <div 
           className="card-img-top"
-          style={{ cursor: "pointer" }}
+          style={{ cursor: 'pointer' }}
           onClick={() => handleProductClick(product.id)}
         >
           <img
@@ -183,56 +179,52 @@ const BestSellingCarousel = () => {
             className="img-fluid rounded-top"
             alt={product.name}
             onError={handleImageError}
-            style={{
-              height: "240px",
-              width: "100%",
-              objectFit: "cover",
-              display: "block",
+            style={{ 
+              height: '240px', 
+              width: '100%', 
+              objectFit: 'cover',
+              display: 'block'
             }}
           />
         </div>
       </div>
-
+      
       <div className="card-body d-flex flex-column p-3">
         <div className="mb-auto">
-          <h6
-            className="card-title fw-bold mb-2 fs-6"
-            style={{
-              lineHeight: "1.3",
-              height: "2.6em",
-              overflow: "hidden",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-            }}
-          >
-            {product.name || "N/A"}
+          <h6 className="card-title fw-bold mb-2 fs-6" 
+              style={{ 
+                lineHeight: '1.3',
+                height: '2.6em',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical'
+              }}>
+            {product.name || 'N/A'}
           </h6>
-          <p className="text-muted mb-2 small fw-medium">
-            {product.brand || "N/A"}
-          </p>
+          <p className="text-muted mb-2 small fw-medium">{product.brand || 'N/A'}</p>
           <div className="d-flex align-items-center mb-2">
             <span className="text-warning me-1 fs-7">★★★★☆</span>
             <small className="text-muted">(4.0)</small>
           </div>
           <div className="h6 text-success fw-bold mb-3">
             {product.price
-              ? new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
+              ? new Intl.NumberFormat('vi-VN', { 
+                  style: 'currency', 
+                  currency: 'VND' 
                 }).format(product.price)
-              : "Liên hệ"}
+              : 'Liên hệ'}
           </div>
         </div>
-
+        
         <div className="mt-auto">
           <div className="d-flex align-items-center justify-content-center mb-3">
-            <div className="input-group" style={{ width: "130px" }}>
+            <div className="input-group" style={{ width: '130px' }}>
               <button
                 type="button"
                 className="btn btn-outline-secondary btn-sm px-2"
                 onClick={() => handleQuantityChange(product.id, -1)}
-                style={{ fontSize: "14px" }}
+                style={{ fontSize: '14px' }}
               >
                 −
               </button>
@@ -241,25 +233,25 @@ const BestSellingCarousel = () => {
                 className="form-control form-control-sm text-center fw-medium"
                 value={quantities[product.id] || 1}
                 readOnly
-                style={{ maxWidth: "60px" }}
+                style={{ maxWidth: '60px' }}
               />
               <button
                 type="button"
                 className="btn btn-outline-secondary btn-sm px-2"
                 onClick={() => handleQuantityChange(product.id, 1)}
-                style={{ fontSize: "14px" }}
+                style={{ fontSize: '14px' }}
               >
                 +
               </button>
             </div>
           </div>
-
+          
           <button
             onClick={() => handleAddToCart(product.id)}
             className="btn btn-primary btn-sm w-100 py-2 fw-medium"
-            style={{
-              transition: "all 0.2s ease-in-out",
-              fontSize: "14px",
+            style={{ 
+              transition: 'all 0.2s ease-in-out',
+              fontSize: '14px'
             }}
           >
             <i className="fas fa-shopping-cart me-1"></i>
@@ -317,11 +309,7 @@ const BestSellingCarousel = () => {
               <div className="tabs-header d-flex justify-content-between border-bottom mb-4 pb-3">
                 <h3 className="fw-bold mb-0">Các sản phẩm liên quan</h3>
                 <nav>
-                  <div
-                    className="nav nav-tabs border-0"
-                    id="nav-tab"
-                    role="tablist"
-                  >
+                  <div className="nav nav-tabs border-0" id="nav-tab" role="tablist">
                     <button
                       className="nav-link text-uppercase fs-6 active fw-medium px-4"
                       id="nav-all-tab"
@@ -362,15 +350,13 @@ const BestSellingCarousel = () => {
                     >
                       Đã xem
                       {recentlyViewed.length > 0 && (
-                        <span className="badge bg-primary ms-1">
-                          {recentlyViewed.length}
-                        </span>
+                        <span className="badge bg-primary ms-1">{recentlyViewed.length}</span>
                       )}
                     </button>
                   </div>
                 </nav>
               </div>
-
+              
               <div className="tab-content" id="nav-tabContent">
                 {/* Tab Pane: All */}
                 <div
@@ -381,7 +367,7 @@ const BestSellingCarousel = () => {
                 >
                   {renderSwiper(allProducts)}
                 </div>
-
+                
                 {/* Tab Pane: Fushimavina */}
                 <div
                   className="tab-pane fade"
@@ -391,7 +377,7 @@ const BestSellingCarousel = () => {
                 >
                   {renderSwiper(fushimavinaProducts)}
                 </div>
-
+                
                 {/* Tab Pane: ABABA */}
                 <div
                   className="tab-pane fade"
@@ -413,8 +399,7 @@ const BestSellingCarousel = () => {
                     <div>
                       <div className="d-flex justify-content-between align-items-center mb-3">
                         <p className="text-muted mb-0">
-                          Sản phẩm bạn đã xem gần đây ({recentlyViewed.length}{" "}
-                          sản phẩm)
+                          Sản phẩm bạn đã xem gần đây ({recentlyViewed.length} sản phẩm)
                         </p>
                         <button
                           className="btn btn-outline-danger btn-sm"
@@ -428,16 +413,9 @@ const BestSellingCarousel = () => {
                     </div>
                   ) : (
                     <div className="text-center py-5">
-                      <div
-                        className="text-muted mb-3"
-                        style={{ fontSize: "3rem" }}
-                      >
-                        👁️
-                      </div>
+                      <div className="text-muted mb-3" style={{ fontSize: '3rem' }}>👁️</div>
                       <h5 className="text-muted">Chưa có sản phẩm đã xem</h5>
-                      <p className="text-muted">
-                        Khi bạn xem sản phẩm, chúng sẽ xuất hiện ở đây
-                      </p>
+                      <p className="text-muted">Khi bạn xem sản phẩm, chúng sẽ xuất hiện ở đây</p>
                     </div>
                   )}
                 </div>

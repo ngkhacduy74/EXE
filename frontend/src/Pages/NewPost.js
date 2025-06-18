@@ -1,31 +1,31 @@
-import { useState } from "react";
-import { Camera, Upload, Link as LinkIcon } from "lucide-react";
-import axios from "axios";
+import { useState } from 'react';
+import { Camera, Upload, Link as LinkIcon } from 'lucide-react';
+import axios from 'axios';
 
 export default function NewPostForm() {
   const [formData, setFormData] = useState({
-    title: "",
-    category: "A",
-    status: "New",
-    address: "",
-    description: "",
-    condition: "Pending",
-    user_position: "Newbie",
+    title: '',
+    category: 'A',
+    status: 'New',
+    address: '',
+    description: '',
+    condition: 'Pending',
+    user_position: 'Newbie',
     image: null,
     video: null,
-    mediaUrl: "",
+    mediaUrl: ''
   });
-
+  
   const [previewUrl, setPreviewUrl] = useState(null);
   const [submitted, setSubmitted] = useState(false);
-  const [uploadMethod, setUploadMethod] = useState("file"); // 'file' or 'url'
+  const [uploadMethod, setUploadMethod] = useState('file'); // 'file' or 'url'
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: value
     });
   };
 
@@ -37,7 +37,7 @@ export default function NewPostForm() {
       setFormData({
         ...formData,
         image: file,
-        mediaUrl: "", // Clear URL when file is selected
+        mediaUrl: '' // Clear URL when file is selected
       });
     }
   };
@@ -47,9 +47,9 @@ export default function NewPostForm() {
     setFormData({
       ...formData,
       mediaUrl: url,
-      image: null, // Clear file when URL is entered
+      image: null // Clear file when URL is entered
     });
-
+    
     if (url) {
       setPreviewUrl(url);
     } else {
@@ -60,9 +60,9 @@ export default function NewPostForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (!token) {
-      alert("Bạn cần đăng nhập để tạo bài viết!");
+      alert('Bạn cần đăng nhập để tạo bài viết!');
       setLoading(false);
       return;
     }
@@ -74,25 +74,25 @@ export default function NewPostForm() {
       Object.entries(formData).forEach(([key, value]) => {
         if (value) submissionData.append(key, value);
       });
-      headers["Content-Type"] = "multipart/form-data";
+      headers['Content-Type'] = 'multipart/form-data';
     } else {
       submissionData = {
         ...formData,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
       };
     }
 
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_API}/post/createPost`,
+        'http://localhost:4000/post/createPost',
         submissionData,
         { headers }
       );
-      alert("Tạo bài viết thành công!");
+      alert('Tạo bài viết thành công!');
       setSubmitted(true);
     } catch (error) {
-      console.error("Error creating post:", error);
-      alert("Tạo bài viết thất bại! " + (error.response?.data?.message || ""));
+      console.error('Error creating post:', error);
+      alert('Tạo bài viết thất bại! ' + (error.response?.data?.message || ''));
     } finally {
       setLoading(false);
     }
@@ -100,20 +100,20 @@ export default function NewPostForm() {
 
   const resetForm = () => {
     setFormData({
-      title: "",
-      category: "A",
-      status: "New",
-      address: "",
-      description: "",
-      condition: "Pending",
-      user_position: "Newbie",
+      title: '',
+      category: 'A',
+      status: 'New',
+      address: '',
+      description: '',
+      condition: 'Pending',
+      user_position: 'Newbie',
       image: null,
       video: null,
-      mediaUrl: "",
+      mediaUrl: ''
     });
     setPreviewUrl(null);
     setSubmitted(false);
-    setUploadMethod("file");
+    setUploadMethod('file');
   };
 
   if (submitted) {
@@ -127,30 +127,23 @@ export default function NewPostForm() {
                   <i className="bi bi-check-circle me-2"></i>
                   Post Submitted Successfully!
                 </h2>
-                <p className="card-text mb-3">
-                  Your product has been posted and is pending review.
-                </p>
+                <p className="card-text mb-3">Your product has been posted and is pending review.</p>
                 <div className="bg-light p-3 rounded">
-                  <pre
-                    className="mb-0"
-                    style={{
-                      fontSize: "0.875rem",
-                      maxHeight: "300px",
-                      overflow: "auto",
-                    }}
-                  >
+                  <pre className="mb-0" style={{fontSize: '0.875rem', maxHeight: '300px', overflow: 'auto'}}>
                     {JSON.stringify(
                       {
                         ...formData,
                         image: formData.image ? formData.image.name : null,
-                        createdAt: new Date().toISOString(),
-                      },
-                      null,
-                      2
+                        createdAt: new Date().toISOString()
+                      }, 
+                      null, 2
                     )}
                   </pre>
                 </div>
-                <button className="btn btn-primary mt-3" onClick={resetForm}>
+                <button 
+                  className="btn btn-primary mt-3"
+                  onClick={resetForm}
+                >
                   Create Another Post
                 </button>
               </div>
@@ -164,13 +157,13 @@ export default function NewPostForm() {
   return (
     <>
       {/* Bootstrap CSS */}
-      <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
-        rel="stylesheet"
+      <link 
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" 
+        rel="stylesheet" 
       />
-      <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
-        rel="stylesheet"
+      <link 
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" 
+        rel="stylesheet" 
       />
       <div className="container mt-4">
         <div className="row justify-content-center">
@@ -189,24 +182,20 @@ export default function NewPostForm() {
                     {/* Upload Method Tabs */}
                     <ul className="nav nav-tabs mb-3" role="tablist">
                       <li className="nav-item" role="presentation">
-                        <button
-                          className={`nav-link ${
-                            uploadMethod === "file" ? "active" : ""
-                          }`}
+                        <button 
+                          className={`nav-link ${uploadMethod === 'file' ? 'active' : ''}`}
                           type="button"
-                          onClick={() => setUploadMethod("file")}
+                          onClick={() => setUploadMethod('file')}
                         >
                           <Upload size={16} className="me-1" />
                           Upload File
                         </button>
                       </li>
                       <li className="nav-item" role="presentation">
-                        <button
-                          className={`nav-link ${
-                            uploadMethod === "url" ? "active" : ""
-                          }`}
+                        <button 
+                          className={`nav-link ${uploadMethod === 'url' ? 'active' : ''}`}
                           type="button"
-                          onClick={() => setUploadMethod("url")}
+                          onClick={() => setUploadMethod('url')}
                         >
                           <LinkIcon size={16} className="me-1" />
                           Use URL
@@ -214,36 +203,32 @@ export default function NewPostForm() {
                       </li>
                     </ul>
                     {/* File Upload Tab */}
-                    {uploadMethod === "file" && (
-                      <div
-                        className={`border border-2 border-dashed rounded p-4 text-center ${
-                          previewUrl && !formData.mediaUrl
-                            ? "border-success"
-                            : "border-secondary"
-                        }`}
-                      >
+                    {uploadMethod === 'file' && (
+                      <div className={`border border-2 border-dashed rounded p-4 text-center ${
+                        previewUrl && !formData.mediaUrl ? 'border-success' : 'border-secondary'
+                      }`}>
                         {previewUrl && !formData.mediaUrl ? (
                           <div className="position-relative">
-                            {formData.image?.type?.startsWith("video/") ? (
-                              <video
-                                src={previewUrl}
+                            {formData.image?.type?.startsWith('video/') ? (
+                              <video 
+                                src={previewUrl} 
                                 controls
                                 className="img-fluid rounded"
-                                style={{ maxHeight: "300px" }}
+                                style={{maxHeight: '300px'}}
                               />
                             ) : (
-                              <img
-                                src={previewUrl}
-                                alt="Product preview"
+                              <img 
+                                src={previewUrl} 
+                                alt="Product preview" 
                                 className="img-fluid rounded"
-                                style={{ maxHeight: "300px" }}
+                                style={{maxHeight: '300px'}}
                               />
                             )}
-                            <button
+                            <button 
                               type="button"
                               onClick={() => {
                                 setPreviewUrl(null);
-                                setFormData({ ...formData, image: null });
+                                setFormData({...formData, image: null});
                               }}
                               className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
                             >
@@ -255,17 +240,14 @@ export default function NewPostForm() {
                             <div className="mb-3">
                               <Camera size={48} className="text-muted" />
                             </div>
-                            <p className="text-muted mb-3">
-                              Drag and drop your image/video here or click to
-                              browse
-                            </p>
+                            <p className="text-muted mb-3">Drag and drop your image/video here or click to browse</p>
                             <label className="btn btn-primary">
                               <Upload size={16} className="me-2" />
                               Select File
-                              <input
-                                type="file"
-                                accept="image/*,video/*"
-                                className="d-none"
+                              <input 
+                                type="file" 
+                                accept="image/*,video/*" 
+                                className="d-none" 
                                 onChange={handleImageChange}
                               />
                             </label>
@@ -274,7 +256,7 @@ export default function NewPostForm() {
                       </div>
                     )}
                     {/* URL Input Tab */}
-                    {uploadMethod === "url" && (
+                    {uploadMethod === 'url' && (
                       <div>
                         <div className="mb-3">
                           <input
@@ -285,41 +267,40 @@ export default function NewPostForm() {
                             onChange={handleUrlChange}
                           />
                           <div className="form-text">
-                            Enter a direct link to an image (jpg, png, gif) or
-                            video (mp4, webm)
+                            Enter a direct link to an image (jpg, png, gif) or video (mp4, webm)
                           </div>
                         </div>
                         {previewUrl && formData.mediaUrl && (
                           <div className="border rounded p-3">
                             <div className="position-relative">
                               {formData.mediaUrl.match(/\.(mp4|webm|ogg)$/i) ? (
-                                <video
-                                  src={previewUrl}
+                                <video 
+                                  src={previewUrl} 
                                   controls
                                   className="img-fluid rounded"
-                                  style={{ maxHeight: "300px" }}
+                                  style={{maxHeight: '300px'}}
                                   onError={() => {
                                     setPreviewUrl(null);
-                                    alert("Could not load video from this URL");
+                                    alert('Could not load video from this URL');
                                   }}
                                 />
                               ) : (
-                                <img
-                                  src={previewUrl}
-                                  alt="Product preview"
+                                <img 
+                                  src={previewUrl} 
+                                  alt="Product preview" 
                                   className="img-fluid rounded"
-                                  style={{ maxHeight: "300px" }}
+                                  style={{maxHeight: '300px'}}
                                   onError={() => {
                                     setPreviewUrl(null);
-                                    alert("Could not load image from this URL");
+                                    alert('Could not load image from this URL');
                                   }}
                                 />
                               )}
-                              <button
+                              <button 
                                 type="button"
                                 onClick={() => {
                                   setPreviewUrl(null);
-                                  setFormData({ ...formData, mediaUrl: "" });
+                                  setFormData({...formData, mediaUrl: ''});
                                 }}
                                 className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
                               >
@@ -348,10 +329,7 @@ export default function NewPostForm() {
                   </div>
                   {/* Category */}
                   <div className="mb-3">
-                    <label
-                      htmlFor="category"
-                      className="form-label fw-semibold"
-                    >
+                    <label htmlFor="category" className="form-label fw-semibold">
                       Category
                     </label>
                     <select
@@ -394,10 +372,7 @@ export default function NewPostForm() {
                           checked={formData.status === "SecondHand"}
                           onChange={handleInputChange}
                         />
-                        <label
-                          className="form-check-label"
-                          htmlFor="statusSecondHand"
-                        >
+                        <label className="form-check-label" htmlFor="statusSecondHand">
                           SecondHand
                         </label>
                       </div>
@@ -420,10 +395,7 @@ export default function NewPostForm() {
                   </div>
                   {/* Description */}
                   <div className="mb-4">
-                    <label
-                      htmlFor="description"
-                      className="form-label fw-semibold"
-                    >
+                    <label htmlFor="description" className="form-label fw-semibold">
                       Description
                     </label>
                     <textarea
@@ -443,7 +415,7 @@ export default function NewPostForm() {
                       className="btn btn-primary btn-lg"
                       disabled={loading}
                     >
-                      {loading ? "Đang gửi..." : "Submit Post"}
+                      {loading ? 'Đang gửi...' : 'Submit Post'}
                     </button>
                   </div>
                 </form>
@@ -456,4 +428,4 @@ export default function NewPostForm() {
       <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     </>
   );
-}
+} 

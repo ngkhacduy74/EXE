@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import { Container, Spinner } from "react-bootstrap";
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import { Container, Spinner } from 'react-bootstrap';
 const backUpImg = "/images/frigde.png";
 const Product2Carousel = () => {
   const [products, setProducts] = useState([]);
@@ -18,7 +18,7 @@ const Product2Carousel = () => {
   useEffect(() => {
     if (products.length > 0) {
       const initialQuantities = {};
-      products.forEach((product) => {
+      products.forEach(product => {
         initialQuantities[product.id] = 1;
       });
       setQuantities(initialQuantities);
@@ -32,7 +32,7 @@ const Product2Carousel = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/product/`
+          `${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/product/`
         );
 
         // Handle different response structures
@@ -42,13 +42,13 @@ const Product2Carousel = () => {
 
         // Filter products to only show "Second Hand" status
         const secondHandProducts = productData.filter(
-          (product) => product.status === "SecondHand"
+          product => product.status === "SecondHand"
         );
 
         setProducts(secondHandProducts);
       } catch (err) {
-        console.error("Error fetching products:", err);
-        setError(err.message || "Failed to fetch products.");
+        console.error('Error fetching products:', err);
+        setError(err.message || 'Failed to fetch products.');
         setProducts([]);
       } finally {
         setLoading(false);
@@ -65,16 +65,16 @@ const Product2Carousel = () => {
 
   // Handle quantity change
   const handleQuantityChange = (productId, change) => {
-    setQuantities((prev) => ({
+    setQuantities(prev => ({
       ...prev,
-      [productId]: Math.max(1, (prev[productId] || 1) + change),
+      [productId]: Math.max(1, (prev[productId] || 1) + change)
     }));
   };
 
   // Handle Add to Cart
   const handleAddToCart = (productId) => {
     const quantity = quantities[productId] || 1;
-    const product = products.find((p) => p.id === productId);
+    const product = products.find(p => p.id === productId);
     console.log(`Xem chi tiết: ${product?.name} - Quantity: ${quantity}`);
     // Implement your cart logic here
   };
@@ -83,7 +83,7 @@ const Product2Carousel = () => {
   const getProductImage = (product) => {
     if (Array.isArray(product.image) && product.image.length > 0) {
       return product.image[0];
-    } else if (typeof product.image === "string") {
+    } else if (typeof product.image === 'string') {
       return product.image;
     }
     return backUpImg;
@@ -97,16 +97,18 @@ const Product2Carousel = () => {
   // Filter products by category/brand for tabs (only Second Hand products)
   const allProducts = products;
   const fushimavinaProducts = products.filter(
-    (product) => product.brand === "Fushimavina"
+    (product) => product.brand === 'Fushimavina'
   );
-  const ababaProducts = products.filter((product) => product.brand === "ABABA");
+  const ababaProducts = products.filter(
+    (product) => product.brand === 'ABABA'
+  );
 
   // Hide component if no Second Hand products exist
   if (loading) {
     return (
       <Container
         className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: "50vh" }}
+        style={{ minHeight: '50vh' }}
       >
         <Spinner animation="border" role="status">
           <span className="visually-hidden">Loading...</span>
@@ -123,31 +125,29 @@ const Product2Carousel = () => {
 
   // Render product item
   const renderProductItem = (product) => (
-    <div
-      className="product-item card h-100 border-0 shadow-sm"
-      style={{
-        minHeight: "420px",
-        maxWidth: "100%",
-        transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-5px)";
-        e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.15)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "";
-      }}
-    >
+    <div className="product-item card h-100 border-0 shadow-sm" 
+         style={{ 
+           minHeight: '420px',
+           maxWidth: '100%',
+           transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out'
+         }}
+         onMouseEnter={(e) => {
+           e.currentTarget.style.transform = 'translateY(-5px)';
+           e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+         }}
+         onMouseLeave={(e) => {
+           e.currentTarget.style.transform = 'translateY(0)';
+           e.currentTarget.style.boxShadow = '';
+         }}>
       <div className="position-relative">
         {product.discount && (
           <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1 fs-7">
             -{product.discount}%
           </span>
         )}
-        <div
+        <div 
           className="card-img-top"
-          style={{ cursor: "pointer" }}
+          style={{ cursor: 'pointer' }}
           onClick={() => handleProductClick(product.id)}
         >
           <img
@@ -155,56 +155,52 @@ const Product2Carousel = () => {
             className="img-fluid rounded-top"
             alt={product.name}
             onError={handleImageError}
-            style={{
-              height: "240px",
-              width: "100%",
-              objectFit: "cover",
-              display: "block",
+            style={{ 
+              height: '240px', 
+              width: '100%', 
+              objectFit: 'cover',
+              display: 'block'
             }}
           />
         </div>
       </div>
-
+      
       <div className="card-body d-flex flex-column p-3">
         <div className="mb-auto">
-          <h6
-            className="card-title fw-bold mb-2 fs-6"
-            style={{
-              lineHeight: "1.3",
-              height: "2.6em",
-              overflow: "hidden",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-            }}
-          >
-            {product.name || "N/A"}
+          <h6 className="card-title fw-bold mb-2 fs-6" 
+              style={{ 
+                lineHeight: '1.3',
+                height: '2.6em',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical'
+              }}>
+            {product.name || 'N/A'}
           </h6>
-          <p className="text-muted mb-2 small fw-medium">
-            {product.brand || "N/A"}
-          </p>
+          <p className="text-muted mb-2 small fw-medium">{product.brand || 'N/A'}</p>
           <div className="d-flex align-items-center mb-2">
             <span className="text-warning me-1 fs-7">★★★★☆</span>
             <small className="text-muted">(4.0)</small>
           </div>
           <div className="h6 text-success fw-bold mb-3">
             {product.price
-              ? new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
+              ? new Intl.NumberFormat('vi-VN', { 
+                  style: 'currency', 
+                  currency: 'VND' 
                 }).format(product.price)
-              : "Liên hệ"}
+              : 'Liên hệ'}
           </div>
         </div>
-
+        
         <div className="mt-auto">
           <div className="d-flex align-items-center justify-content-center mb-3">
-            <div className="input-group" style={{ width: "130px" }}>
+            <div className="input-group" style={{ width: '130px' }}>
               <button
                 type="button"
                 className="btn btn-outline-secondary btn-sm px-2"
                 onClick={() => handleQuantityChange(product.id, -1)}
-                style={{ fontSize: "14px" }}
+                style={{ fontSize: '14px' }}
               >
                 −
               </button>
@@ -213,25 +209,25 @@ const Product2Carousel = () => {
                 className="form-control form-control-sm text-center fw-medium"
                 value={quantities[product.id] || 1}
                 readOnly
-                style={{ maxWidth: "60px" }}
+                style={{ maxWidth: '60px' }}
               />
               <button
                 type="button"
                 className="btn btn-outline-secondary btn-sm px-2"
                 onClick={() => handleQuantityChange(product.id, 1)}
-                style={{ fontSize: "14px" }}
+                style={{ fontSize: '14px' }}
               >
                 +
               </button>
             </div>
           </div>
-
+          
           <button
             onClick={() => handleAddToCart(product.id)}
             className="btn btn-primary btn-sm w-100 py-2 fw-medium"
-            style={{
-              transition: "all 0.2s ease-in-out",
-              fontSize: "14px",
+            style={{ 
+              transition: 'all 0.2s ease-in-out',
+              fontSize: '14px'
             }}
           >
             <i className="fas fa-shopping-cart me-1"></i>
@@ -289,11 +285,7 @@ const Product2Carousel = () => {
               <div className="tabs-header d-flex justify-content-between border-bottom mb-4 pb-3">
                 <h3 className="fw-bold mb-0">Đồ cũ</h3>
                 <nav>
-                  <div
-                    className="nav nav-tabs border-0"
-                    id="nav-tab"
-                    role="tablist"
-                  >
+                  <div className="nav nav-tabs border-0" id="nav-tab" role="tablist">
                     <button
                       className="nav-link text-uppercase fs-6 active fw-medium px-4"
                       id="nav-all-tab"
@@ -327,7 +319,7 @@ const Product2Carousel = () => {
                   </div>
                 </nav>
               </div>
-
+              
               <div className="tab-content" id="nav-tabContent">
                 {/* Tab Pane: All */}
                 <div
@@ -338,7 +330,7 @@ const Product2Carousel = () => {
                 >
                   {renderSwiper(allProducts)}
                 </div>
-
+                
                 {/* Tab Pane: Fushimavina */}
                 <div
                   className="tab-pane fade"
@@ -348,7 +340,7 @@ const Product2Carousel = () => {
                 >
                   {renderSwiper(fushimavinaProducts)}
                 </div>
-
+                
                 {/* Tab Pane: ABABA */}
                 <div
                   className="tab-pane fade"

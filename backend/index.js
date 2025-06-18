@@ -5,13 +5,7 @@ const Router = require("./Router/index");
 const app = express();
 const configs = require("./Config/index");
 
-const corsOptions = {
-  origin: "https://exe-frontend-ou98.onrender.com", // Thay thế bằng URL frontend của bạn trên Render
-  methods: ["GET", "POST"], // Thêm phương thức cho phép nếu cần thiết
-};
-
-app.use(cors(corsOptions));
-
+app.use(cors());
 app.use(express.json());
 Router(app);
 configs.connect();

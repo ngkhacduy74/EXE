@@ -1,33 +1,33 @@
-import { useState } from "react";
-import { Camera, Upload, Link as LinkIcon } from "lucide-react";
-import Header from "../Components/Header";
-import Footer from "../Components/Footer";
-import ChatWidget from "../Components/WidgetChat";
-import axios from "axios";
+import { useState } from 'react';
+import { Camera, Upload, Link as LinkIcon } from 'lucide-react';
+import Header from '../Components/Header';
+import Footer from '../Components/Footer';
+import ChatWidget from '../Components/WidgetChat';
+import axios from 'axios';
 
 export default function NewPostForm() {
   const [formData, setFormData] = useState({
-    title: "",
-    category: "A",
-    status: "New",
-    address: "",
-    description: "",
-    condition: "Pending",
-    user_position: "Newbie",
+    title: '',
+    category: 'A',
+    status: 'New',
+    address: '',
+    description: '',
+    condition: 'Pending',
+    user_position: 'Newbie',
     image: [],
-    video: [],
+    video: []
   });
-
+  
   const [previewUrl, setPreviewUrl] = useState(null);
   const [submitted, setSubmitted] = useState(false);
-  const [uploadMethod, setUploadMethod] = useState("file"); // 'file' or 'url'
+  const [uploadMethod, setUploadMethod] = useState('file'); // 'file' or 'url'
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: value
     });
   };
 
@@ -60,9 +60,9 @@ export default function NewPostForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (!token) {
-      alert("Bạn cần đăng nhập để tạo bài viết!");
+      alert('Bạn cần đăng nhập để tạo bài viết!');
       setLoading(false);
       return;
     }
@@ -71,32 +71,31 @@ export default function NewPostForm() {
     let headers = { token };
     if (formData.image.length > 0 && formData.image[0] instanceof File) {
       submissionData = new FormData();
-      formData.image.forEach((img) => submissionData.append("image[]", img));
-      formData.video.forEach((vid) => submissionData.append("video[]", vid));
+      formData.image.forEach((img) => submissionData.append('image[]', img));
+      formData.video.forEach((vid) => submissionData.append('video[]', vid));
       Object.entries(formData).forEach(([key, value]) => {
-        if (key !== "image" && key !== "video")
-          submissionData.append(key, value);
+        if (key !== 'image' && key !== 'video') submissionData.append(key, value);
       });
-      headers["Content-Type"] = "multipart/form-data";
+      headers['Content-Type'] = 'multipart/form-data';
     } else {
       submissionData = {
         ...formData,
         image: formData.image,
-        video: formData.video,
+        video: formData.video
       };
     }
 
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_API}/post/createPost`,
+        'http://localhost:4000/post/createPost',
         submissionData,
         { headers }
       );
-      alert("Tạo bài viết thành công!");
+      alert('Tạo bài viết thành công!');
       setSubmitted(true);
     } catch (error) {
-      console.error("Error creating post:", error);
-      alert("Tạo bài viết thất bại! " + (error.response?.data?.message || ""));
+      console.error('Error creating post:', error);
+      alert('Tạo bài viết thất bại! ' + (error.response?.data?.message || ''));
     } finally {
       setLoading(false);
     }
@@ -104,19 +103,19 @@ export default function NewPostForm() {
 
   const resetForm = () => {
     setFormData({
-      title: "",
-      category: "A",
-      status: "New",
-      address: "",
-      description: "",
-      condition: "Pending",
-      user_position: "Newbie",
+      title: '',
+      category: 'A',
+      status: 'New',
+      address: '',
+      description: '',
+      condition: 'Pending',
+      user_position: 'Newbie',
       image: [],
-      video: [],
+      video: []
     });
     setPreviewUrl(null);
     setSubmitted(false);
-    setUploadMethod("file");
+    setUploadMethod('file');
   };
 
   if (submitted) {
@@ -130,22 +129,16 @@ export default function NewPostForm() {
                   <i className="bi bi-check-circle me-2"></i>
                   Post Submitted Successfully!
                 </h2>
-                <p className="card-text mb-3">
-                  Your product has been posted and is pending review.
-                </p>
+                <p className="card-text mb-3">Your product has been posted and is pending review.</p>
                 <div className="bg-light p-3 rounded">
-                  <pre
-                    className="mb-0"
-                    style={{
-                      fontSize: "0.875rem",
-                      maxHeight: "300px",
-                      overflow: "auto",
-                    }}
-                  >
+                  <pre className="mb-0" style={{fontSize: '0.875rem', maxHeight: '300px', overflow: 'auto'}}>
                     {JSON.stringify(formData, null, 2)}
                   </pre>
                 </div>
-                <button className="btn btn-primary mt-3" onClick={resetForm}>
+                <button 
+                  className="btn btn-primary mt-3"
+                  onClick={resetForm}
+                >
                   Create Another Post
                 </button>
               </div>
@@ -160,13 +153,13 @@ export default function NewPostForm() {
     <div>
       <Header />
       {/* Bootstrap CSS */}
-      <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
-        rel="stylesheet"
+      <link 
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" 
+        rel="stylesheet" 
       />
-      <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
-        rel="stylesheet"
+      <link 
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" 
+        rel="stylesheet" 
       />
       <div className="container mt-4">
         <div className="row justify-content-center">
@@ -179,9 +172,7 @@ export default function NewPostForm() {
                 <form onSubmit={handleSubmit}>
                   {/* Upload file ảnh */}
                   <div className="mb-3">
-                    <label className="form-label fw-semibold">
-                      Product Images
-                    </label>
+                    <label className="form-label fw-semibold">Product Images</label>
                     <input
                       type="file"
                       accept="image/*"
@@ -202,9 +193,7 @@ export default function NewPostForm() {
                   </div>
                   {/* Nhập URL video (nếu có) */}
                   <div className="mb-3">
-                    <label className="form-label fw-semibold">
-                      Video URL (optional)
-                    </label>
+                    <label className="form-label fw-semibold">Video URL (optional)</label>
                     <input
                       type="url"
                       className="form-control"
@@ -248,9 +237,7 @@ export default function NewPostForm() {
                     </select>
                   </div>
                   <div className="mb-3">
-                    <label className="form-label fw-semibold">
-                      User Position
-                    </label>
+                    <label className="form-label fw-semibold">User Position</label>
                     <input
                       type="text"
                       className="form-control"
@@ -271,9 +258,7 @@ export default function NewPostForm() {
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label fw-semibold">
-                      Description
-                    </label>
+                    <label className="form-label fw-semibold">Description</label>
                     <textarea
                       className="form-control"
                       name="description"
@@ -298,7 +283,7 @@ export default function NewPostForm() {
                       className="btn btn-primary btn-lg"
                       disabled={loading}
                     >
-                      {loading ? "Đang gửi..." : "Submit Post"}
+                      {loading ? 'Đang gửi...' : 'Submit Post'}
                     </button>
                   </div>
                 </form>
@@ -309,9 +294,10 @@ export default function NewPostForm() {
       </div>
       {/* Bootstrap JS */}
       <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-
-      <ChatWidget />
-      <Footer />
+    
+    
+    <ChatWidget />
+    <Footer />
     </div>
   );
-}
+} 
