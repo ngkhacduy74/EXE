@@ -48,10 +48,10 @@ const getUserById = async (idUser) => {
   return { success: true, user };
 };
 const updateUser = async (params) => {
-  const { id, fullname, phone, email, address, gender, ava_img_url } =
-    params.body;
+  console.log("params", params);
+  const { id, fullname, phone, email, address, gender, ava_img_url } = params;
   try {
-    const updateUser = await User.findByIdAndUpdate(
+    const updateUser = await User.findOneAndUpdate(
       { id: id },
       { fullname, phone, email, address, gender, ava_img_url },
       { new: true }

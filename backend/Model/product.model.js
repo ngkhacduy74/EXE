@@ -23,12 +23,16 @@ const ProductSchema = new mongoose.Schema(
     voltage: { type: String, require: true },
     features: [{ type: Other_features, require: false }],
     quantity: { type: Number, require: true, min: 0 },
+<<<<<<< HEAD
+=======
+    business_phone: { type: String, require: true },
     creator: {
       id: { type: String, require: true },
       fullname: { type: String, require: true },
       phone: { type: String, require: true },
       email: { type: String, require: true },
     },
+>>>>>>> 6316d98a4a6119aac433ead086ab454a91ef1dec
   },
   {
     timestamps: true,

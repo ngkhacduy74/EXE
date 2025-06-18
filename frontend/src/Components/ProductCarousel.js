@@ -6,7 +6,7 @@ import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Container, Spinner } from 'react-bootstrap';
-
+const backUpImg = "/images/frigde.png";
 const Product2Carousel = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,12 +86,12 @@ const Product2Carousel = () => {
     } else if (typeof product.image === 'string') {
       return product.image;
     }
-    return 'https://via.placeholder.com/240x240?text=No+Image';
+    return backUpImg;
   };
 
   // Handle image load error
   const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/240x240?text=No+Image';
+    e.target.src = backUpImg;
   };
 
   // Filter products by category/brand for tabs (only Second Hand products)

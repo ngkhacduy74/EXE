@@ -19,7 +19,7 @@ const postSchema = Joi.object({
   address: Joi.string().required(),
   condition: Joi.string().valid("Pending", "Active", "Reject").optional(),
   description: Joi.string().min(6).max(1500).required(),
-  seller: sellerSchema.optional(), // ✅ dùng schema lồng bên trong
+  seller: sellerSchema.optional(),
 });
 
 module.exports = postSchema;

@@ -5,6 +5,7 @@ import { Container, Row, Col, Button, Badge, Alert, Card, Modal, Spinner } from 
 import Header from '../Components/Header'; // User header component
 import Footer from '../Components/Footer'; // User footer component
 import ErrorPage from '../Components/ErrorPage';
+import WigdetChat from '../Components/WidgetChat.js';
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:4000',
@@ -488,7 +489,7 @@ const ProductView = () => {
           )}
         </Modal.Body>
       </Modal>
-
+          <WigdetChat></WigdetChat>
       <Footer />
     </>
   );
