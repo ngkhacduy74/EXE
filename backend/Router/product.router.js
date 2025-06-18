@@ -15,6 +15,9 @@ router.post(
   verifyAdmin,
   productMiddleware.productMiddleware,
   async (req, res) => {
+    // const authHeader = req.headers.token;
+
+    // const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
     const result = await createProduct(req.body, req.user);
     if (result.success === false) {
       return res.status(500).json(result);

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const { v1 } = require("uuid");
 
 const createProduct = async (data, user) => {
+  console.log("token123123132", user);
   const {
     image,
     video,
@@ -35,10 +36,10 @@ const createProduct = async (data, user) => {
     voltage: voltage,
     features: features,
     creator: {
-      id: user.id,
-      fullname: user.fullname,
-      phone: user.phone,
-      email: user.email,
+      id: user.user.id,
+      fullname: user.user.fullname,
+      phone: user.user.phone,
+      email: user.user.email,
     },
     quantity: quantity,
   });
@@ -47,6 +48,7 @@ const createProduct = async (data, user) => {
     return {
       success: true,
       message: "Save successfully",
+      data: newProduct,
     };
   } catch (err) {
     return {
