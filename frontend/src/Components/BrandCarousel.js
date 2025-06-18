@@ -120,8 +120,7 @@ const BestSellingCarousel = () => {
         if (firstImage && firstImage.trim() !== "") {
           // If it's a relative URL, make it absolute
           if (firstImage.startsWith("/") || firstImage.startsWith("./")) {
-            const baseUrl =
-              process.env.REACT_APP_API_URL || "http://localhost:4000";
+            const baseUrl = process.env.REACT_APP_API_URL;
             const fullUrl = firstImage.startsWith("/")
               ? `${baseUrl}${firstImage}`
               : `${baseUrl}/${firstImage.replace("./", "")}`;
@@ -158,8 +157,7 @@ const BestSellingCarousel = () => {
         if (product.image.trim() !== "") {
           // If it's a relative URL, make it absolute
           if (product.image.startsWith("/") || product.image.startsWith("./")) {
-            const baseUrl =
-              process.env.REACT_APP_API_URL || "http://localhost:4000";
+            const baseUrl = process.env.REACT_APP_API_URL;
             const fullUrl = product.image.startsWith("/")
               ? `${baseUrl}${product.image}`
               : `${baseUrl}/${product.image.replace("./", "")}`;
