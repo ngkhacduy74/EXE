@@ -20,8 +20,10 @@ import {
   AlertCircle,
 } from "lucide-react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const CompareProduct = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [compareProducts, setCompareProducts] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
@@ -523,7 +525,10 @@ const CompareProduct = () => {
                                 className="text-center"
                                 style={{ padding: "0.5rem" }}
                               >
-                                <button className="btn btn-sm btn-outline-primary">
+                                <button 
+                                  className="btn btn-sm btn-outline-primary"
+                                  onClick={() => navigate(`/productView/${product.id}`)}
+                                >
                                   <Eye size={12} className="me-1" />
                                   Xem chi tiết
                                 </button>

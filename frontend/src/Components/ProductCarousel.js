@@ -227,7 +227,7 @@ const Product2Carousel = () => {
           </div>
 
           <button
-            onClick={() => handleAddToCart(product.id)}
+            onClick={() => handleProductClick(product.id)}
             className="btn btn-primary btn-sm w-100 py-2 fw-medium"
             style={{
               transition: "all 0.2s ease-in-out",

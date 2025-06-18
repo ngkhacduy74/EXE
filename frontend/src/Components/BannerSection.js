@@ -1,50 +1,45 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const BannerSection = () => {
   const [savedProducts, setSavedProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isCustomProducts, setIsCustomProducts] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Load saved products from localStorage (compatible with MultiProductViewer)
-  useEffect(() => {
-    const loadSavedProducts = () => {
-      try {
-        const bannerProducts = localStorage.getItem('bannerProducts');
-        if (bannerProducts) {
-          const parsedProducts = JSON.parse(bannerProducts);
-          if (Array.isArray(parsedProducts) && parsedProducts.length > 0) {
-            setSavedProducts(parsedProducts);
-            setIsCustomProducts(true);
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Error loading saved products:', error);
-      }
+  // Load saved products from API
+  const loadSavedProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:4000/banner');
       
-      // If no saved products, reset state
+      if (response.data.success && response.data.data.length > 0) {
+        setSavedProducts(response.data.data);
+        setIsCustomProducts(true);
+        console.log('BannerSection: Loaded products from API:', response.data.data);
+      } else {
+        setSavedProducts([]);
+        setIsCustomProducts(false);
+      }
+    } catch (error) {
+      console.error('Error loading banner products from API:', error);
       setSavedProducts([]);
       setIsCustomProducts(false);
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    // Load immediately
     loadSavedProducts();
     
-    // Listen for storage changes to update banner when products are saved
-    const handleStorageChange = (event) => {
-      if (event.key === 'bannerProducts') {
-        loadSavedProducts();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Also check periodically for localStorage changes within the same tab
+    // Check for updates every 30 seconds
     const interval = setInterval(() => {
       loadSavedProducts();
-    }, 2000);
+    }, 30000);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
   }, []);
@@ -71,12 +66,44 @@ const BannerSection = () => {
     setCurrentSlide(index);
   };
 
-  const resetToDefault = () => {
-    localStorage.removeItem('bannerProducts');
-    setSavedProducts([]);
-    setIsCustomProducts(false);
-    setCurrentSlide(0);
+  const resetToDefault = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log('No token found, cannot reset banner');
+        return;
+      }
+
+      await axios.delete('http://localhost:4000/banner/clear', {
+        headers: {
+          'token': token,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      setSavedProducts([]);
+      setIsCustomProducts(false);
+      setCurrentSlide(0);
+    } catch (error) {
+      console.error('Error resetting banner:', error);
+    }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className="py-4" style={{ background: '#f8f9fa', minHeight: '200px' }}>
+        <div className="container-fluid px-4">
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-2 text-muted">Đang tải banner...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   // Empty state when no products are saved
   if (!isCustomProducts || savedProducts.length === 0) {
@@ -210,7 +237,7 @@ const BannerSection = () => {
                             src={product.image}
                             className="img-fluid rounded-3 shadow-sm"
                             alt={product.name}
-                            style={{ maxHeight: '300px', width: '100%', objectFit: 'cover' }}
+                            style={{ maxHeight: 'fit-content', width: '100%', objectFit: 'cover' }}
                           
                           />
                           <div className="position-absolute top-0 end-0 m-3">

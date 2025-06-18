@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import "./styles/style.css";
 import "./styles/vendor.css";
@@ -21,6 +21,7 @@ import axios from "axios";
 
 const ProductBrowse = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -446,6 +447,10 @@ const ProductBrowse = () => {
       e.target.alt = "product placeholder";
     };
 
+    const handleProductClick = () => {
+      navigate(`/productView/${product.id}`);
+    };
+
     return (
       <div
         className={`product-card ${
@@ -457,6 +462,8 @@ const ProductBrowse = () => {
             className={`position-relative image-container ${
               viewMode === "list" ? "flex-shrink-0" : ""
             }`}
+            style={{ cursor: "pointer" }}
+            onClick={handleProductClick}
           >
             <img
               src={getProductImage(product)}
@@ -599,6 +606,7 @@ const ProductBrowse = () => {
                   product.quantity > 0 ? "btn-outline-primary" : "btn-secondary"
                 }`}
                 disabled={product.quantity <= 0}
+                onClick={handleProductClick}
               >
                 {product.quantity > 0 ? "Xem chi tiết" : "Hết hàng"}
               </button>

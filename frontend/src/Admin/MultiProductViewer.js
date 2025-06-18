@@ -41,7 +41,7 @@ const MultiProductViewer = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastVariant, setToastVariant] = useState("success");
-
+  const backUpImg = '/images/frigde.jpg';
   // Load all products for search suggestions
   useEffect(() => {
     fetchAllProducts();
@@ -242,7 +242,7 @@ const MultiProductViewer = () => {
     setSelectedForBanner(newSelection);
   };
 
-  const saveToBanner = () => {
+  const saveToBanner = async () => {
     if (selectedForBanner.size === 0) {
       showToastMessage(
         "Vui lòng chọn ít nhất một sản phẩm để lưu vào banner!",
@@ -251,34 +251,75 @@ const MultiProductViewer = () => {
       return;
     }
 
-    // Get selected products data
-    const selectedProducts = products.filter((product) =>
-      selectedForBanner.has(product.Id || product.id)
-    );
+    try {
+      // Get selected products data
+      const selectedProducts = products.filter((product) =>
+        selectedForBanner.has(product.Id || product.id)
+      );
 
-    // Transform to banner format
-    const bannerProducts = selectedProducts.map((product, index) => ({
-      id: product.Id || product.id,
-      name: product.name || "Unnamed Product",
-      category: product.category || "Sản phẩm",
-      description:
-        product.description || `${product.name} - Sản phẩm chất lượng cao`,
-      price: formatPrice(product.price),
-      discount: "Giảm 15%", // Default discount
-      image:
-        (product.image && product.image[0]) ||
-        "https://via.placeholder.com/400x300?text=No+Image",
-      badge: index === 0 ? "Bán Chạy #1" : `Top ${index + 1}`,
-      buttonText: "Mua Ngay",
-    }));
+      console.log('Selected products for banner:', selectedProducts);
 
-    // Save to localStorage for BannerSection
-    localStorage.setItem("bannerProducts", JSON.stringify(bannerProducts));
+      // Transform to banner format
+      const bannerProducts = selectedProducts.map((product, index) => ({
+        id: product.Id || product.id,
+        name: product.name || "Unnamed Product",
+        category: product.category || "Sản phẩm",
+        description:
+          product.description || `${product.name} - Sản phẩm chất lượng cao`,
+        price: formatPrice(product.price),
+        discount: "Giảm 15%", // Default discount
+        image:
+          (product.image && product.image[0]) ||
+          backUpImg,
+        badge: index === 0 ? "Bán Chạy #1" : `Top ${index + 1}`,
+        buttonText: "Mua Ngay",
+      }));
 
-    showToastMessage(
-      `Đã lưu ${selectedProducts.length} sản phẩm vào banner thành công!`,
-      "success"
-    );
+      console.log('Banner products to save:', bannerProducts);
+
+      // Get token for authentication
+      const token = localStorage.getItem("token");
+      if (!token) {
+        showToastMessage("Vui lòng đăng nhập lại để thực hiện thao tác này!", "warning");
+        return;
+      }
+
+      console.log('Token found:', token.substring(0, 20) + '...');
+
+      // Save to database via API
+      const response = await axios.post("http://localhost:4000/banner/save", 
+        { products: bannerProducts },
+        {
+          headers: {
+            'token': token,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      console.log('API Response:', response.data);
+
+      showToastMessage(
+        response.data.message || `Đã lưu ${selectedProducts.length} sản phẩm vào banner thành công!`,
+        "success"
+      );
+    } catch (error) {
+      console.error('Error saving banner products:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      
+      let errorMessage = "Lỗi khi lưu banner products!";
+      
+      if (error.response?.status === 401) {
+        errorMessage = "Vui lòng đăng nhập lại!";
+      } else if (error.response?.status === 403) {
+        errorMessage = "Bạn không có quyền thực hiện thao tác này!";
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      showToastMessage(errorMessage, "danger");
+    }
   };
 
   const showToastMessage = (message, variant = "success") => {
@@ -508,7 +549,7 @@ const MultiProductViewer = () => {
                                   className="rounded me-3"
                                   onError={(e) => {
                                     e.target.src =
-                                      "https://via.placeholder.com/40x40?text=No+Image";
+                                      backUpImg;
                                   }}
                                 />
                               )}
@@ -613,7 +654,7 @@ const MultiProductViewer = () => {
                     className="img-fluid rounded"
                     onError={(e) => {
                       e.target.src =
-                        "https://via.placeholder.com/300x300?text=No+Image";
+                        backUpImg;
                     }}
                   />
                 )}
