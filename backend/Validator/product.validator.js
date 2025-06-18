@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { Bus } = require("lucide-react");
 
 const creator = Joi.object({
   id: Joi.string().required().messages({
@@ -96,6 +97,12 @@ const ProductSchema = Joi.object({
     "number.max": "Số lượng không được lớn hơn 1000",
     "any.required": "Vui lòng nhập số lượng sản phẩm",
   }),
+  business_phone: Joi.string()
+    .pattern(/^\d{10,15}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": "Số điện thoại doanh nghiệp không hợp lệ",
+    }),
 });
 
 module.exports = ProductSchema;

@@ -9,9 +9,14 @@ const {
   changePostCondition,
   getPostByUserId,
   loadAllPost,
+  getPostById,
 } = require("../Controller/post.controller");
 const { getUserById } = require("../Controller/user.controller");
-const { token } = require("../Middleware/auth.middleware");
+const {
+  token,
+  verifyAdmin,
+  verifyToken,
+} = require("../Middleware/auth.middleware");
 
 router.get("/user-post", async (req, res) => {
   const result = await getPostByUserId(req.user.id);
@@ -21,31 +26,37 @@ router.get("/user-post", async (req, res) => {
   res.status(200).json(result);
 });
 //verify admin
-router.put("/change-condition/:condition/:id", async (req, res) => {
-  try {
-    const { condition, id } = req.params;
-    const authHeader = req.headers.token;
-    if (!authHeader) {
-      return res.status(401).json({ success: false, message: "No token provided" });
+router.put(
+  "/change-condition/:condition/:id",
+  verifyAdmin,
+  async (req, res) => {
+    try {
+      const { condition, id } = req.params;
+      const authHeader = req.headers.token;
+      if (!authHeader) {
+        return res
+          .status(401)
+          .json({ success: false, message: "No token provided" });
+      }
+
+      const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
+      console.log("Token decoded:", decoded);
+
+      const result = await changePostCondition(condition, id, decoded);
+      if (result.success === false) {
+        return res.status(400).json(result);
+      }
+      res.status(200).json(result);
+    } catch (err) {
+      console.error("Error in change-condition route:", err);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error",
+        error: err.message,
+      });
     }
-    
-    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
-    console.log("Token decoded:", decoded);
-    
-    const result = await changePostCondition(condition, id, decoded);
-    if (result.success === false) {
-      return res.status(400).json(result);
-    }
-    res.status(200).json(result);
-  } catch (err) {
-    console.error("Error in change-condition route:", err);
-    res.status(500).json({ 
-      success: false, 
-      message: "Internal server error",
-      error: err.message 
-    });
   }
-});
+);
 router.post("/createPost", postMiddleware.postMiddleware, async (req, res) => {
   const authHeader = req.headers.token;
 
@@ -93,6 +104,13 @@ router.put("/update-post/:id", async (req, res) => {
 });
 router.delete("/deletePost/:id", async (req, res) => {
   const result = await deletePost(req.params.id);
+  if (result.success === false) {
+    return res.status(500).json(result);
+  }
+  res.status(200).json(result);
+});
+router.get("/:id", verifyToken, async (req, res) => {
+  const result = await getPostById(req.params.id);
   if (result.success === false) {
     return res.status(500).json(result);
   }

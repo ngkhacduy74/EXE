@@ -55,7 +55,21 @@ const createPost = async (data, token) => {
     };
   }
 };
-
+const getPostById = async (id) => {
+  const post = await Post.findOne({ id: id });
+  if (!post) {
+    return {
+      success: false,
+      message: "Không tìm thấy bài đăng",
+      description: "func getPostById",
+    };
+  }
+  return {
+    success: true,
+    message: "Đã lấy thành công post",
+    data: post,
+  };
+};
 const loadAllPost = async () => {
   const post = await Post.find();
   if (!post) {
@@ -108,34 +122,34 @@ const updatePost = async (params) => {
     { new: true }
   );
 
-  return { success: true, data: updatePost };
+  return { success: true, data: updatedPost };
 };
 const changePostCondition = async (condition, id, token) => {
   try {
-    console.log('Attempting to change condition for post:', { id, condition });
-    
+    console.log("Attempting to change condition for post:", { id, condition });
+
     const change = await Post.findByIdAndUpdate(
       id,
       {
-        condition: condition
+        condition: condition,
       },
       { new: true }
     );
 
     if (!change) {
-      console.log('Post not found with id:', id);
+      console.log("Post not found with id:", id);
       return {
         success: false,
         message: "Can't change the condition of this post - Post not found",
         description: "func changePostCondition",
       };
     }
-    
-    console.log('Successfully updated post:', change);
+
+    console.log("Successfully updated post:", change);
     return {
       success: true,
       message: "Change this post successfully",
-      data: change
+      data: change,
     };
   } catch (err) {
     console.error("Error in changePostCondition:", err);
@@ -176,4 +190,5 @@ module.exports = {
   changePostCondition,
   getPostByUserId,
   loadAllPost,
+  getPostById,
 };
