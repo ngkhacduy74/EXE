@@ -8,34 +8,36 @@ import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
 
 const api = axios.create({
-  baseURL: 'http://localhost:4000',
+  baseURL: process.env.REACT_APP_API_URL,
   timeout: 5000,
 });
 
 const ManagePost = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Token state management - similar to ManageProduct
   const [tokens, setTokens] = useState(() => {
     // First try to get from location state
     const locationToken = location.state?.token;
     const locationRefreshToken = location.state?.refresh_token;
-    
+
     if (locationToken && locationRefreshToken) {
       return {
         accessToken: locationToken,
-        refreshToken: locationRefreshToken
+        refreshToken: locationRefreshToken,
       };
     }
-    
+
     // Fallback to localStorage
     try {
       const accessToken = localStorage.getItem("token");
-      const refreshToken = localStorage.getItem("refreshToken") || localStorage.getItem("refresh_token");
+      const refreshToken =
+        localStorage.getItem("refreshToken") ||
+        localStorage.getItem("refresh_token");
       return {
         accessToken: accessToken || null,
-        refreshToken: refreshToken || null
+        refreshToken: refreshToken || null,
       };
     } catch (error) {
       console.error("Error accessing localStorage:", error);
@@ -62,16 +64,22 @@ const ManagePost = () => {
   useEffect(() => {
     const locationToken = location.state?.token;
     const locationRefreshToken = location.state?.refresh_token;
-    
+
     if (locationToken && locationRefreshToken) {
-      console.log("✅ Token from location:", locationToken.substring(0, 15) + "...");
-      console.log("🔄 Refresh Token from location:", locationRefreshToken.substring(0, 15) + "...");
-      
+      console.log(
+        "✅ Token from location:",
+        locationToken.substring(0, 15) + "..."
+      );
+      console.log(
+        "🔄 Refresh Token from location:",
+        locationRefreshToken.substring(0, 15) + "..."
+      );
+
       setTokens({
         accessToken: locationToken,
-        refreshToken: locationRefreshToken
+        refreshToken: locationRefreshToken,
       });
-      
+
       // Optionally save to localStorage for persistence
       try {
         localStorage.setItem("token", locationToken);
@@ -87,44 +95,44 @@ const ManagePost = () => {
   // Token refresh function
   const refreshAccessToken = async () => {
     if (!tokens.refreshToken) {
-      console.error('No refresh token available');
-      throw new Error('No refresh token available');
+      console.error("No refresh token available");
+      throw new Error("No refresh token available");
     }
 
     try {
-      console.log('Attempting to refresh token...');
+      console.log("Attempting to refresh token...");
 
-      const response = await api.post('/auth/refresh-token', {
+      const response = await api.post("/auth/refresh-token", {
         refresh_token: tokens.refreshToken,
       });
 
       const { token, refresh_token } = response.data;
       if (!token || !refresh_token) {
-        throw new Error('Invalid refresh token response');
+        throw new Error("Invalid refresh token response");
       }
 
       const newTokens = {
         accessToken: token,
-        refreshToken: refresh_token
+        refreshToken: refresh_token,
       };
 
       // Update localStorage
       try {
-        localStorage.setItem('token', token);
-        localStorage.setItem('refreshToken', refresh_token);
+        localStorage.setItem("token", token);
+        localStorage.setItem("refreshToken", refresh_token);
       } catch (error) {
         console.error("Error saving refreshed tokens:", error);
       }
 
       setTokens(newTokens);
-      console.log('✅ Tokens refreshed successfully');
+      console.log("✅ Tokens refreshed successfully");
       return token;
     } catch (err) {
-      console.error('Error refreshing token:', err);
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('refresh_token'); // Clean up old key too
-      window.location.href = '/login';
+      console.error("Error refreshing token:", err);
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("refresh_token"); // Clean up old key too
+      window.location.href = "/login";
       throw err;
     }
   };
@@ -133,7 +141,7 @@ const ManagePost = () => {
   const makeAuthenticatedRequest = async (config, retryCount = 0) => {
     try {
       if (!tokens.accessToken) {
-        throw new Error('No access token available');
+        throw new Error("No access token available");
       }
 
       const requestConfig = {
@@ -147,18 +155,24 @@ const ManagePost = () => {
       const response = await api.request(requestConfig);
       return response;
     } catch (err) {
-      if (err.response?.status === 401 && retryCount === 0 && tokens.refreshToken) {
-        console.warn('Access token expired. Attempting to refresh...');
+      if (
+        err.response?.status === 401 &&
+        retryCount === 0 &&
+        tokens.refreshToken
+      ) {
+        console.warn("Access token expired. Attempting to refresh...");
         try {
           await refreshAccessToken();
           return makeAuthenticatedRequest(config, 1); // Retry once
         } catch (refreshErr) {
-          throw new Error('Session expired. Please log in again.');
+          throw new Error("Session expired. Please log in again.");
         }
       } else if (err.response?.status === 429) {
-        throw new Error('Too many requests. Please try again later.');
+        throw new Error("Too many requests. Please try again later.");
       } else if (!err.response) {
-        throw new Error('Server connection error. Please check your connection.');
+        throw new Error(
+          "Server connection error. Please check your connection."
+        );
       }
       throw err;
     }
@@ -170,7 +184,7 @@ const ManagePost = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Check if we have tokens
         if (!tokens.accessToken) {
           console.log("No access token available");
@@ -178,10 +192,10 @@ const ManagePost = () => {
           setLoading(false);
           return;
         }
-        
+
         const response = await makeAuthenticatedRequest({
-          method: 'GET',
-          url: '/post/',
+          method: "GET",
+          url: "/post/",
         });
 
         console.log("API Response:", response.data);
@@ -196,20 +210,26 @@ const ManagePost = () => {
         setFilteredPosts(postData);
 
         // Extract unique conditions and categories
-        const uniqueConditions = [...new Set(postData.map((p) => p.condition).filter(Boolean))];
-        const uniqueCategories = [...new Set(postData.map((p) => p.category).filter(Boolean))];
+        const uniqueConditions = [
+          ...new Set(postData.map((p) => p.condition).filter(Boolean)),
+        ];
+        const uniqueCategories = [
+          ...new Set(postData.map((p) => p.category).filter(Boolean)),
+        ];
         setConditions(uniqueConditions);
         setCategories(uniqueCategories);
       } catch (err) {
         console.error("Fetch Error:", err);
-        setError(err.message || "Failed to fetch posts. Please try again later.");
+        setError(
+          err.message || "Failed to fetch posts. Please try again later."
+        );
         setPosts([]);
         setFilteredPosts([]);
       } finally {
         setLoading(false);
       }
     };
-    
+
     // Only fetch if we have access token
     if (tokens.accessToken) {
       fetchPosts();
@@ -239,7 +259,9 @@ const ManagePost = () => {
 
     // Filter by categories
     if (selectedCategories.length > 0) {
-      result = result.filter((post) => selectedCategories.includes(post.category));
+      result = result.filter((post) =>
+        selectedCategories.includes(post.category)
+      );
     }
 
     setFilteredPosts(result);
@@ -289,36 +311,40 @@ const ManagePost = () => {
 
   // Handle toggle condition status with checkbox
   const handleToggleCondition = async (postId, currentCondition) => {
-    setToggleLoading(prev => ({ ...prev, [postId]: true }));
-    
+    setToggleLoading((prev) => ({ ...prev, [postId]: true }));
+
     const newCondition = currentCondition === "Active" ? "Inactive" : "Active";
-    console.log('Attempting to change condition:', { postId, currentCondition, newCondition });
+    console.log("Attempting to change condition:", {
+      postId,
+      currentCondition,
+      newCondition,
+    });
 
     try {
       const response = await makeAuthenticatedRequest({
-        method: 'PUT',
+        method: "PUT",
         url: `/post/change-condition/${newCondition}/${postId}`,
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       });
 
-      console.log('Server response:', response.data);
+      console.log("Server response:", response.data);
 
       if (response.data.success) {
-        setPosts(prevPosts =>
+        setPosts((prevPosts) =>
           prevPosts.map((post) =>
             post._id === postId ? { ...post, condition: newCondition } : post
           )
         );
-        setFilteredPosts(prevPosts =>
+        setFilteredPosts((prevPosts) =>
           prevPosts.map((post) =>
             post._id === postId ? { ...post, condition: newCondition } : post
           )
         );
-        console.log('Post condition updated successfully');
+        console.log("Post condition updated successfully");
       } else {
-        throw new Error(response.data.message || 'Failed to update condition');
+        throw new Error(response.data.message || "Failed to update condition");
       }
     } catch (err) {
       console.error("Error updating post condition:", err);
@@ -326,12 +352,16 @@ const ManagePost = () => {
         postId,
         currentCondition,
         newCondition,
-        error: err.response?.data || err.message
+        error: err.response?.data || err.message,
       });
-      setError(err.response?.data?.message || err.message || "Failed to update post condition.");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to update post condition."
+      );
       setTimeout(() => setError(null), 5000);
     } finally {
-      setToggleLoading(prev => {
+      setToggleLoading((prev) => {
         const newState = { ...prev };
         delete newState[postId];
         return newState;
@@ -347,7 +377,10 @@ const ManagePost = () => {
     return (
       <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
         <HeaderAdmin />
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "50vh" }}>
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "50vh" }}
+        >
           <div className="text-center">
             <div className="spinner-border text-primary" role="status">
               <span className="visually-hidden">Loading...</span>
@@ -415,8 +448,8 @@ const ManagePost = () => {
             {error && !error.includes("Session expired") && (
               <div className="alert alert-warning mb-3" role="alert">
                 <strong>Warning:</strong> {error}
-                <button 
-                  className="btn btn-link btn-sm ms-2" 
+                <button
+                  className="btn btn-link btn-sm ms-2"
                   onClick={() => setError(null)}
                 >
                   Dismiss
@@ -425,7 +458,6 @@ const ManagePost = () => {
             )}
 
             {/* Header with title and Create button */}
-          
 
             {/* Filter Controls */}
             <Row className="mb-4">
@@ -443,7 +475,10 @@ const ManagePost = () => {
               <Col md={2}>
                 <Form.Group>
                   <Form.Label>Filter by Status</Form.Label>
-                  <Form.Select value={statusFilter} onChange={handleStatusChange}>
+                  <Form.Select
+                    value={statusFilter}
+                    onChange={handleStatusChange}
+                  >
                     <option value="All">All</option>
                     <option value="New">New</option>
                     <option value="Denied">Denied</option>
@@ -453,7 +488,10 @@ const ManagePost = () => {
               <Col md={2}>
                 <Form.Group>
                   <Form.Label>Filter by Condition</Form.Label>
-                  <Form.Select value={conditionFilter} onChange={handleConditionChange}>
+                  <Form.Select
+                    value={conditionFilter}
+                    onChange={handleConditionChange}
+                  >
                     <option value="All">All</option>
                     {conditions.map((condition) => (
                       <option key={condition} value={condition}>
@@ -478,7 +516,9 @@ const ManagePost = () => {
                         />
                       ))
                     ) : (
-                      <p className="text-muted small">No categories available.</p>
+                      <p className="text-muted small">
+                        No categories available.
+                      </p>
                     )}
                   </div>
                 </Form.Group>
@@ -502,8 +542,8 @@ const ManagePost = () => {
                 <FileText size={48} className="text-muted mb-3" />
                 <p className="text-muted">No posts found.</p>
                 {posts.length === 0 && !error && (
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     onClick={handleCreatePost}
                     className="mt-2"
                   >
@@ -537,7 +577,7 @@ const ManagePost = () => {
                       <td>{post.title || "N/A"}</td>
                       <td>{post.category || "N/A"}</td>
                       <td>
-                        <span 
+                        <span
                           className={`badge ${
                             post.status === "New" ? "bg-success" : "bg-danger"
                           }`}
@@ -546,9 +586,11 @@ const ManagePost = () => {
                         </span>
                       </td>
                       <td>
-                        <span 
+                        <span
                           className={`badge ${
-                            post.condition === "Active" ? "bg-success" : "bg-secondary"
+                            post.condition === "Active"
+                              ? "bg-success"
+                              : "bg-secondary"
                           }`}
                         >
                           {post.condition || "N/A"}
@@ -558,12 +600,19 @@ const ManagePost = () => {
                         <Form.Check
                           type="checkbox"
                           checked={post.condition === "Active"}
-                          onChange={() => handleToggleCondition(post._id, post.condition)}
+                          onChange={() =>
+                            handleToggleCondition(post._id, post.condition)
+                          }
                           disabled={toggleLoading[post._id]}
-                          title={`Toggle to ${post.condition === "Active" ? "Inactive" : "Active"}`}
+                          title={`Toggle to ${
+                            post.condition === "Active" ? "Inactive" : "Active"
+                          }`}
                         />
                         {toggleLoading[post._id] && (
-                          <div className="spinner-border spinner-border-sm ms-2" role="status">
+                          <div
+                            className="spinner-border spinner-border-sm ms-2"
+                            role="status"
+                          >
                             <span className="visually-hidden">Loading...</span>
                           </div>
                         )}
