@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Base URL for API calls
-const API_BASE_URL = "http://localhost:4000";
+const API_BASE_URL = `${process.env.REACT_APP_BACKEND_URL}`;
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -88,7 +88,7 @@ const createPost = (postData) => {
 const uploadFile = (file, onUploadProgress) => {
   const formData = new FormData();
   formData.append("file", file);
-  
+
   return apiClient.post("/file/upload", formData, {
     headers: {
       "Content-Type": "multipart/form-data",

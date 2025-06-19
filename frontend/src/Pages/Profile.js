@@ -44,7 +44,7 @@ export default function UserProfile() {
         // Nếu muốn lấy thông tin mới nhất từ server
         if (userData.id) {
           const response = await axios.get(
-            `${"http://localhost:4000"}/user/${userData.id}`,
+            `${process.env.REACT_APP_BACKEND_URL}/user/${userData.id}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -112,7 +112,7 @@ export default function UserProfile() {
 
       // Gửi API cập nhật thông tin user
       const response = await axios.put(
-        `${"http://localhost:4000"}/user/${user.id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/user/${user.id}`,
         user,
         {
           headers: {

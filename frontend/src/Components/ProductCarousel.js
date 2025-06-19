@@ -32,7 +32,7 @@ const Product2Carousel = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(
-          `http://localhost:4000/product/`
+          `${process.env.REACT_APP_BACKEND_URL}/product/`
         );
 
         // Handle different response structures

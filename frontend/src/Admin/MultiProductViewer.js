@@ -22,7 +22,7 @@ import HeaderAdmin from "../Components/HeaderAdmin";
 import Sidebar from "../Components/Sidebar";
 
 const api = axios.create({
-  baseURL: "http://localhost:4000",
+  baseURL: process.env.REACT_APP_BACKEND_URL,
   timeout: 10000,
 });
 
@@ -41,7 +41,7 @@ const MultiProductViewer = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastVariant, setToastVariant] = useState("success");
-  const backUpImg = '/images/frigde.jpg';
+  const backUpImg = "/images/frigde.jpg";
   // Load all products for search suggestions
   useEffect(() => {
     fetchAllProducts();
@@ -257,7 +257,7 @@ const MultiProductViewer = () => {
         selectedForBanner.has(product.Id || product.id)
       );
 
-      console.log('Selected products for banner:', selectedProducts);
+      console.log("Selected products for banner:", selectedProducts);
 
       // Transform to banner format
       const bannerProducts = selectedProducts.map((product, index) => ({
@@ -268,48 +268,51 @@ const MultiProductViewer = () => {
           product.description || `${product.name} - Sản phẩm chất lượng cao`,
         price: formatPrice(product.price),
         discount: "Giảm 15%", // Default discount
-        image:
-          (product.image && product.image[0]) ||
-          backUpImg,
+        image: (product.image && product.image[0]) || backUpImg,
         badge: index === 0 ? "Bán Chạy #1" : `Top ${index + 1}`,
         buttonText: "Mua Ngay",
       }));
 
-      console.log('Banner products to save:', bannerProducts);
+      console.log("Banner products to save:", bannerProducts);
 
       // Get token for authentication
       const token = localStorage.getItem("token");
       if (!token) {
-        showToastMessage("Vui lòng đăng nhập lại để thực hiện thao tác này!", "warning");
+        showToastMessage(
+          "Vui lòng đăng nhập lại để thực hiện thao tác này!",
+          "warning"
+        );
         return;
       }
 
-      console.log('Token found:', token.substring(0, 20) + '...');
+      console.log("Token found:", token.substring(0, 20) + "...");
 
       // Save to database via API
-      const response = await axios.post("http://localhost:4000/banner/save", 
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/banner/save`,
         { products: bannerProducts },
         {
           headers: {
-            'token': token,
-            'Content-Type': 'application/json'
-          }
+            token: token,
+            "Content-Type": "application/json",
+          },
         }
       );
-      
-      console.log('API Response:', response.data);
+
+      console.log("API Response:", response.data);
 
       showToastMessage(
-        response.data.message || `Đã lưu ${selectedProducts.length} sản phẩm vào banner thành công!`,
+        response.data.message ||
+          `Đã lưu ${selectedProducts.length} sản phẩm vào banner thành công!`,
         "success"
       );
     } catch (error) {
-      console.error('Error saving banner products:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
-      
+      console.error("Error saving banner products:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+
       let errorMessage = "Lỗi khi lưu banner products!";
-      
+
       if (error.response?.status === 401) {
         errorMessage = "Vui lòng đăng nhập lại!";
       } else if (error.response?.status === 403) {
@@ -317,7 +320,7 @@ const MultiProductViewer = () => {
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
-      
+
       showToastMessage(errorMessage, "danger");
     }
   };
@@ -548,8 +551,7 @@ const MultiProductViewer = () => {
                                   }}
                                   className="rounded me-3"
                                   onError={(e) => {
-                                    e.target.src =
-                                      backUpImg;
+                                    e.target.src = backUpImg;
                                   }}
                                 />
                               )}
@@ -653,8 +655,7 @@ const MultiProductViewer = () => {
                     alt={selectedProduct.name}
                     className="img-fluid rounded"
                     onError={(e) => {
-                      e.target.src =
-                        backUpImg;
+                      e.target.src = backUpImg;
                     }}
                   />
                 )}

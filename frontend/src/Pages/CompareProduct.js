@@ -41,7 +41,7 @@ const CompareProduct = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${"http://localhost:4000"}/product/`
+          `${process.env.REACT_APP_BACKEND_URL}/product/`
         );
         console.log("API Response:", response.data);
 
@@ -525,9 +525,11 @@ const CompareProduct = () => {
                                 className="text-center"
                                 style={{ padding: "0.5rem" }}
                               >
-                                <button 
+                                <button
                                   className="btn btn-sm btn-outline-primary"
-                                  onClick={() => navigate(`/productView/${product.id}`)}
+                                  onClick={() =>
+                                    navigate(`/productView/${product.id}`)
+                                  }
                                 >
                                   <Eye size={12} className="me-1" />
                                   Xem chi tiết

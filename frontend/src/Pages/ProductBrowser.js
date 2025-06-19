@@ -71,7 +71,7 @@ const ProductBrowse = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${"http://localhost:4000"}/product/`
+          `${process.env.REACT_APP_BACKEND_URL}/product/`
         );
         console.log("API Response:", response.data);
 

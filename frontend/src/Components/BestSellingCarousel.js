@@ -57,7 +57,7 @@ const BestSellingCarousel = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(
-          `http://localhost:4000/product/`
+          `${process.env.REACT_APP_BACKEND_URL}/product/`
         );
         console.log("kjqekqwe", response);
         // Handle different response structures

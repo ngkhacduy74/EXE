@@ -234,7 +234,7 @@ const CreateProduct = () => {
       console.log("Sending data:", dataToSend);
 
       const response = await axios.post(
-        `${"http://localhost:4000"}/product/createProduct`,
+        `${process.env.REACT_APP_BACKEND_URL}/product/createProduct`,
         dataToSend,
         {
           headers: {

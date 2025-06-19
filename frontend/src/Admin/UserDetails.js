@@ -33,7 +33,7 @@ export default function UserDetails() {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${"http://localhost:4000"}/user/${userId}`
+          `${process.env.REACT_APP_BACKEND_URL}/user/${userId}`
         );
 
         // Handle different response structures

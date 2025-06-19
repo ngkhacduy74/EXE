@@ -54,7 +54,7 @@ function Header() {
     const fetchAllProducts = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:4000/product/`
+          `${process.env.REACT_APP_BACKEND_URL}/product/`
         );
 
         const productData = Array.isArray(response.data.data)
@@ -215,7 +215,7 @@ function Header() {
       try {
         setLoadingCategories(true);
         const response = await axios.get(
-          `http://localhost:4000/product/`
+          `${process.env.REACT_APP_BACKEND_URL}/product/`
         );
 
         const productData = Array.isArray(response.data.data)
@@ -279,7 +279,7 @@ function Header() {
           try {
             const response = await axios.get(
               `${
-                "http://localhost:4000"
+                process.env.REACT_APP_BACKEND_URL
               }/auth/getUserByEmail?email=${encodeURIComponent(
                 parsedUser.email
               )}`
