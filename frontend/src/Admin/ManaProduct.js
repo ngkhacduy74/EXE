@@ -16,7 +16,7 @@ import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
 
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_BACKEND_URL}`, // Sử dụng trực tiếp biến môi trường mà không cần dấu $ và {}
+  baseURL: process.env.REACT_APP_BACKEND_URL, // Sử dụng trực tiếp biến môi trường mà không cần dấu $ và {}
   timeout: 5000,
 });
 
