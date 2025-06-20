@@ -264,6 +264,7 @@ export default function UserProfile() {
                       <div className="profile-img-container mb-3">
                         <img
                           src={
+                            user.ava_img_url ||
                             user.profileImage ||
                             "https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg"
                           }

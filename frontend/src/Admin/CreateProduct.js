@@ -276,6 +276,37 @@ const CreateProduct = () => {
     console.log("Video URL:", videoUrl);
   };
 
+  // Thêm hàm upload file ảnh
+  const handleUploadImageFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("img", file);
+    try {
+      // Gọi API upload ảnh
+      const res = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/file/upload-image`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      // Lấy URL trả về (ưu tiên url, path, secure_url)
+      const imageUrl = res.data.url || res.data.path || res.data.secure_url;
+      if (imageUrl) {
+        setImageUrls((prev) => {
+          if (prev.length < 3) return [...prev, imageUrl];
+          return prev;
+        });
+      } else {
+        alert("Không lấy được URL ảnh từ server!");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Upload ảnh thất bại!");
+    }
+  };
+
   return (
     <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
       <HeaderAdmin />
@@ -604,6 +635,21 @@ const CreateProduct = () => {
                     )}
                   </Card.Header>
                   <Card.Body>
+                    {/* Thêm input file upload ảnh */}
+                    <div className="mb-3">
+                      <Form.Group>
+                        <Form.Label>Hoặc chọn file ảnh để upload</Form.Label>
+                        <Form.Control
+                          type="file"
+                          accept="image/*"
+                          onChange={handleUploadImageFile}
+                          disabled={imageUrls.length >= 3}
+                        />
+                        <Form.Text className="text-muted">
+                          Tối đa 3 ảnh. Ảnh upload sẽ tự động thêm vào danh sách URL.
+                        </Form.Text>
+                      </Form.Group>
+                    </div>
                     {imageUrls.map((url, index) => (
                       <div key={index} className="mb-3">
                         <Form.Group>

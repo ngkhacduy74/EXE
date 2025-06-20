@@ -78,9 +78,9 @@ const ProductView = () => {
       if (err.response) {
         switch (err.response.status) {
           case 401:
-            // For user view, might redirect to login or show guest view
-            setError("Vui lòng đăng nhập để xem chi tiết sản phẩm.");
-            break;
+            // Redirect to login page if not authenticated
+            navigate("/login");
+            return;
           case 403:
             setError("Sản phẩm này không khả dụng để xem.");
             break;

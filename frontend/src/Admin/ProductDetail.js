@@ -549,70 +549,7 @@ const ProductDetail = () => {
                 </Card.Body>
               </Card>
 
-              <Card className="shadow-sm mb-4">
-                <Card.Header className="bg-white border-bottom">
-                  <h6 className="mb-0">
-                    <i className="fas fa-cart-plus text-primary me-2"></i>{" "}
-                    Purchase Options
-                  </h6>
-                </Card.Header>
-                <Card.Body>
-                  <Row className="align-items-center mb-4">
-                    <Col sm={6}>
-                      <label className="form-label fw-medium">Quantity:</label>
-                      <div className="input-group" style={{ width: "150px" }}>
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary"
-                          onClick={() => handleQuantityChange(-1)}
-                          aria-label="Decrease quantity"
-                        >
-                          −
-                        </button>
-                        <input
-                          type="text"
-                          className="form-control text-center fw-medium"
-                          value={quantity}
-                          readOnly
-                          aria-label="Current quantity"
-                        />
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary"
-                          onClick={() => handleQuantityChange(1)}
-                          aria-label="Increase quantity"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col sm={12}>
-                      <Button
-                        variant="primary"
-                        size="lg"
-                        className="w-100 mb-3 py-3 fw-medium"
-                        onClick={handleAddToCart}
-                        disabled={product.quantity === 0}
-                      >
-                        <i className="fas fa-shopping-cart me-2"></i>
-                        Add to Cart
-                      </Button>
-                      <Button
-                        variant="success"
-                        size="lg"
-                        className="w-100 py-3 fw-medium"
-                        onClick={() => alert("Proceeding to checkout...")}
-                        disabled={product.quantity === 0}
-                      >
-                        <i className="fas fa-bolt me-2"></i>
-                        Buy Now
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Card>
+             
 
               {product.quantity !== undefined && product.quantity < 10 && (
                 <Alert variant="warning" className="mb-4">

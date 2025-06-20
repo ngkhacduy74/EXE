@@ -1,28 +1,69 @@
-import axios from "axios";
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState(""); // "terms" or "policy"
+  const [modalType, setModalType] = useState("");
   const [canClose, setCanClose] = useState(false);
-  const navigate = useNavigate();
   const modalContentRef = useRef(null);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const message = location.state?.message;
 
   // Terms of Service content
   const termsContent = `
-    ĐIỀU KHOẢN DỊCH VỤ VINSAKY
-    ...
-  `; // Keeping it as provided for brevity
+ĐIỀU KHOẢN DỊCH VỤ VINSAKY
+
+1. GIỚI THIỆU
+Chào mừng bạn đến với Vinsaky! Khi bạn sử dụng dịch vụ của chúng tôi, bạn đồng ý tuân thủ các điều khoản này.
+
+2. SỬ DỤNG DỊCH VỤ
+- Bạn phải cung cấp thông tin chính xác khi đăng ký
+- Không được sử dụng dịch vụ cho mục đích bất hợp pháp
+- Tuân thủ các quy định của pháp luật Việt Nam
+
+3. QUYỀN VÀ NGHĨA VỤ
+- Chúng tôi có quyền thay đổi điều khoản dịch vụ
+- Người dùng có trách nhiệm bảo mật thông tin tài khoản
+- Báo cáo kịp thời nếu phát hiện vi phạm
+
+4. CHÍNH SÁCH BẢO MẬT
+Thông tin cá nhân của bạn được bảo vệ theo chính sách riêng tư của chúng tôi.
+
+5. LIÊN HỆ
+Mọi thắc mắc xin liên hệ: support@vinsaky.com
+  `;
 
   // Customer Policy content
   const policyContent = `
-    CHÍNH SÁCH KHÁCH HÀNG VINSAKY
-    ...
-  `; // Keeping it as provided for brevity
+CHÍNH SÁCH KHÁCH HÀNG VINSAKY
+
+1. CAM KẾT CHẤT LƯỢNG
+Chúng tôi cam kết cung cấp dịch vụ chất lượng cao nhất cho khách hàng.
+
+2. CHÍNH SÁCH HOÀN TIỀN
+- Hoàn tiền 100% nếu không hài lòng trong 7 ngày đầu
+- Quy trình hoàn tiền trong vòng 3-5 ngày làm việc
+- Phí dịch vụ có thể được khấu trừ tùy theo từng trường hợp
+
+3. HỖ TRỢ KHÁCH HÀNG
+- Hỗ trợ 24/7 qua hotline: 1900-xxxx
+- Email hỗ trợ: support@vinsaky.com
+- Chat trực tuyến trên website
+
+4. QUYỀN LỢI KHÁCH HÀNG
+- Được tư vấn miễn phí
+- Ưu đãi đặc biệt cho khách hàng thân thiết
+- Chương trình khuyến mãi hàng tháng
+
+5. CHÍNH SÁCH BẢO HÀNH
+Tất cả sản phẩm/dịch vụ đều được bảo hành theo quy định của nhà sản xuất.
+  `;
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -40,22 +81,16 @@ function Login() {
           password,
         }
       );
-      console.log("Full login response:", response);
-      console.log("Response data:", response.data);
-
       if (response.data.success) {
         const { token, user } = response.data;
-        console.log("Token received:", token);
-        console.log("User data:", user);
-
-        localStorage.setItem("token", token); // Save token
+        localStorage.setItem("token", token); // Lưu token
+        // Nếu flow có xác thực OTP, chuyển hướng sang trang OTP
         navigate("/otp", { state: { email } });
       } else {
         throw new Error(response.data.message || "Đăng nhập thất bại.");
       }
     } catch (error) {
       console.error("Login error:", error);
-      console.error("Error response:", error.response?.data);
       alert(
         error.response?.data?.message || "Đăng nhập thất bại, vui lòng thử lại."
       );
@@ -90,162 +125,528 @@ function Login() {
     }
   }, [showModal]);
 
+  const handleRegister = () => {
+    navigate('/register');
+  };
+
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      backgroundColor: '#f9fafb',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    },
+    mainCard: {
+      maxWidth: '64rem',
+      width: '100%',
+      backgroundColor: 'white',
+      borderRadius: '1rem',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+      border: '1px solid #f3f4f6',
+      overflow: 'hidden'
+    },
+    mainContent: {
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    leftPanel: {
+      padding: '2rem',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'relative',
+      overflow: 'hidden',
+      backgroundColor: 'white',
+      borderRight: '1px solid #f3f4f6'
+    },
+    bgOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: '#f9fafb',
+      opacity: 0.5
+    },
+    branding: {
+      position: 'relative',
+      zIndex: 10,
+      textAlign: 'center'
+    },
+    logo: {
+      width: '6rem',
+      height: '6rem',
+      backgroundColor: '#dbeafe',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      margin: '0 auto 1rem'
+    },
+    logoSvg: {
+      width: '3rem',
+      height: '3rem',
+      color: '#2563eb'
+    },
+    brandTitle: {
+      fontSize: '2.25rem',
+      fontWeight: 'bold',
+      marginBottom: '0.5rem',
+      color: '#1f2937'
+    },
+    brandSubtitle: {
+      fontSize: '1.25rem',
+      color: '#6b7280',
+      marginBottom: '2rem'
+    },
+    features: {
+      textAlign: 'left',
+      maxWidth: '20rem'
+    },
+    featureItem: {
+      display: 'flex',
+      alignItems: 'center',
+      marginBottom: '1rem'
+    },
+    featureDot: {
+      width: '0.5rem',
+      height: '0.5rem',
+      backgroundColor: '#2563eb',
+      borderRadius: '50%',
+      marginRight: '0.75rem'
+    },
+    featureText: {
+      color: '#374151'
+    },
+    decorativeCircle1: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      width: '8rem',
+      height: '8rem',
+      backgroundColor: '#dbeafe',
+      borderRadius: '50%',
+      transform: 'translate(4rem, -4rem)'
+    },
+    decorativeCircle2: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      width: '6rem',
+      height: '6rem',
+      backgroundColor: '#eff6ff',
+      borderRadius: '50%',
+      transform: 'translate(-3rem, 3rem)'
+    },
+    rightPanel: {
+      padding: '2rem'
+    },
+    message: {
+      marginBottom: '1.5rem',
+      padding: '1rem',
+      backgroundColor: '#fef3c7',
+      border: '1px solid #f59e0b',
+      color: '#92400e',
+      borderRadius: '0.5rem'
+    },
+    formHeader: {
+      marginBottom: '2rem'
+    },
+    formTitle: {
+      fontSize: '1.875rem',
+      fontWeight: 'bold',
+      color: '#1f2937',
+      marginBottom: '0.5rem'
+    },
+    formSubtitle: {
+      color: '#6b7280'
+    },
+    formGroup: {
+      marginBottom: '1.5rem'
+    },
+    formLabel: {
+      display: 'block',
+      fontSize: '0.875rem',
+      fontWeight: '500',
+      color: '#374151',
+      marginBottom: '0.5rem'
+    },
+    formInput: {
+      width: '100%',
+      padding: '0.75rem 1rem',
+      border: '1px solid #d1d5db',
+      borderRadius: '0.5rem',
+      fontSize: '1rem',
+      transition: 'all 0.2s',
+      outline: 'none'
+    },
+    btnPrimary: {
+      width: '100%',
+      backgroundColor: '#2563eb',
+      color: 'white',
+      padding: '0.75rem 1rem',
+      border: 'none',
+      borderRadius: '0.5rem',
+      fontWeight: '500',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      outline: 'none'
+    },
+    loadingSpinner: {
+      width: '1rem',
+      height: '1rem',
+      border: '2px solid white',
+      borderTop: '2px solid transparent',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+      marginRight: '0.5rem'
+    },
+    textCenter: {
+      textAlign: 'center',
+      margin: '1.5rem 0'
+    },
+    linkButton: {
+      background: 'none',
+      border: 'none',
+      color: '#2563eb',
+      cursor: 'pointer',
+      fontSize: '0.875rem',
+      fontWeight: '500',
+      textDecoration: 'none'
+    },
+    formFooter: {
+      paddingTop: '1.5rem',
+      borderTop: '1px solid #e5e7eb',
+      textAlign: 'center',
+      color: '#6b7280'
+    },
+    footerLinks: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem',
+      fontSize: '0.875rem'
+    },
+    modalOverlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+      zIndex: 50
+    },
+    modal: {
+      backgroundColor: 'white',
+      borderRadius: '0.75rem',
+      maxWidth: '42rem',
+      width: '100%',
+      maxHeight: '80vh',
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    modalHeader: {
+      padding: '1.5rem',
+      borderBottom: '1px solid #e5e7eb'
+    },
+    modalTitle: {
+      fontSize: '1.25rem',
+      fontWeight: '600',
+      color: '#1f2937'
+    },
+    modalContent: {
+      flex: 1,
+      overflowY: 'auto',
+      padding: '1.5rem'
+    },
+    modalText: {
+      whiteSpace: 'pre-line',
+      color: '#374151',
+      lineHeight: 1.6
+    },
+    scrollIndicator: {
+      textAlign: 'center',
+      marginTop: '1.5rem',
+      padding: '1rem',
+      backgroundColor: '#eff6ff',
+      borderRadius: '0.5rem'
+    },
+    scrollIndicatorContent: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#2563eb'
+    },
+    scrollIndicatorSvg: {
+      width: '1rem',
+      height: '1rem',
+      marginRight: '0.5rem',
+      animation: 'bounce 1s infinite'
+    },
+    scrollIndicatorText: {
+      fontSize: '0.875rem'
+    },
+    modalFooter: {
+      padding: '1.5rem',
+      borderTop: '1px solid #e5e7eb'
+    },
+    btnModal: {
+      width: '100%',
+      padding: '0.75rem 1rem',
+      border: 'none',
+      borderRadius: '0.5rem',
+      fontWeight: '500',
+      cursor: 'pointer',
+      transition: 'all 0.2s'
+    },
+    btnModalEnabled: {
+      backgroundColor: '#2563eb',
+      color: 'white'
+    },
+    btnModalDisabled: {
+      backgroundColor: '#d1d5db',
+      color: '#6b7280',
+      cursor: 'not-allowed'
+    }
+  };
+
+  // CSS animations
+  const cssAnimations = `
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes bounce {
+      0%, 20%, 53%, 80%, 100% { transform: translateY(0); }
+      40%, 43% { transform: translateY(-10px); }
+    }
+    input:focus {
+      border-color: transparent !important;
+      box-shadow: 0 0 0 2px #3b82f6 !important;
+    }
+    button:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background-color: #1d4ed8 !important;
+    }
+    .link-button:hover {
+      color: #1d4ed8 !important;
+    }
+    @media (min-width: 640px) {
+      .footer-links {
+        flex-direction: row !important;
+        justify-content: center !important;
+      }
+    }
+    @media (min-width: 1024px) {
+      .main-content {
+        flex-direction: row !important;
+      }
+      .left-panel, .right-panel {
+        width: 50% !important;
+      }
+      .right-panel {
+        padding: 3rem !important;
+      }
+    }
+  `;
+
   return (
-    <section className="vh-100" style={{ backgroundColor: "#508BFC" }}>
-      <div className="container py-5 h-100">
-        <div className="row d-flex justify-content-center align-items-center h-100">
-          <div className="col col-xl-10">
-            <div className="card" style={{ borderRadius: "1rem" }}>
-              <div className="row g-0">
-                <div className="col-md-6 col-lg-5 d-none d-md-block">
-                  <img
-                    src="../images/Community.jpg"
-                    alt="login form"
-                    className="img-fluid"
-                    style={{
-                      borderRadius: "1rem 0 0 1rem",
-                      height: "100%",
-                      width: "100%",
-                    }}
+    <>
+      <style>{cssAnimations}</style>
+      <div style={styles.container}>
+        <div style={styles.mainCard}>
+          <div style={{...styles.mainContent}} className="main-content">
+            {/* Left Side - Image/Branding */}
+            <div style={{...styles.leftPanel}} className="left-panel">
+              <div style={styles.bgOverlay}></div>
+              <div style={styles.branding}>
+                <div style={styles.logo}>
+                  <svg style={styles.logoSvg} fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h1 style={styles.brandTitle}>Vinsaky</h1>
+                <p style={styles.brandSubtitle}>Nền tảng dịch vụ hiện đại</p>
+                
+                <div style={styles.features}>
+                  <div style={styles.featureItem}>
+                    <div style={styles.featureDot}></div>
+                    <span style={styles.featureText}>Dịch vụ chuyên nghiệp</span>
+                  </div>
+                  <div style={styles.featureItem}>
+                    <div style={styles.featureDot}></div>
+                    <span style={styles.featureText}>Hỗ trợ 24/7</span>
+                  </div>
+                  <div style={styles.featureItem}>
+                    <div style={styles.featureDot}></div>
+                    <span style={styles.featureText}>Bảo mật tuyệt đối</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div style={styles.decorativeCircle1}></div>
+              <div style={styles.decorativeCircle2}></div>
+            </div>
+
+            {/* Right Side - Login Form */}
+            <div style={{...styles.rightPanel}} className="right-panel">
+              {message && (
+                <div style={styles.message}>
+                  {message}
+                </div>
+              )}
+
+              <div style={styles.formHeader}>
+                <h2 style={styles.formTitle}>Đăng nhập</h2>
+                <p style={styles.formSubtitle}>Chào mừng bạn trở lại!</p>
+              </div>
+
+              <div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    Email của bạn
+                  </label>
+                  <input
+                    type="email"
+                    style={styles.formInput}
+                    placeholder="example@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
                 </div>
-                <div className="col-md-6 col-lg-7 d-flex align-items-center">
-                  <div className="card-body p-4 p-lg-5 text-black">
-                    <form onSubmit={handleLogin}>
-                      <div className="d-flex align-items-center mb-3 pb-1">
-                        <i
-                          className="fas fa-cubes fa-2x me-3"
-                          style={{ color: "#ff6219" }}
-                        ></i>
-                        <span className="h1 fw-bold mb-0">Vinsaky</span>
-                      </div>
 
-                      <div className="form-outline mb-4">
-                        <label className="form-label" htmlFor="form2Example17">
-                          Điền email của bạn
-                        </label>
-                        <input
-                          type="email"
-                          id="form2Example17"
-                          className="form-control form-control-lg"
-                          name="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                        />
-                      </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    Mật khẩu
+                  </label>
+                  <input
+                    type="password"
+                    style={styles.formInput}
+                    placeholder="Nhập mật khẩu"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
 
-                      <div className="form-outline mb-4">
-                        <label className="form-label" htmlFor="form2Example27">
-                          Điền mật khẩu của bạn:
-                        </label>
-                        <input
-                          type="password"
-                          id="form2Example27"
-                          className="form-control form-control-lg"
-                          name="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                        />
-                      </div>
+                <button
+                  onClick={handleLogin}
+                  disabled={loading}
+                  style={{
+                    ...styles.btnPrimary,
+                    opacity: loading ? 0.5 : 1,
+                    cursor: loading ? 'not-allowed' : 'pointer'
+                  }}
+                  className="btn-primary"
+                >
+                  {loading ? (
+                    <>
+                      <div style={styles.loadingSpinner}></div>
+                      <span>Đang đăng nhập...</span>
+                    </>
+                  ) : (
+                    "Đăng nhập"
+                  )}
+                </button>
+              </div>
 
-                      <div className="pt-1 mb-4">
-                        <button
-                          className="btn btn-dark btn-lg btn-block"
-                          type="submit"
-                          disabled={loading}
-                        >
-                          {loading ? "Logging in..." : "Login"}
-                        </button>
-                      </div>
+              <div style={styles.textCenter}>
+                <button
+                  type="button"
+                  style={styles.linkButton}
+                  className="link-button"
+                  onClick={() => alert("Chức năng quên mật khẩu")}
+                >
+                  Quên mật khẩu?
+                </button>
+              </div>
 
-                      <a
-                        className="text-primary"
-                        style={{ cursor: "pointer" }}
-                        onClick={() => navigate("/forgotPassword")}
-                      >
-                        Forgot password?
-                      </a>
-                      <p className="mb-5 pb-lg-2" style={{ color: "#393f81" }}>
-                        Không có tài khoản?
-                        <a
-                          onClick={() => navigate("/register")}
-                          style={{ color: "#393f81", cursor: "pointer" }}
-                        >
-                          <span className="text-primary"> Đăng kí tại đây</span>
-                        </a>
-                      </p>
-                      <a
-                        className="text-primary"
-                        style={{ cursor: "pointer" }}
-                        onClick={() => openModal("policy")}
-                      >
-                        Chính sách khách hàng
-                      </a>
-                      <h1> </h1>
-                      <a
-                        className="text-primary"
-                        style={{ cursor: "pointer" }}
-                        onClick={() => openModal("terms")}
-                      >
-                        Điều khoản dịch vụ
-                      </a>
-                    </form>
-                  </div>
+              <div style={styles.textCenter}>
+                Chưa có tài khoản?{" "}
+                <button
+                  type="button"
+                  style={styles.linkButton}
+                  className="link-button"
+                  onClick={handleRegister}
+                >
+                  Đăng ký ngay
+                </button>
+              </div>
+
+              <div style={styles.formFooter}>
+                <div style={{...styles.footerLinks}} className="footer-links">
+                  <button
+                    type="button"
+                    style={styles.linkButton}
+                    className="link-button"
+                    onClick={() => openModal("policy")}
+                  >
+                    Chính sách khách hàng
+                  </button>
+                  <button
+                    type="button"
+                    style={styles.linkButton}
+                    className="link-button"
+                    onClick={() => openModal("terms")}
+                  >
+                    Điều khoản dịch vụ
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {showModal && (
-        <div
-          className="modal show d-block"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-          tabIndex="-1"
-        >
-          <div className="modal-dialog modal-lg modal-dialog-scrollable">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {modalType === "terms"
-                    ? "Điều khoản dịch vụ"
-                    : "Chính sách khách hàng"}
-                </h5>
+        {/* Modal */}
+        {showModal && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modal}>
+              <div style={styles.modalHeader}>
+                <h3 style={styles.modalTitle}>
+                  {modalType === "terms" ? "Điều khoản dịch vụ" : "Chính sách khách hàng"}
+                </h3>
               </div>
+              
               <div
-                className="modal-body"
                 ref={modalContentRef}
                 onScroll={handleScroll}
-                style={{
-                  maxHeight: "60vh",
-                  overflowY: "auto",
-                  padding: "20px",
-                }}
+                style={styles.modalContent}
               >
-                <div style={{ whiteSpace: "pre-line", lineHeight: "1.6" }}>
+                <div style={styles.modalText}>
                   {modalType === "terms" ? termsContent : policyContent}
                 </div>
+                
                 {!canClose && (
-                  <div className="text-center mt-3">
-                    <small className="text-muted">
-                      <i className="fas fa-arrow-down"></i> Vui lòng lướt xuống
-                      cuối để tiếp tục
-                    </small>
+                  <div style={styles.scrollIndicator}>
+                    <div style={styles.scrollIndicatorContent}>
+                      <svg style={styles.scrollIndicatorSvg} fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M15.707 4.293a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 011.414-1.414L10 8.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span style={styles.scrollIndicatorText}>Vui lòng lướt xuống cuối để tiếp tục</span>
+                    </div>
                   </div>
                 )}
               </div>
-              <div className="modal-footer">
+              
+              <div style={styles.modalFooter}>
                 <button
-                  type="button"
-                  className="btn btn-primary"
                   onClick={closeModal}
                   disabled={!canClose}
                   style={{
-                    opacity: canClose ? 1 : 0.5,
-                    cursor: canClose ? "pointer" : "not-allowed",
+                    ...styles.btnModal,
+                    ...(canClose ? styles.btnModalEnabled : styles.btnModalDisabled)
                   }}
                 >
                   Tôi đã hiểu
@@ -253,9 +654,9 @@ function Login() {
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </section>
+        )}
+      </div>
+    </>
   );
 }
 
