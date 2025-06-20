@@ -31,7 +31,7 @@ const createProduct = async (data, user) => {
     size: size,
     weight: weight,
     status: status,
-    business_phone: business_phone,
+   // business_phone: business_phone,
     warranty_period: warranty_period,
     capacity: capacity,
     voltage: voltage,
