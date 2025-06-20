@@ -31,7 +31,7 @@ const ProductSchema = Joi.object({
     )
     .required(),
 
-    video: Joi.array()
+  video: Joi.array()
     .items(
       Joi.string()
         .uri()
@@ -39,7 +39,7 @@ const ProductSchema = Joi.object({
         .message("URL video YouTube không hợp lệ")
     )
     .optional(),
-  
+
   name: Joi.string().required(),
   brand: Joi.string().required(),
 
@@ -97,12 +97,12 @@ const ProductSchema = Joi.object({
     "number.max": "Số lượng không được lớn hơn 1000",
     "any.required": "Vui lòng nhập số lượng sản phẩm",
   }),
-  business_phone: Joi.string()
-    .pattern(/^\d{10,15}$/)
-    .optional()
-    .messages({
-      "string.pattern.base": "Số điện thoại doanh nghiệp không hợp lệ",
-    }),
+  // business_phone: Joi.string()
+  //   .pattern(/^\d{10,15}$/)
+  //   .optional()
+  //   .messages({
+  //     "string.pattern.base": "Số điện thoại doanh nghiệp không hợp lệ",
+  //   }),
 });
 
 module.exports = ProductSchema;

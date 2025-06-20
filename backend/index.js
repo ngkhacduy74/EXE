@@ -7,12 +7,14 @@ const configs = require("./Config/index");
 
 const corsOptions = {
   origin: [
-    "http://localhost:3000", // Frontend local development
-    "https://exe-frontend-ou98.onrender.com" // Production URL
+    "http://localhost:3000",
+    "https://exe-frontend-ou98.onrender.com",
+    "https://vinsaky.com",
+    "https://www.vinsaky.com",
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
