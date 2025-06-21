@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { 
   Search, 
@@ -91,7 +91,7 @@ function Header() {
           : [];
         setAllProducts(productData);
       } catch (error) {
-        console.error("Error fetching all products:", error.message);
+        console.error("Error fetching all products:", error);
         setAllProducts([]);
       }
     };
@@ -99,8 +99,8 @@ function Header() {
     fetchAllProducts();
   }, []);
 
-  // Function to get first image safely - memoized
-  const getFirstImage = useCallback((product) => {
+  // Function to get first image safely
+  const getFirstImage = (product) => {
     // Kiểm tra nếu có mảng images và có ít nhất 1 ảnh
     if (
       product.images &&
@@ -115,7 +115,7 @@ function Header() {
     }
     // Fallback về ảnh mặc định
     return "./styles/images/product-thumb-1.png";
-  }, []);
+  };
 
   // Enhanced debounced search suggestions
   useEffect(() => {
@@ -129,7 +129,7 @@ function Header() {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, selectedCategory, allProducts, fetchEnhancedSuggestions]);
+  }, [searchTerm, selectedCategory, allProducts]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -150,62 +150,59 @@ function Header() {
     };
   }, []);
 
-  // Memoized filtered suggestions for better performance
-  const filteredSuggestions = useMemo(() => {
-    if (!searchTerm.trim() || searchTerm.length < 2) return [];
-    
-    return allProducts
-      .filter((product) => {
-        const matchesSearch =
-          product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchesCategory =
-          selectedCategory === "all" ||
-          product.category?.toLowerCase() === selectedCategory.toLowerCase();
-
-        return matchesSearch && matchesCategory;
-      })
-      .slice(0, 8)
-      .map((product) => ({
-        id: product.id,
-        name: product.name,
-        brand: product.brand,
-        category: product.category,
-        price: product.price,
-        image: getFirstImage(product),
-        rating: product.rating,
-        quantity: product.quantity,
-        description: product.description,
-        type: "product",
-      }));
-  }, [searchTerm, selectedCategory, allProducts, getFirstImage]);
-
-  // Enhanced product suggestions with detailed info - memoized
-  const fetchEnhancedSuggestions = useCallback(async (query) => {
+  // Enhanced product suggestions with detailed info
+  const fetchEnhancedSuggestions = async (query) => {
     try {
       setLoadingSuggestions(true);
-      setSuggestions(filteredSuggestions);
-      setShowSuggestions(filteredSuggestions.length > 0);
+
+      // Filter products locally for faster response
+      const filteredProducts = allProducts
+        .filter((product) => {
+          const matchesSearch =
+            product.name?.toLowerCase().includes(query.toLowerCase()) ||
+            product.brand?.toLowerCase().includes(query.toLowerCase()) ||
+            product.category?.toLowerCase().includes(query.toLowerCase()) ||
+            product.description?.toLowerCase().includes(query.toLowerCase());
+
+          const matchesCategory =
+            selectedCategory === "all" ||
+            product.category?.toLowerCase() === selectedCategory.toLowerCase();
+
+          return matchesSearch && matchesCategory;
+        })
+        .slice(0, 8)
+        .map((product) => ({
+          id: product.id,
+          name: product.name,
+          brand: product.brand,
+          category: product.category,
+          price: product.price,
+          image: getFirstImage(product),
+          rating: product.rating,
+          quantity: product.quantity,
+          description: product.description,
+          type: "product",
+        }));
+
+      setSuggestions(filteredProducts);
+      setShowSuggestions(filteredProducts.length > 0);
     } catch (error) {
-      console.error("Error fetching suggestions:", error.message);
+      console.error("Error fetching suggestions:", error);
       setSuggestions([]);
       setShowSuggestions(false);
     } finally {
       setLoadingSuggestions(false);
     }
-  }, [filteredSuggestions]);
+  };
 
-  // Format price like in Compare Product - memoized
-  const formatPrice = useCallback((price) => {
+  // Format price like in Compare Product
+  const formatPrice = (price) => {
     if (!price) return "Chưa có giá";
     return `${parseFloat(price).toLocaleString("vi-VN")} VND`;
-  }, []);
+  };
 
-  // Render star rating like in Compare Product - memoized
-  const renderStars = useCallback((rating) => {
+  // Render star rating like in Compare Product
+  const renderStars = (rating) => {
     if (!rating) return <span className="text-muted small">Chưa đánh giá</span>;
 
     return (
@@ -221,10 +218,10 @@ function Header() {
         <span className="ms-1 small text-muted">({rating})</span>
       </div>
     );
-  }, []);
+  };
 
-  // Save search term to recent searches - memoized
-  const saveRecentSearch = useCallback((term) => {
+  // Save search term to recent searches
+  const saveRecentSearch = (term) => {
     if (!term.trim()) return;
 
     const newSearches = [
@@ -234,13 +231,13 @@ function Header() {
 
     setRecentSearches(newSearches);
     localStorage.setItem("recentSearches", JSON.stringify(newSearches));
-  }, [recentSearches]);
+  };
 
-  // Clear recent searches - memoized
-  const clearRecentSearches = useCallback(() => {
+  // Clear recent searches
+  const clearRecentSearches = () => {
     setRecentSearches([]);
     localStorage.removeItem("recentSearches");
-  }, []);
+  };
 
   // Fetch categories and brands
   useEffect(() => {
@@ -264,7 +261,7 @@ function Header() {
         setCategories(uniqueCategories);
         setBrands(uniqueBrands);
       } catch (error) {
-        console.error("Error fetching categories and brands:", error.message);
+        console.error("Error fetching categories and brands:", error);
         setCategories([]);
         setBrands([]);
       } finally {
@@ -275,11 +272,11 @@ function Header() {
     fetchCategoriesAndBrands();
   }, []);
 
-  const handleLogoutClick = useCallback(() => {
+  const handleLogoutClick = () => {
     handleLogout();
-  }, [handleLogout]);
+  };
 
-  const handleSearch = useCallback((e, searchQuery = null) => {
+  const handleSearch = (e, searchQuery = null) => {
     if (e) e.preventDefault();
 
     const query = searchQuery || searchTerm;
@@ -300,9 +297,9 @@ function Header() {
     const queryString = params.toString();
     navigate(`/product-browser${queryString ? `?${queryString}` : ""}`);
     setShowSuggestions(false);
-  }, [searchTerm, selectedCategory, saveRecentSearch, navigate]);
+  };
 
-  const handleSuggestionClick = useCallback((suggestion) => {
+  const handleSuggestionClick = (suggestion) => {
     if (suggestion.type === "product") {
       // Scroll to top before navigating
       window.scrollTo(0, 0);
@@ -312,29 +309,29 @@ function Header() {
       handleSearch(null, suggestion.name);
     }
     setShowSuggestions(false);
-  }, [navigate, handleSearch]);
+  };
 
-  const handleSearchFocus = useCallback(() => {
+  const handleSearchFocus = () => {
     if (searchTerm.trim().length >= 2 && suggestions.length > 0) {
       setShowSuggestions(true);
     } else if (recentSearches.length > 0) {
       setShowSuggestions(true);
     }
-  }, [searchTerm, suggestions.length, recentSearches.length]);
+  };
 
-  const handleBrandClick = useCallback((brand) => {
+  const handleBrandClick = (brand) => {
     navigate(`/product-browser?brand=${encodeURIComponent(brand)}`);
     setShowBrandsDropdown(false);
-  }, [navigate]);
+  };
 
-  const handleCategoryClick = useCallback((category) => {
+  const handleCategoryClick = (category) => {
     navigate(`/product-browser?category=${encodeURIComponent(category)}`);
     setShowCategoriesDropdown(false);
-  }, [navigate]);
+  };
 
-  const handleCategoryChange = useCallback((e) => {
+  const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
-  }, []);
+  };
 
   // Ensure sticky positioning works
   useEffect(() => {
@@ -348,6 +345,12 @@ function Header() {
       header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
     }
   }, []);
+
+  // Debug logs
+  console.log('Header render - user:', user);
+  console.log('Header render - loading:', loading);
+  console.log('Header render - localStorage user:', localStorage.getItem('user'));
+  console.log('Header render - localStorage token:', localStorage.getItem('token'));
 
   if (loading) {
     return <div>Loading...</div>;
@@ -1112,4 +1115,4 @@ function Header() {
   );
 }
 
-export default React.memo(Header);
+export default Header;

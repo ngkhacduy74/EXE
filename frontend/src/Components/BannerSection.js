@@ -18,13 +18,16 @@ const BannerSection = () => {
       if (response.data.success && response.data.data.length > 0) {
         setSavedProducts(response.data.data);
         setIsCustomProducts(true);
-        console.log("BannerSection: Products loaded successfully");
+        console.log(
+          "BannerSection: Loaded products from API:",
+          response.data.data
+        );
       } else {
         setSavedProducts([]);
         setIsCustomProducts(false);
       }
     } catch (error) {
-      console.error("Error loading banner products from API:", error.message);
+      console.error("Error loading banner products from API:", error);
       setSavedProducts([]);
       setIsCustomProducts(false);
     } finally {
@@ -36,17 +39,10 @@ const BannerSection = () => {
     // Load immediately
     loadSavedProducts();
 
-// Check for updates every 30 seconds
-const interval = setInterval(() => {
-  loadSavedProducts();
-}, 30000);
-
-
-setTimeout(() => {
-  clearInterval(interval);
-  console.log('Banner update check stopped after 10 minutes');
-}, 600000); 
-
+    // Check for updates every 30 seconds
+    const interval = setInterval(() => {
+      loadSavedProducts();
+    }, 30000);
 
     return () => {
       clearInterval(interval);
@@ -81,7 +77,7 @@ setTimeout(() => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        console.log("Authentication required to reset banner");
+        console.log("No token found, cannot reset banner");
         return;
       }
 
@@ -96,7 +92,7 @@ setTimeout(() => {
       setIsCustomProducts(false);
       setCurrentSlide(0);
     } catch (error) {
-      console.error("Error resetting banner:", error.message);
+      console.error("Error resetting banner:", error);
     }
   };
 
