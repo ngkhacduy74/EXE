@@ -107,13 +107,30 @@ class DashboardController {
     try {
       console.log("📊 Dashboard stats requested by user:", req.user?.user?.email);
       
-      // Get total counts
+      // Get total counts - đọc trực tiếp từ database
       const totalUsers = await User.countDocuments();
       const totalPosts = await Post.countDocuments();
       const totalProducts = await Product.countDocuments();
       const totalBanners = await Banner.countDocuments();
 
       console.log("📈 Counts:", { totalUsers, totalPosts, totalProducts, totalBanners });
+
+      // Get today's new users - tính chính xác
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayNewUsers = await User.countDocuments({
+        createdAt: { $gte: today }
+      });
+
+      // Get today's new posts
+      const todayNewPosts = await Post.countDocuments({
+        createdAt: { $gte: today }
+      });
+
+      // Get today's new products
+      const todayNewProducts = await Product.countDocuments({
+        createdAt: { $gte: today }
+      });
 
       // Get active users (users who logged in within last 24 hours)
       const yesterday = new Date();
@@ -122,14 +139,10 @@ class DashboardController {
         lastLoginAt: { $gte: yesterday }
       });
 
-      // Get today's new users
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayNewUsers = await User.countDocuments({
-        createdAt: { $gte: today }
-      });
+      // Get today's page views (approximate - using new users as proxy)
+      const todayPageViews = todayNewUsers * 3; // Giả sử mỗi user mới xem 3 trang
 
-      console.log("👥 User stats:", { activeUsers, todayNewUsers });
+      console.log("👥 User stats:", { activeUsers, todayNewUsers, todayNewPosts, todayNewProducts });
 
       // Get posts by month for current year
       const currentYear = new Date().getFullYear();
@@ -188,11 +201,11 @@ class DashboardController {
         monthlyUserGrowth[i] = cumulative;
       }
 
-      // Get recent posts
+      // Get recent posts - không dùng populate để tránh lỗi
       const recentPosts = await Post.find()
         .sort({ createdAt: -1 })
         .limit(5)
-        .populate('author', 'username email');
+        .select('title content createdAt author'); // Chỉ lấy các trường cần thiết
 
       // Get top categories (from products)
       const topCategories = await Product.aggregate([
@@ -210,7 +223,7 @@ class DashboardController {
         }
       ]);
 
-      // Get user registration trend (last 7 days)
+      // Get registration trend for last 7 days
       const last7Days = [];
       for (let i = 6; i >= 0; i--) {
         const date = new Date();
@@ -266,7 +279,9 @@ class DashboardController {
           totalBanners,
           activeUsers,
           todayNewUsers,
-          todayPageViews: todayNewUsers // Using new users as a proxy for page views for now
+          todayNewPosts,
+          todayNewProducts,
+          todayPageViews
         },
         charts: {
           postsByMonth: monthlyPosts,
@@ -282,22 +297,16 @@ class DashboardController {
       };
 
       console.log("✅ Dashboard stats calculated successfully");
-      console.log("📊 Response data summary:", {
-        totalUsers: responseData.summary.totalUsers,
-        totalPosts: responseData.summary.totalPosts,
-        totalProducts: responseData.summary.totalProducts,
-        totalBanners: responseData.summary.totalBanners
-      });
-
       res.json({
         success: true,
         data: responseData
       });
+
     } catch (error) {
-      console.error('❌ Dashboard stats error:', error);
+      console.error("❌ Error fetching dashboard statistics:", error);
       res.status(500).json({
         success: false,
-        message: 'Error fetching dashboard statistics',
+        message: "Error fetching dashboard statistics",
         error: error.message
       });
     }

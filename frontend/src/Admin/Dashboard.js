@@ -702,7 +702,7 @@ function AdminDashboard() {
 
           {/* GA4 Configuration Info */}
           <Alert variant="success" className="mb-3">
-            📊 <strong>Google Analytics 4.3 Đã Kết Nối:</strong> 
+            📊 <strong>Google Analytics 4.5 Đã Kết Nối:</strong> 
             <br />
             <small>
               <strong>Stream:</strong> Vinsaky | 
@@ -773,7 +773,7 @@ function AdminDashboard() {
           <div id="dashboard" className="mb-5">
             <h3 className="mb-4">📊 Tổng Quan Dashboard</h3>
             <Row className="g-4 mb-4">
-              <Col md={4}>
+              <Col md={3}>
                 <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
                   <Card.Body>
                     <div className="display-6 text-primary">{dashboardData.totalUsers}</div>
@@ -782,7 +782,7 @@ function AdminDashboard() {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={4}>
+              <Col md={3}>
                 <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
                   <Card.Body>
                     <div className="display-6 text-success">{dashboardData.newUsersToday}</div>
@@ -791,7 +791,7 @@ function AdminDashboard() {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={4}>
+              <Col md={3}>
                 <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
                   <Card.Body>
                     <div className="display-6 text-warning">{dashboardData.totalProducts}</div>
@@ -800,10 +800,7 @@ function AdminDashboard() {
                   </Card.Body>
                 </Card>
               </Col>
-            </Row>
-
-            <Row className="g-4">
-              <Col md={4}>
+              <Col md={3}>
                 <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
                   <Card.Body>
                     <div className="display-6 text-info">{dashboardData.totalPosts}</div>
@@ -812,7 +809,10 @@ function AdminDashboard() {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={4}>
+            </Row>
+
+            <Row className="g-4">
+              <Col md={3}>
                 <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
                   <Card.Body>
                     <div className="display-6 text-success">{dashboardData.activeUsers}</div>
@@ -821,12 +821,30 @@ function AdminDashboard() {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={4}>
+              <Col md={3}>
                 <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
                   <Card.Body>
                     <div className="display-6 text-primary">{dashboardData.todayPageViews}</div>
                     <div className="text-muted">Lượt Xem Hôm Nay</div>
                     <small className="text-primary">📈 Truy cập</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={3}>
+                <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
+                  <Card.Body>
+                    <div className="display-6 text-warning">{realData.summary?.todayNewPosts || 0}</div>
+                    <div className="text-muted">Bài Post Mới Hôm Nay</div>
+                    <small className="text-warning">📝 Mới đăng</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={3}>
+                <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
+                  <Card.Body>
+                    <div className="display-6 text-info">{realData.summary?.todayNewProducts || 0}</div>
+                    <div className="text-muted">Sản Phẩm Mới Hôm Nay</div>
+                    <small className="text-info">🆕 Mới thêm</small>
                   </Card.Body>
                 </Card>
               </Col>
