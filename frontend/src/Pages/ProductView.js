@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { authApiClient } from "../Services/auth.service";
 import {
   Container,
   Row,
@@ -27,11 +27,6 @@ import {
   loadRecentlyViewed,
 } from "../utils/recentlyViewed";
 
-const api = axios.create({
-  baseURL: process.env.REACT_APP_BACKEND_URL,
-  timeout: 5000,
-});
-
 const ProductView = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -55,20 +50,7 @@ const ProductView = () => {
         return;
       }
 
-      // For user view, we might not need authentication token
-      // or use a different endpoint for public product access
-      const headers = {
-        "Content-Type": "application/json",
-      };
-
-      // If authentication is still required for users
-      const token =
-        localStorage.getItem("userToken") || localStorage.getItem("token");
-      if (token) {
-        headers.token = token;
-      }
-
-      const response = await api.get(`/product/${productId}`, { headers });
+      const response = await authApiClient.get(`/product/${productId}`);
 
       const productData =
         response.data.data || response.data.product || response.data;
@@ -78,9 +60,9 @@ const ProductView = () => {
       if (err.response) {
         switch (err.response.status) {
           case 401:
-            // Redirect to login page if not authenticated
-            navigate("/login");
-            return;
+            // Token expired or invalid - authApiClient will handle this automatically
+            setError("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+            break;
           case 403:
             setError("Sản phẩm này không khả dụng để xem.");
             break;

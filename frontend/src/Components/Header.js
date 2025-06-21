@@ -1,23 +1,29 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  Edit,
-  LogOut,
-  LogIn,
-  Copy,
-  ChevronDown,
-  Search,
-  Menu,
-  X,
+import { 
+  Search, 
+  Filter, 
+  Download, 
+  GitCompare, 
+  Heart, 
+  ShoppingCart, 
+  Eye, 
   Star,
+  TrendingUp,
+  Users,
+  Package,
+  DollarSign,
+  X,
   Plus,
-} from "lucide-react";
-import axios from "axios";
+  Copy,
+  Menu,
+  ChevronDown
+} from 'lucide-react';
+import { useAuth } from "../hooks/useAuth";
+import { authApiClient } from "../Services/auth.service";
 
 function Header() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { user, loading, handleLogout } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -53,9 +59,7 @@ function Header() {
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/product/`
-        );
+        const response = await authApiClient.get("/product/");
 
         const productData = Array.isArray(response.data.data)
           ? response.data.data
@@ -195,12 +199,13 @@ function Header() {
   const saveRecentSearch = (term) => {
     if (!term.trim()) return;
 
-    const updated = [term, ...recentSearches.filter((s) => s !== term)].slice(
-      0,
-      5
-    );
-    setRecentSearches(updated);
-    localStorage.setItem("recentSearches", JSON.stringify(updated));
+    const newSearches = [
+      term.trim(),
+      ...recentSearches.filter((s) => s !== term.trim()),
+    ].slice(0, 5);
+
+    setRecentSearches(newSearches);
+    localStorage.setItem("recentSearches", JSON.stringify(newSearches));
   };
 
   // Clear recent searches
@@ -209,39 +214,27 @@ function Header() {
     localStorage.removeItem("recentSearches");
   };
 
-  // Fetch categories and brands from products
+  // Fetch categories and brands
   useEffect(() => {
     const fetchCategoriesAndBrands = async () => {
       try {
         setLoadingCategories(true);
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/product/`
-        );
+        const response = await authApiClient.get("/product/");
 
         const productData = Array.isArray(response.data.data)
           ? response.data.data
           : [];
 
-        if (productData.length > 0) {
-          const uniqueCategories = [
-            ...new Set(
-              productData
-                .map((product) => product.category)
-                .filter((category) => category && category.trim() !== "")
-            ),
-          ].sort();
+        // Extract unique categories and brands
+        const uniqueCategories = [
+          ...new Set(productData.map((p) => p.category).filter(Boolean)),
+        ];
+        const uniqueBrands = [
+          ...new Set(productData.map((p) => p.brand).filter(Boolean)),
+        ];
 
-          const uniqueBrands = [
-            ...new Set(
-              productData
-                .map((product) => product.brand)
-                .filter((brand) => brand && brand.trim() !== "")
-            ),
-          ].sort();
-
-          setCategories(uniqueCategories);
-          setBrands(uniqueBrands);
-        }
+        setCategories(uniqueCategories);
+        setBrands(uniqueBrands);
       } catch (error) {
         console.error("Error fetching categories and brands:", error);
         setCategories([]);
@@ -254,66 +247,8 @@ function Header() {
     fetchCategoriesAndBrands();
   }, []);
 
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      if (isLoggingOut) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const token = localStorage.getItem("token");
-        const userData = localStorage.getItem("user");
-        let parsedUser = null;
-
-        try {
-          if (userData) {
-            parsedUser = JSON.parse(userData);
-            setUser(parsedUser);
-          }
-        } catch (e) {
-          console.error("Error parsing user data:", e);
-        }
-
-        if (parsedUser?.email) {
-          try {
-            const response = await axios.get(
-              `${
-                process.env.REACT_APP_BACKEND_URL
-              }/auth/getUserByEmail?email=${encodeURIComponent(
-                parsedUser.email
-              )}`
-            );
-
-            if (response.data && response.data.user) {
-              setUser(response.data.user);
-              localStorage.setItem("user", JSON.stringify(response.data.user));
-            } else {
-              handleLogout();
-            }
-          } catch (err) {
-            console.error("Failed to fetch user by email:", err);
-            if (err.response?.status === 401) {
-              handleLogout();
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Authentication check failed:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuthentication();
-  }, [isLoggingOut, navigate]);
-
-  const handleLogout = () => {
-    setIsLoggingOut(true);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/login", { replace: true });
+  const handleLogoutClick = () => {
+    handleLogout();
   };
 
   const handleSearch = (e, searchQuery = null) => {
@@ -371,17 +306,14 @@ function Header() {
     setSelectedCategory(e.target.value);
   };
 
+  // Debug logs
+  console.log('Header render - user:', user);
+  console.log('Header render - loading:', loading);
+  console.log('Header render - localStorage user:', localStorage.getItem('user'));
+  console.log('Header render - localStorage token:', localStorage.getItem('token'));
+
   if (loading) {
-    return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: "100px" }}
-      >
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   return (
@@ -667,9 +599,14 @@ function Header() {
               {/* User Profile */}
               <div className="dropdown">
                 <button
-                  className="btn btn-light rounded-circle p-2"
+                  className="btn btn-light rounded-circle p-2 dropdown-toggle"
+                  type="button"
+                  id="userDropdown"
                   data-bs-toggle="dropdown"
+                  data-bs-display="static"
+                  data-bs-reference="parent"
                   aria-expanded="false"
+                  style={{ border: 'none', outline: 'none' }}
                 >
                   <svg
                     width="20"
@@ -680,35 +617,80 @@ function Header() {
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                   </svg>
                 </button>
-                <ul className="dropdown-menu dropdown-menu-end">
+                <ul 
+                  className="dropdown-menu dropdown-menu-end shadow-lg" 
+                  aria-labelledby="userDropdown"
+                  data-bs-auto-close="true"
+                  data-bs-offset="0,8"
+                  data-bs-popper="static"
+                  data-bs-boundary="viewport"
+                  style={{ 
+                    minWidth: '200px',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '8px 0'
+                  }}
+                >
                   {user ? (
                     <>
                       <li>
-                        <h6 className="dropdown-header">
+                        <h6 className="dropdown-header text-primary fw-bold px-3 py-2">
                           Xin chào, {user.name || user.email}
+                          
                         </h6>
                       </li>
+                      <li><hr className="dropdown-divider" /></li>
                       <li>
-                        <hr className="dropdown-divider" />
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="/profile">
+                        <Link 
+                          className="dropdown-item px-3 py-2" 
+                          to="/profile"
+                          style={{ 
+                            transition: 'all 0.2s ease',
+                            cursor: 'pointer',
+                            textDecoration: 'none',
+                            color: 'inherit'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                          <i className="bi bi-person me-2"></i>
                           Hồ sơ
-                        </a>
+                        </Link>
                       </li>
                       <li>
-                        <a className="dropdown-item" href="/orders">
+                        <Link 
+                          className="dropdown-item px-3 py-2" 
+                          to="/orders"
+                          style={{ 
+                            transition: 'all 0.2s ease',
+                            cursor: 'pointer',
+                            textDecoration: 'none',
+                            color: 'inherit'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                          <i className="bi bi-box me-2"></i>
                           Đơn hàng
-                        </a>
+                        </Link>
                       </li>
-                      <li>
-                        <hr className="dropdown-divider" />
-                      </li>
+                      <li><hr className="dropdown-divider" /></li>
                       <li>
                         <button
-                          className="dropdown-item"
-                          onClick={handleLogout}
+                          className="dropdown-item px-3 py-2 text-danger"
+                          onClick={handleLogoutClick}
+                          style={{ 
+                            border: 'none',
+                            background: 'transparent',
+                            width: '100%',
+                            textAlign: 'left',
+                            transition: 'all 0.2s ease',
+                            cursor: 'pointer'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                         >
+                          <i className="bi bi-box-arrow-right me-2"></i>
                           Đăng xuất
                         </button>
                       </li>
@@ -716,14 +698,38 @@ function Header() {
                   ) : (
                     <>
                       <li>
-                        <a className="dropdown-item" href="/login">
+                        <Link 
+                          className="dropdown-item px-3 py-2" 
+                          to="/login"
+                          style={{ 
+                            transition: 'all 0.2s ease',
+                            cursor: 'pointer',
+                            textDecoration: 'none',
+                            color: 'inherit'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                          <i className="bi bi-box-arrow-in-right me-2"></i>
                           Đăng nhập
-                        </a>
+                        </Link>
                       </li>
                       <li>
-                        <a className="dropdown-item" href="/register">
+                        <Link 
+                          className="dropdown-item px-3 py-2" 
+                          to="/register"
+                          style={{ 
+                            transition: 'all 0.2s ease',
+                            cursor: 'pointer',
+                            textDecoration: 'none',
+                            color: 'inherit'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                          <i className="bi bi-person-plus me-2"></i>
                           Đăng ký
-                        </a>
+                        </Link>
                       </li>
                     </>
                   )}
@@ -745,7 +751,7 @@ function Header() {
                     className="btn btn-light rounded-circle p-2"
                     title="So sánh sản phẩm"
                   >
-                    <Copy size={20} />
+                    <GitCompare size={20} />
                   </Link>
                 </>
               )}

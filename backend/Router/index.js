@@ -8,6 +8,7 @@ const postRouter = require("./post.router");
 const userRouter = require("./user.router");
 const chatRouter = require("./chat.router");
 const bannerRouter = require("./banner.route");
+const dashboardRouter = require("./dashboard.route");
 
 module.exports = (app) => {
   app.use("/auth", authRouter);
@@ -18,4 +19,5 @@ module.exports = (app) => {
   app.use("/user", userRouter);
   app.use("/chat", chatRouter);
   app.use("/banner", bannerRouter);
+  app.use("/dashboard", dashboardRouter);
 };

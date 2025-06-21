@@ -11,8 +11,8 @@ import {
   Card,
 } from "antd";
 import { createStyles } from "antd-style";
-import { verifyOTPApi } from "../Services/api.service";
-import getUserByEmail from "../Services/user.service";
+import { authApiClient } from "../Services/auth.service";
+import axios from "axios";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
   linearGradientButton: css`
@@ -88,7 +88,9 @@ const App = () => {
   const handleClick = async () => {
     setLoading(true);
     try {
-      const res = await verifyOTPApi(email, otp);
+      const res = await authApiClient.get("/otp/verifyOTP", { 
+        params: { email, otp } 
+      });
       console.log("OTP verification response:", res.data);
 
       if (res && res.data.success) {
@@ -112,17 +114,20 @@ const App = () => {
         });
 
         try {
-          // Fetch user data
-          const userRes = await getUserByEmail(email);
-          console.log("User response:", userRes.data);
+          // Fetch user data - use axios directly since this endpoint doesn't need auth
+          console.log("🔍 Fetching user data for email:", email);
+          const userRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/user/getUserByEmail?email=${encodeURIComponent(email)}`);
+          console.log("✅ User response:", userRes.data);
 
           // Store user data
           if (userRes.data && userRes.data.user) {
+            console.log("💾 Storing user data:", userRes.data.user);
             localStorage.setItem("user", JSON.stringify(userRes.data.user));
             
             // Navigate based on user role
             const userRole = userRes.data.user.role;
             const destination = userRole === "Admin" ? "/admin" : "/";
+            console.log("🚀 Navigating to:", destination);
             
             navigate(destination, {
               state: {
@@ -132,11 +137,17 @@ const App = () => {
               },
             });
           } else {
+            console.log("❌ Invalid user data received:", userRes.data);
             throw new Error("Invalid user data received");
           }
 
         } catch (userError) {
-          console.error("Error fetching user data:", userError);
+          console.error("❌ Error fetching user data:", userError);
+          console.error("Error details:", {
+            message: userError.message,
+            status: userError.response?.status,
+            data: userError.response?.data
+          });
           
           notification.warning({
             message: "Warning",
@@ -144,6 +155,7 @@ const App = () => {
           });
 
           // Still navigate to home page with tokens
+          console.log("🚀 Navigating to home page with tokens only");
           navigate("/", {
             state: {
               token,

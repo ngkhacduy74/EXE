@@ -539,16 +539,16 @@ h1,h2,h3,h4,h5,h6 {
     border-radius: 8px;
   }
   /* dropdown-menu */
-  .dropdown-menu {
+  .offcanvas-body .dropdown-menu {
     padding: 0;
     border: none;
     line-height: 1.4;
     font-size: 0.9em;
   }
-  .dropdown-menu a {
+  .offcanvas-body .dropdown-menu a {
     padding-left: 0;
   }
-  .dropdown-toggle::after {
+  .offcanvas-body .dropdown-toggle::after {
     position: absolute;
     right: 0;
     top: 21px;
@@ -576,3 +576,148 @@ h1,h2,h3,h4,h5,h6 {
     height: 740px;
   }
 }
+
+/* Ensure Bootstrap dropdown works correctly */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  min-width: 200px;
+  padding: 8px 0;
+  margin: 0;
+  background-color: #fff;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 12px;
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175);
+}
+
+.dropdown-menu.show {
+  display: block !important;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  clear: both;
+  font-weight: 400;
+  color: #212529;
+  text-align: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #16181b;
+}
+
+.dropdown-item:focus {
+  background-color: #f8f9fa;
+  color: #16181b;
+  outline: none;
+}
+
+.dropdown-header {
+  display: block;
+  padding: 8px 16px;
+  margin-bottom: 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+  white-space: nowrap;
+}
+
+.dropdown-divider {
+  height: 0;
+  margin: 0.5rem 0;
+  overflow: hidden;
+  border-top: 1px solid #e9ecef;
+}
+
+.btn.dropdown-toggle::after {
+  display: none;
+}
+
+/* Ensure Bootstrap dropdown works correctly */
+
+/* Ensure dropdown menu positioning */
+.dropdown-menu-end {
+  right: 0;
+  left: auto;
+}
+
+.dropdown-menu-end[data-bs-popper] {
+  right: 0;
+  left: auto;
+}
+
+/* Ensure dropdown menu is visible */
+.dropdown-menu.show {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure dropdown menu has proper z-index */
+.dropdown-menu {
+  z-index: 1050 !important;
+}
+
+/* Ensure dropdown menu has proper positioning */
+.dropdown {
+  position: relative;
+}
+
+/* Ensure dropdown menu has proper display */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1050;
+  min-width: 200px;
+  padding: 8px 0;
+  margin: 0;
+  background-color: #fff;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 12px;
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175);
+}
+
+.dropdown-menu.show {
+  display: block !important;
+}
+
+/* Ensure dropdown menu positioning */
+
+/* Ensure dropdown menu is not hidden by other elements */
+.dropdown-menu {
+  z-index: 9999 !important;
+  position: absolute !important;
+  display: none;
+  top: 100% !important;
+  right: 0 !important;
+  left: auto !important;
+  min-width: 200px;
+  padding: 8px 0;
+  margin: 0;
+  background-color: #fff !important;
+  border: 1px solid rgba(0,0,0,.15) !important;
+  border-radius: 12px;
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175) !important;
+}
+
+.dropdown-menu.show {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+/* Ensure dropdown menu is not hidden by other elements */

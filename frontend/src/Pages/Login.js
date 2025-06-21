@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
+import { authApiClient } from "../Services/auth.service";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -9,6 +9,7 @@ function Login() {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [canClose, setCanClose] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const modalContentRef = useRef(null);
 
   const navigate = useNavigate();
@@ -74,13 +75,10 @@ Tất cả sản phẩm/dịch vụ đều được bảo hành theo quy định
 
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/auth/login`,
-        {
-          email,
-          password,
-        }
-      );
+      const response = await authApiClient.post("/auth/login", {
+        email,
+        password,
+      });
       if (response.data.success) {
         const { token, user } = response.data;
         localStorage.setItem("token", token); // Lưu token

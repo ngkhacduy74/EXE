@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Camera, Upload, Link as LinkIcon } from "lucide-react";
-import axios from "axios";
+import { useAuth } from "../hooks/useAuth";
+import { authApiClient } from "../Services/auth.service";
 
 export default function NewPostForm() {
+  const { user, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     category: "A",
@@ -60,15 +62,16 @@ export default function NewPostForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const token = localStorage.getItem("token");
-    if (!token) {
+
+    if (!user) {
       alert("Bạn cần đăng nhập để tạo bài viết!");
       setLoading(false);
       return;
     }
 
     let submissionData;
-    let headers = { token };
+    let headers = {};
+    
     if (formData.image) {
       submissionData = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
@@ -83,8 +86,8 @@ export default function NewPostForm() {
     }
 
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/post/createPost`,
+      const response = await authApiClient.post(
+        "/post/createPost",
         submissionData,
         { headers }
       );

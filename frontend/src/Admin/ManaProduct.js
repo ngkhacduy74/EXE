@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { Plus, Eye, EyeOff, Check, Package, Trash2 } from "lucide-react";
+import { Plus, Eye, EyeOff, Check, Package, Trash2, Edit } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
@@ -69,8 +69,19 @@ const ManageProduct = () => {
   const [productToDelete, setProductToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  console.log("Access token found:", tokens.accessToken ? "Yes" : "No");
-  console.log("Refresh token found:", tokens.refreshToken ? "Yes" : "No");
+  // Edit modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [productToEdit, setProductToEdit] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    brand: "",
+    price: "",
+    capacity: "",
+    quantity: "",
+    status: "",
+    description: ""
+  });
 
   // Effect to update tokens when location state changes
   useEffect(() => {
@@ -78,15 +89,6 @@ const ManageProduct = () => {
     const locationRefreshToken = location.state?.refresh_token;
 
     if (locationToken && locationRefreshToken) {
-      console.log(
-        "✅ Token from location:",
-        locationToken.substring(0, 15) + "..."
-      );
-      console.log(
-        "🔄 Refresh Token from location:",
-        locationRefreshToken.substring(0, 15) + "..."
-      );
-
       setTokens({
         accessToken: locationToken,
         refreshToken: locationRefreshToken,
@@ -99,21 +101,16 @@ const ManageProduct = () => {
       } catch (error) {
         console.error("Error saving tokens to localStorage:", error);
       }
-    } else if (!tokens.accessToken || !tokens.refreshToken) {
-      console.warn("⚠️ No token data passed via location state");
     }
   }, [location.state]);
 
   // Token refresh function
   const refreshAccessToken = async () => {
     if (!tokens.refreshToken) {
-      console.error("No refresh token available");
       throw new Error("No refresh token available");
     }
 
     try {
-      console.log("Attempting to refresh token...");
-
       const response = await api.post("/auth/refresh-token", {
         refresh_token: tokens.refreshToken,
       });
@@ -137,16 +134,45 @@ const ManageProduct = () => {
       }
 
       setTokens(newTokens);
-      console.log("✅ Tokens refreshed successfully");
       return token;
     } catch (err) {
       console.error("Error refreshing token:", err);
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
-      localStorage.removeItem("refresh_token"); // Clean up old key too
+      localStorage.removeItem("refresh_token");
       window.location.href = "/login";
       throw err;
     }
+  };
+
+  // Force logout and redirect to login
+  const forceLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("refresh_token");
+    window.location.href = "/login";
+  };
+
+  // Function to decode JWT token and get user info
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
+  };
+
+  // Check if user is admin
+  const isUserAdmin = () => {
+    if (!tokens.accessToken) return false;
+    const decoded = decodeToken(tokens.accessToken);
+    return decoded?.user?.role === "Admin";
   };
 
   // API call with token refresh logic
@@ -172,7 +198,6 @@ const ManageProduct = () => {
         retryCount === 0 &&
         tokens.refreshToken
       ) {
-        console.warn("Access token expired. Attempting to refresh...");
         try {
           await refreshAccessToken();
           return makeAuthenticatedRequest(config, 1); // Retry once
@@ -199,7 +224,6 @@ const ManageProduct = () => {
 
         // Check if we have tokens
         if (!tokens.accessToken) {
-          console.log("No access token available");
           setError("No access token available. Please log in again.");
           setLoading(false);
           return;
@@ -210,8 +234,6 @@ const ManageProduct = () => {
           url: "/product/",
         });
 
-        console.log("API Response:", response.data);
-
         const productData = Array.isArray(response.data.data)
           ? response.data.data
           : [];
@@ -221,8 +243,12 @@ const ManageProduct = () => {
 
         // Extract unique brands
         const uniqueBrands = [
-          ...new Set(productData.map((p) => p.brand).filter(Boolean)),
-        ];
+          ...new Set(
+            productData
+              .map((p) => p.brand?.trim()) // Trim whitespace
+              .filter((brand) => brand && brand.length > 0) // Filter out empty/null brands
+          ),
+        ].sort(); // Sort alphabetically
         setBrands(uniqueBrands);
       } catch (err) {
         console.error("Fetch Error:", err);
@@ -261,7 +287,7 @@ const ManageProduct = () => {
     // Filter by brands
     if (selectedBrands.length > 0) {
       result = result.filter((product) =>
-        selectedBrands.includes(product.brand)
+        selectedBrands.includes(product.brand?.trim())
       );
     }
 
@@ -316,7 +342,6 @@ const ManageProduct = () => {
   // Handle view details
   const handleViewDetails = (productId) => {
     navigate(`/product/${productId}`);
-    console.log(`Navigating to product details for ID: ${productId}`);
   };
 
   // Handle create product
@@ -327,10 +352,17 @@ const ManageProduct = () => {
   // Handle toggle status with authentication
   const handleToggleStatus = async (productId, currentStatus) => {
     const newStatus = currentStatus === "New" ? "SecondHand" : "New";
+    
+    // Check if user is admin
+    if (!isUserAdmin()) {
+      alert("Bạn không có quyền thực hiện hành động này. Chỉ Admin mới có thể thay đổi trạng thái sản phẩm.");
+      return;
+    }
+
     try {
-      await makeAuthenticatedRequest({
+      const response = await makeAuthenticatedRequest({
         method: "PUT",
-        url: `/product/${productId}`,
+        url: `/product/update/${productId}`,
         data: {
           status: newStatus,
         },
@@ -342,11 +374,17 @@ const ManageProduct = () => {
           product.id === productId ? { ...product, status: newStatus } : product
         )
       );
-
-      console.log(`Product ${productId} status updated to ${newStatus}`);
+      
+      // Show success message
+      alert(`Đã đổi trạng thái sản phẩm thành công: ${currentStatus} → ${newStatus}`);
     } catch (err) {
       console.error("Error updating product status:", err);
-      setError(err.message || "Failed to update product status.");
+      
+      if (err.response?.status === 403) {
+        alert("Lỗi 403: Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập với tài khoản Admin.");
+      } else {
+        setError(err.message || "Failed to update product status.");
+      }
     }
   };
 
@@ -360,8 +398,17 @@ const ManageProduct = () => {
   const confirmDeleteProduct = async () => {
     if (!productToDelete) return;
 
+    // Check if user is admin
+    if (!isUserAdmin()) {
+      alert("Bạn không có quyền thực hiện hành động này. Chỉ Admin mới có thể xóa sản phẩm.");
+      setShowDeleteModal(false);
+      setProductToDelete(null);
+      return;
+    }
+
     try {
       setDeleteLoading(true);
+      
       await makeAuthenticatedRequest({
         method: "DELETE",
         url: `/product/${productToDelete.id}`,
@@ -372,14 +419,17 @@ const ManageProduct = () => {
         products.filter((product) => product.id !== productToDelete.id)
       );
 
-      console.log(`Product ${productToDelete.id} deleted successfully`);
-
       // Close modal and reset state
       setShowDeleteModal(false);
       setProductToDelete(null);
     } catch (err) {
       console.error("Error deleting product:", err);
-      setError(err.message || "Failed to delete product.");
+      
+      if (err.response?.status === 403) {
+        alert("Lỗi 403: Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập với tài khoản Admin.");
+      } else {
+        setError(err.message || "Failed to delete product.");
+      }
     } finally {
       setDeleteLoading(false);
     }
@@ -389,6 +439,101 @@ const ManageProduct = () => {
   const cancelDelete = () => {
     setShowDeleteModal(false);
     setProductToDelete(null);
+  };
+
+  // Handle edit product - show edit modal
+  const handleEditProduct = (product) => {
+    setProductToEdit(product);
+    setEditForm({
+      name: product.name || "",
+      brand: product.brand || "",
+      price: product.price || "",
+      capacity: product.capacity || "",
+      quantity: product.quantity || "",
+      status: product.status || "New",
+      description: product.description || ""
+    });
+    setShowEditModal(true);
+  };
+
+  // Confirm edit product
+  const confirmEditProduct = async () => {
+    if (!productToEdit) return;
+
+    // Check if user is admin
+    if (!isUserAdmin()) {
+      alert("Bạn không có quyền thực hiện hành động này. Chỉ Admin mới có thể chỉnh sửa sản phẩm.");
+      setShowEditModal(false);
+      setProductToEdit(null);
+      return;
+    }
+
+    try {
+      setEditLoading(true);
+      
+      const response = await makeAuthenticatedRequest({
+        method: "PUT",
+        url: `/product/update/${productToEdit.id}`,
+        data: editForm,
+      });
+
+      // Update local state
+      setProducts(
+        products.map((product) =>
+          product.id === productToEdit.id 
+            ? { ...product, ...editForm }
+            : product
+        )
+      );
+
+      // Close modal and reset state
+      setShowEditModal(false);
+      setProductToEdit(null);
+      setEditForm({
+        name: "",
+        brand: "",
+        price: "",
+        capacity: "",
+        quantity: "",
+        status: "",
+        description: ""
+      });
+
+      alert("Cập nhật sản phẩm thành công!");
+    } catch (err) {
+      console.error("Error updating product:", err);
+      
+      if (err.response?.status === 403) {
+        alert("Lỗi 403: Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập với tài khoản Admin.");
+      } else {
+        setError(err.message || "Failed to update product.");
+      }
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Cancel edit
+  const cancelEdit = () => {
+    setShowEditModal(false);
+    setProductToEdit(null);
+    setEditForm({
+      name: "",
+      brand: "",
+      price: "",
+      capacity: "",
+      quantity: "",
+      status: "",
+      description: ""
+    });
+  };
+
+  // Handle edit form change
+  const handleEditFormChange = (field, value) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   if (error && error.includes("Session expired")) {
@@ -431,39 +576,7 @@ const ManageProduct = () => {
         </Col>
         <Col style={{ marginLeft: "10px" }} className="p-4">
           {/* Token Status Display - Similar to AdminDashboard */}
-          {/* <div className="mb-3">
-            <div className={`alert alert-${tokens.accessToken && tokens.refreshToken ? 'success' : 'warning'} py-2`}>
-              <Row>
-                <Col md={6}>
-                  <small className={`text-${tokens.accessToken ? 'success' : 'danger'}`}>
-                    {tokens.accessToken ? '✅' : '❌'} Access Token: {tokens.accessToken ? `${tokens.accessToken.substring(0, 15)}...` : 'Not found'}
-                  </small>
-                </Col>
-                <Col md={6}>
-                  <small className={`text-${tokens.refreshToken ? 'success' : 'danger'}`}>
-                    {tokens.refreshToken ? '✅' : '❌'} Refresh Token: {tokens.refreshToken ? `${tokens.refreshToken.substring(0, 15)}...` : 'Not found'}
-                  </small>
-                </Col>
-              </Row>
-              {tokens.accessToken && tokens.refreshToken && (
-                <div className="mt-2">
-                  <button 
-                    className="btn btn-sm btn-outline-primary"
-                    onClick={refreshAccessToken}
-                  >
-                    Refresh Access Token
-                  </button>
-                </div>
-              )}
-              {location.state?.token && (
-                <div className="mt-2">
-                  <small className="text-info">
-                    📍 Tokens loaded from navigation state
-                  </small>
-                </div>
-              )}
-            </div>
-          </div> */}
+          
 
           <div id="manage-products" className="mb-5">
             {/* Error Alert */}
@@ -544,8 +657,8 @@ const ManageProduct = () => {
               </Col>
               <Col md={3}>
                 <Form.Group>
-                  <Form.Label>Filter by Brand</Form.Label>
-                  <div style={{ maxHeight: "120px", overflowY: "auto" }}>
+                  <Form.Label>Filter by Brand ({brands.length})</Form.Label>
+                  <div style={{ maxHeight: "120px", overflowY: "auto", border: "1px solid #dee2e6", borderRadius: "0.375rem", padding: "8px" }}>
                     {brands.length > 0 ? (
                       brands.map((brand) => (
                         <Form.Check
@@ -554,12 +667,18 @@ const ManageProduct = () => {
                           label={brand}
                           checked={selectedBrands.includes(brand)}
                           onChange={() => handleBrandChange(brand)}
+                          className="mb-1"
                         />
                       ))
                     ) : (
-                      <p className="text-muted small">No brands available.</p>
+                      <p className="text-muted small mb-0">No brands available.</p>
                     )}
                   </div>
+                  {selectedBrands.length > 0 && (
+                    <small className="text-info">
+                      Selected: {selectedBrands.join(", ")}
+                    </small>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={1} className="d-flex align-items-end">
@@ -573,6 +692,7 @@ const ManageProduct = () => {
             <div className="mb-3">
               <small className="text-muted">
                 Showing {filteredProducts.length} of {products.length} products
+                {brands.length > 0 && ` • ${brands.length} unique brands available`}
               </small>
             </div>
 
@@ -604,9 +724,10 @@ const ManageProduct = () => {
                     <th>Tên</th>
                     <th>Thương hiệu</th>
                     <th>Giá tiền</th>
+                    <th>Số lượng</th>
                     <th>Dung tích/ Ngày</th>
                     <th>Trạng thái</th>
-                    <th>Chỉnh sủa</th>
+                    <th>Chỉnh sửa</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -621,6 +742,9 @@ const ManageProduct = () => {
                               "vi-VN"
                             )} VND`
                           : "N/A"}
+                      </td>
+                      <td>
+                        {product.quantity ? `${product.quantity} kg` : "N/A"}
                       </td>
                       <td>
                         {product.capacity ? `${product.capacity} kg` : "N/A"}
@@ -647,8 +771,16 @@ const ManageProduct = () => {
                             <Eye size={16} />
                           </Button>
                           <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleEditProduct(product)}
+                            title="Sửa sản phẩm"
+                          >
+                            <Edit size={16} />
+                          </Button>
+                          <Button
                             variant={
-                              product.status === "New" ? "danger" : "success"
+                              product.status === "New" ? "warning" : "success"
                             }
                             size="sm"
                             onClick={() =>
@@ -656,8 +788,8 @@ const ManageProduct = () => {
                             }
                             title={
                               product.status === "New"
-                                ? "Mark as Second Hand"
-                                : "Mark as New"
+                                ? "Đổi thành Second Hand"
+                                : "Đổi thành New"
                             }
                           >
                             {product.status === "New" ? (
@@ -747,6 +879,140 @@ const ManageProduct = () => {
               <>
                 <Trash2 size={16} className="me-2" />
                 Delete Product
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Product Modal */}
+      <Modal show={showEditModal} onHide={cancelEdit} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title className="text-primary">
+            <Edit size={24} className="me-2" />
+            Sửa sản phẩm
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {productToEdit && (
+            <Form>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Tên sản phẩm *</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editForm.name}
+                      onChange={(e) => handleEditFormChange("name", e.target.value)}
+                      placeholder="Nhập tên sản phẩm"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Thương hiệu *</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={editForm.brand}
+                      onChange={(e) => handleEditFormChange("brand", e.target.value)}
+                      placeholder="Nhập thương hiệu"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Giá tiền (VND) *</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={editForm.price}
+                      onChange={(e) => handleEditFormChange("price", e.target.value)}
+                      placeholder="Nhập giá tiền"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Số lượng *</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={editForm.quantity}
+                      onChange={(e) => handleEditFormChange("quantity", e.target.value)}
+                      placeholder="Nhập số lượng"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Dung tích (kg)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={editForm.capacity}
+                      onChange={(e) => handleEditFormChange("capacity", e.target.value)}
+                      placeholder="Nhập dung tích"
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Trạng thái *</Form.Label>
+                    <Form.Select
+                      value={editForm.status}
+                      onChange={(e) => handleEditFormChange("status", e.target.value)}
+                    >
+                      <option value="New">New</option>
+                      <option value="SecondHand">Second Hand</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Mô tả</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={editForm.description}
+                  onChange={(e) => handleEditFormChange("description", e.target.value)}
+                  placeholder="Nhập mô tả sản phẩm"
+                />
+              </Form.Group>
+            </Form>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={cancelEdit}
+            disabled={editLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={confirmEditProduct}
+            disabled={editLoading}
+            className="d-flex align-items-center"
+          >
+            {editLoading ? (
+              <>
+                <div
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                >
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                Updating...
+              </>
+            ) : (
+              <>
+                <Edit size={16} className="me-2" />
+                Update Product
               </>
             )}
           </Button>

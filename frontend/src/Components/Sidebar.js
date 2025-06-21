@@ -21,7 +21,7 @@ function Sidebar() {
             <Nav className="flex-column">
                 <Nav.Link
                     className="text-white mb-3 d-flex align-items-center"
-                    onClick={() => navigate('/setting')}
+                    onClick={() => navigate('/admin')}
                 >
                     <FaChartBar className="me-2" /> Dashboard
                 </Nav.Link>

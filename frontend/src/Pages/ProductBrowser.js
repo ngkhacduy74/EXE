@@ -17,7 +17,7 @@ import {
   Package,
   Star,
 } from "lucide-react";
-import axios from "axios";
+import { authApiClient } from "../Services/auth.service";
 
 const ProductBrowse = () => {
   const location = useLocation();
@@ -70,9 +70,7 @@ const ProductBrowse = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/product/`
-        );
+        const response = await authApiClient.get("/product/");
         console.log("API Response:", response.data);
 
         const productData = Array.isArray(response.data.data)

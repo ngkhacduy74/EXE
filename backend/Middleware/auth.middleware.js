@@ -11,7 +11,16 @@ const validateUser = (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
   try {
-    const token = req.headers.token;
+    // Support both token and authorization headers
+    let token = req.headers.token;
+    
+    if (!token && req.headers.authorization) {
+      // Extract token from "Bearer <token>" format
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
 
     if (!token) {
       return res
@@ -20,7 +29,7 @@ const verifyToken = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    console.log("822222222", decoded);
+    console.log("Token verified:", decoded);
     if (
       !decoded ||
       (decoded.user.role !== "Admin" && decoded.user.role !== "User")
@@ -43,8 +52,17 @@ const verifyToken = (req, res, next) => {
 //CẦN CHÚ Ý CHỖ NÀY
 const verifyAdmin = (req, res, next) => {
   try {
-    const token = req.headers.token;
-    console.log("mmmmmmm123", token);
+    // Support both token and authorization headers
+    let token = req.headers.token;
+    
+    if (!token && req.headers.authorization) {
+      // Extract token from "Bearer <token>" format
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
+    
     if (!token) {
       return res
         .status(401)

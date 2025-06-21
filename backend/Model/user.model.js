@@ -44,6 +44,14 @@ const userSchema = new mongoose.Schema(
       required: false,
     },
     license: { type: Boolean, require: true },
+    lastLoginAt: {
+      type: Date,
+      default: Date.now,
+    },
+    lastActivityAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   { timestamps: true, versionKey: false }
 );

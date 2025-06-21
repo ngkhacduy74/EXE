@@ -45,19 +45,70 @@ const CreateProduct = () => {
 
   const [errors, setErrors] = useState({});
 
-  // Handle input changes
+  // Hàm kiểm tra và làm sạch văn bản (loại bỏ ký tự đặc biệt, emoji)
+  const sanitizeText = (text) => {
+    // Loại bỏ các ký tự đặc biệt, emoji, chỉ giữ lại chữ cái, số, dấu cách và một số ký tự cơ bản
+    return text.replace(/[^\w\s\u00C0-\u024F\u1E00-\u1EFF.,!?()%-]/g, '').trim();
+  };
+
+  // Hàm kiểm tra chỉ cho phép số và dấu chấm
+  const sanitizeNumber = (value) => {
+    return value.replace(/[^0-9.]/g, '');
+  };
+
+  // Hàm kiểm tra chỉ cho phép số nguyên
+  const sanitizeInteger = (value) => {
+    return value.replace(/[^0-9]/g, '');
+  };
+
+  // Hàm kiểm tra kích thước (chỉ cho phép số, x, và dấu cách)
+  const sanitizeSize = (value) => {
+    return value.replace(/[^0-9x\s]/g, '').trim();
+  };
+
+  // Handle input changes với validation
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    let sanitizedValue = value;
+
+    // Áp dụng sanitization dựa trên loại trường
+    switch (name) {
+      case 'name':
+      case 'brand':
+      case 'description':
+        sanitizedValue = sanitizeText(value);
+        break;
+      case 'price':
+      case 'capacity':
+      case 'weight':
+        sanitizedValue = sanitizeNumber(value);
+        break;
+      case 'quantity':
+      case 'warranty_period':
+        sanitizedValue = sanitizeInteger(value);
+        break;
+      case 'size':
+        sanitizedValue = sanitizeSize(value);
+        break;
+      case 'voltage':
+        // Voltage có thể có ký tự V hoặc số
+        sanitizedValue = value.replace(/[^0-9V\s]/g, '').trim();
+        break;
+      default:
+        sanitizedValue = value;
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  // Handle features array
+  // Handle features array với validation
   const handleFeatureChange = (index, field, value) => {
+    const sanitizedValue = sanitizeText(value);
     const newFeatures = [...formData.features];
-    newFeatures[index] = { ...newFeatures[index], [field]: value };
+    newFeatures[index] = { ...newFeatures[index], [field]: sanitizedValue };
     setFormData((prev) => ({ ...prev, features: newFeatures }));
     if (errors.features) {
       setErrors((prev) => ({ ...prev, features: "" }));
@@ -81,7 +132,7 @@ const CreateProduct = () => {
   // Handle image URL changes
   const handleImageUrlChange = (index, value) => {
     const newImageUrls = [...imageUrls];
-    newImageUrls[index] = value;
+    newImageUrls[index] = value.trim();
     setImageUrls(newImageUrls);
 
     if (errors.images) {
@@ -106,7 +157,7 @@ const CreateProduct = () => {
 
   // Handle video URL change
   const handleVideoUrlChange = (value) => {
-    setVideoUrl(value);
+    setVideoUrl(value.trim());
   };
 
   // Validate URL format
@@ -146,27 +197,82 @@ const CreateProduct = () => {
     );
   };
 
-  // Form validation
+  // Enhanced form validation
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Tên sản phẩm là bắt buộc";
-    if (!formData.brand.trim()) newErrors.brand = "Thương hiệu là bắt buộc";
-    if (!formData.price || parseFloat(formData.price) < 1000)
+    
+    // Kiểm tra tên sản phẩm
+    if (!formData.name.trim()) {
+      newErrors.name = "Tên sản phẩm là bắt buộc";
+    } else if (formData.name.length < 3) {
+      newErrors.name = "Tên sản phẩm phải có ít nhất 3 ký tự";
+    } else if (formData.name.length > 100) {
+      newErrors.name = "Tên sản phẩm không được vượt quá 100 ký tự";
+    }
+
+    // Kiểm tra thương hiệu
+    if (!formData.brand.trim()) {
+      newErrors.brand = "Thương hiệu là bắt buộc";
+    } else if (formData.brand.length < 2) {
+      newErrors.brand = "Thương hiệu phải có ít nhất 2 ký tự";
+    }
+
+    // Kiểm tra giá
+    if (!formData.price || parseFloat(formData.price) < 1000) {
       newErrors.price = "Giá phải lớn hơn hoặc bằng 1.000 VND";
-    if (!formData.capacity || formData.capacity <= 0)
+    } else if (parseFloat(formData.price) > 1000000000) {
+      newErrors.price = "Giá không được vượt quá 1 tỷ VND";
+    }
+
+    // Kiểm tra dung tích
+    if (!formData.capacity || parseFloat(formData.capacity) <= 0) {
       newErrors.capacity = "Dung tích phải lớn hơn 0";
-    if (!formData.description.trim())
+    } else if (parseFloat(formData.capacity) > 10000) {
+      newErrors.capacity = "Dung tích không được vượt quá 10.000";
+    }
+
+    // Kiểm tra mô tả
+    if (!formData.description.trim()) {
       newErrors.description = "Mô tả là bắt buộc";
-    if (!formData.size.trim()) newErrors.size = "Kích thước là bắt buộc";
-    if (!formData.weight || formData.weight <= 0)
+    } else if (formData.description.length < 10) {
+      newErrors.description = "Mô tả phải có ít nhất 10 ký tự";
+    } else if (formData.description.length > 2000) {
+      newErrors.description = "Mô tả không được vượt quá 2000 ký tự";
+    }
+
+    // Kiểm tra kích thước
+    if (!formData.size.trim()) {
+      newErrors.size = "Kích thước là bắt buộc";
+    } else if (!/^\d+(\s*x\s*\d+)*$/.test(formData.size.replace(/\s/g, ''))) {
+      newErrors.size = "Kích thước phải theo định dạng: số x số x số (VD: 60x55x85)";
+    }
+
+    // Kiểm tra trọng lượng
+    if (!formData.weight || parseFloat(formData.weight) <= 0) {
       newErrors.weight = "Trọng lượng phải lớn hơn 0";
-    if (!formData.voltage.trim()) newErrors.voltage = "Điện áp là bắt buộc";
-    if (!formData.quantity || formData.quantity <= 0)
+    } else if (parseFloat(formData.weight) > 1000) {
+      newErrors.weight = "Trọng lượng không được vượt quá 1000kg";
+    }
+
+    // Kiểm tra điện áp
+    if (!formData.voltage.trim()) {
+      newErrors.voltage = "Điện áp là bắt buộc";
+    } else if (!/^\d+(\s*V)?$/.test(formData.voltage.replace(/\s/g, ''))) {
+      newErrors.voltage = "Điện áp phải là số (VD: 220 hoặc 220V)";
+    }
+
+    // Kiểm tra số lượng
+    if (!formData.quantity || parseInt(formData.quantity) <= 0) {
       newErrors.quantity = "Số lượng phải lớn hơn 0";
-    if (
-      formData.features.some((f) => !f.title.trim() || !f.description.trim())
-    ) {
+    } else if (parseInt(formData.quantity) > 10000) {
+      newErrors.quantity = "Số lượng không được vượt quá 10.000";
+    }
+
+    // Kiểm tra tính năng
+    if (formData.features.some((f) => !f.title.trim() || !f.description.trim())) {
       newErrors.features = "Tất cả tính năng phải có tiêu đề và mô tả";
+    } else if (formData.features.some((f) => f.title.length < 3 || f.description.length < 5)) {
+      newErrors.features = "Tiêu đề tính năng ít nhất 3 ký tự, mô tả ít nhất 5 ký tự";
     }
 
     // Validate image URLs
@@ -194,7 +300,7 @@ const CreateProduct = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      setError("Vui lòng điền đầy đủ các trường bắt buộc");
+      setError("Vui lòng điền đầy đủ các trường bắt buộc và kiểm tra lại thông tin");
       return;
     }
 
@@ -209,23 +315,23 @@ const CreateProduct = () => {
     setSuccess("");
 
     try {
-      // Prepare data to send
+      // Prepare data to send với dữ liệu đã được làm sạch
       const dataToSend = {
-        name: formData.name,
-        brand: formData.brand,
+        name: formData.name.trim(),
+        brand: formData.brand.trim(),
         price: parseFloat(formData.price),
-        description: formData.description,
-        size: formData.size,
+        description: formData.description.trim(),
+        size: formData.size.trim(),
         weight: parseFloat(formData.weight),
         status: formData.status,
         warranty_period: parseInt(formData.warranty_period),
         capacity: parseFloat(formData.capacity),
-        voltage: formData.voltage,
+        voltage: formData.voltage.trim(),
         quantity: parseInt(formData.quantity),
         features: formData.features.map((f, index) => ({
           id: `f${index + 1}`,
-          title: f.title,
-          description: f.description,
+          title: f.title.trim(),
+          description: f.description.trim(),
         })),
         image: imageUrls.filter((url) => url.trim() !== ""),
         video: videoUrl.trim() !== "" ? [videoUrl] : [],
@@ -280,6 +386,20 @@ const CreateProduct = () => {
   const handleUploadImageFile = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
+    // Kiểm tra loại file
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Chỉ chấp nhận file ảnh: JPG, PNG, GIF, WebP");
+      return;
+    }
+
+    // Kiểm tra kích thước file (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File ảnh không được vượt quá 5MB");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("img", file);
     try {
@@ -356,10 +476,14 @@ const CreateProduct = () => {
                             onChange={handleInputChange}
                             isInvalid={!!errors.name}
                             placeholder="Nhập tên sản phẩm"
+                            maxLength={100}
                           />
                           <Form.Control.Feedback type="invalid">
                             {errors.name}
                           </Form.Control.Feedback>
+                          <Form.Text className="text-muted">
+                            {formData.name.length}/100 ký tự
+                          </Form.Text>
                         </Form.Group>
                       </Col>
                       <Col md={6}>
@@ -372,6 +496,7 @@ const CreateProduct = () => {
                             onChange={handleInputChange}
                             isInvalid={!!errors.brand}
                             placeholder="Nhập thương hiệu"
+                            maxLength={50}
                           />
                           <Form.Control.Feedback type="invalid">
                             {errors.brand}
@@ -384,13 +509,12 @@ const CreateProduct = () => {
                         <Form.Group className="mb-3">
                           <Form.Label>Giá (VND) *</Form.Label>
                           <Form.Control
-                            type="number"
+                            type="text"
                             name="price"
                             value={formData.price}
                             onChange={handleInputChange}
                             isInvalid={!!errors.price}
                             placeholder="1000"
-                            min="1000"
                           />
                           <Form.Text className="text-muted">
                             Tối thiểu 1.000 VND
@@ -404,14 +528,12 @@ const CreateProduct = () => {
                         <Form.Group className="mb-3">
                           <Form.Label>Dung tích/Ngày *</Form.Label>
                           <Form.Control
-                            type="number"
+                            type="text"
                             name="capacity"
                             value={formData.capacity}
                             onChange={handleInputChange}
                             isInvalid={!!errors.capacity}
                             placeholder="0"
-                            min="0"
-                            step="0.1"
                           />
                           <Form.Control.Feedback type="invalid">
                             {errors.capacity}
@@ -422,13 +544,12 @@ const CreateProduct = () => {
                         <Form.Group className="mb-3">
                           <Form.Label>Số lượng *</Form.Label>
                           <Form.Control
-                            type="number"
+                            type="text"
                             name="quantity"
                             value={formData.quantity}
                             onChange={handleInputChange}
                             isInvalid={!!errors.quantity}
                             placeholder="1"
-                            min="1"
                           />
                           <Form.Control.Feedback type="invalid">
                             {errors.quantity}
@@ -459,10 +580,14 @@ const CreateProduct = () => {
                         onChange={handleInputChange}
                         isInvalid={!!errors.description}
                         placeholder="Nhập mô tả chi tiết sản phẩm"
+                        maxLength={2000}
                       />
                       <Form.Control.Feedback type="invalid">
                         {errors.description}
                       </Form.Control.Feedback>
+                      <Form.Text className="text-muted">
+                        {formData.description.length}/2000 ký tự
+                      </Form.Text>
                     </Form.Group>
                   </Card.Body>
                 </Card>
@@ -497,14 +622,12 @@ const CreateProduct = () => {
                           <Form.Label>Trọng lượng *</Form.Label>
                           <div className="d-flex align-items-center">
                             <Form.Control
-                              type="number"
+                              type="text"
                               name="weight"
                               value={formData.weight}
                               onChange={handleInputChange}
                               isInvalid={!!errors.weight}
                               placeholder="VD: 65"
-                              min="0"
-                              step="0.1"
                             />
                             <span className="ms-2">kg</span>
                           </div>
@@ -525,7 +648,7 @@ const CreateProduct = () => {
                               value={formData.voltage}
                               onChange={handleInputChange}
                               isInvalid={!!errors.voltage}
-                              placeholder="VD: 220"
+                              placeholder="VD: 220 hoặc 220V"
                             />
                             <span className="ms-2">volt</span>
                           </div>
@@ -538,11 +661,10 @@ const CreateProduct = () => {
                         <Form.Group className="mb-3">
                           <Form.Label>Thời gian bảo hành (tháng)</Form.Label>
                           <Form.Control
-                            type="number"
+                            type="text"
                             name="warranty_period"
                             value={formData.warranty_period}
                             onChange={handleInputChange}
-                            min="0"
                             placeholder="12"
                           />
                         </Form.Group>
@@ -578,6 +700,7 @@ const CreateProduct = () => {
                             }
                             placeholder={`Tiêu đề tính năng ${index + 1}`}
                             isInvalid={!!errors.features}
+                            maxLength={100}
                           />
                         </Col>
                         <Col md={6}>
@@ -593,6 +716,7 @@ const CreateProduct = () => {
                             }
                             placeholder={`Mô tả tính năng ${index + 1}`}
                             isInvalid={!!errors.features}
+                            maxLength={500}
                           />
                         </Col>
                         <Col md={2}>

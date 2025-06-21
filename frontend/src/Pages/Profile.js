@@ -10,7 +10,8 @@ import {
   Button,
   Form,
 } from "react-bootstrap";
-import axios from "axios";
+import { useAuth } from "../hooks/useAuth";
+import { authApiClient } from "../Services/auth.service";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import { Helmet, HelmetProvider } from "react-helmet-async";
@@ -18,77 +19,39 @@ import ChatWidget from "../Components/WidgetChat";
 
 export default function UserProfile() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, loading, handleLogout } = useAuth();
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("about");
   const [isEditing, setIsEditing] = useState(false);
+  const [profileUser, setProfileUser] = useState(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserProfile = async () => {
+      if (!user) return;
+
       try {
-        setLoading(true);
-
-        // Lấy thông tin user từ localStorage (giống như trang home)
-        const storedUser = localStorage.getItem("user");
-        const token = localStorage.getItem("token");
-
-        if (!storedUser || !token) {
-          setError("Bạn cần đăng nhập để xem hồ sơ");
-          navigate("/login");
-          return;
-        }
-
-        const userData = JSON.parse(storedUser);
-
-        // Nếu muốn lấy thông tin mới nhất từ server
-        if (userData.id) {
-          const response = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/user/${userData.id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          const updatedUserData =
-            response.data?.user?.[0] || response.data?.user || response.data;
-          setUser(updatedUserData);
-        } else {
-          // Sử dụng dữ liệu từ localStorage nếu không có ID
-          setUser(userData);
-        }
-
         setError(null);
+        
+        // Fetch latest user data from server
+        const response = await authApiClient.get(`/user/${user.id}`);
+        
+        const updatedUserData =
+          response.data?.user?.[0] || response.data?.user || response.data;
+        setProfileUser(updatedUserData);
+        
+        // Update localStorage with latest data
+        localStorage.setItem("user", JSON.stringify(updatedUserData));
       } catch (err) {
         console.error("Lỗi khi tải thông tin người dùng:", err);
-
-        // Nếu token hết hạn hoặc không hợp lệ
-        if (err.response?.status === 401) {
-          localStorage.removeItem("user");
-          localStorage.removeItem("token");
-          navigate("/login");
-          return;
-        }
-
-        // Nếu có lỗi khác, vẫn hiển thị thông tin từ localStorage
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-          setError("Không thể tải thông tin mới nhất, hiển thị dữ liệu đã lưu");
-        } else {
-          setError(
-            err.response?.data?.message || "Không thể tải thông tin người dùng"
-          );
-        }
-      } finally {
-        setLoading(false);
+        
+        // If there's an error, use the user data from auth hook
+        setProfileUser(user);
+        setError("Không thể tải thông tin mới nhất, hiển thị dữ liệu đã lưu");
       }
     };
 
-    fetchUser();
-  }, [navigate]);
+    fetchUserProfile();
+  }, [user]);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -104,37 +67,34 @@ export default function UserProfile() {
 
   const handleSaveProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Bạn cần đăng nhập để lưu thông tin");
+      if (!profileUser) {
+        setError("Không có thông tin người dùng để lưu");
         return;
       }
 
       // Gửi API cập nhật thông tin user
-      const response = await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/user/${user.id}`,
-        user,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await authApiClient.put(
+        `/user/${profileUser.id}`,
+        profileUser
       );
 
       // Cập nhật localStorage với thông tin mới
-      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(profileUser));
+      setProfileUser(profileUser);
 
       setIsEditing(false);
       console.log("Đã lưu hồ sơ thành công");
 
-      // Hiển thị thông báo thành công (có thể thêm toast notification)
+      // Hiển thị thông báo thành công
       alert("Cập nhật hồ sơ thành công!");
     } catch (err) {
       console.error("Lỗi khi lưu hồ sơ:", err);
       setError("Không thể lưu thông tin hồ sơ");
     }
   };
+
+  // Use profileUser for display, fallback to user from auth hook
+  const displayUser = profileUser || user;
 
   if (loading) {
     return (
@@ -204,7 +164,7 @@ export default function UserProfile() {
     );
   }
 
-  if (!user) {
+  if (!displayUser) {
     return (
       <HelmetProvider>
         <div>
@@ -219,10 +179,10 @@ export default function UserProfile() {
           >
             <Card className="text-center shadow">
               <Card.Body>
-                <Card.Title>Không tìm thấy người dùng</Card.Title>
-                <Card.Text>Người dùng bạn tìm kiếm không tồn tại.</Card.Text>
-                <Button variant="primary" href="/">
-                  Về trang chủ
+                <Card.Title>Không tìm thấy thông tin người dùng</Card.Title>
+                <Card.Text>Vui lòng đăng nhập lại để xem hồ sơ.</Card.Text>
+                <Button variant="primary" onClick={() => navigate("/login")}>
+                  Đăng nhập
                 </Button>
               </Card.Body>
             </Card>
@@ -238,11 +198,11 @@ export default function UserProfile() {
     <HelmetProvider>
       <div>
         <Helmet>
-          <title>Hồ Sơ - {user.fullname || user.name} - Vinsaky</title>
+          <title>Hồ Sơ - {displayUser.fullname || displayUser.name} - Vinsaky</title>
           <meta
             name="description"
-            content={`Hồ sơ của ${user.fullname || user.name} - ${
-              user.profession || "Freelancer"
+            content={`Hồ sơ của ${displayUser.fullname || displayUser.name} - ${
+              displayUser.profession || "Freelancer"
             }`}
           />
         </Helmet>
@@ -264,8 +224,8 @@ export default function UserProfile() {
                       <div className="profile-img-container mb-3">
                         <img
                           src={
-                            user.ava_img_url ||
-                            user.profileImage ||
+                            displayUser.ava_img_url ||
+                            displayUser.profileImage ||
                             "https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg"
                           }
                           alt="Ảnh đại diện"
@@ -296,18 +256,18 @@ export default function UserProfile() {
                     <Col md={6}>
                       <div className="profile-header">
                         <h2 className="mb-2 text-primary">
-                          {user.fullname || user.name || "Tên người dùng"}
+                          {displayUser.fullname || displayUser.name || "Tên người dùng"}
                         </h2>
                         <p className="text-muted h5 mb-3">
-                          {user.profession || "Freelancer"}
+                          {displayUser.profession || "Freelancer"}
                         </p>
                         <div className="mb-3">
                           <span className="badge bg-success me-2">
-                            {user.rating || "5.0"} ({user.reviews || "15"} đánh
+                            {displayUser.rating || "5.0"} ({displayUser.reviews || "15"} đánh
                             giá)
                           </span>
                           <span className="badge bg-info">
-                            {user.location || "Hà Nội, Việt Nam"}
+                            {displayUser.location || "Hà Nội, Việt Nam"}
                           </span>
                         </div>
                       </div>
@@ -362,8 +322,8 @@ export default function UserProfile() {
                                   </Col>
                                   <Col md={8}>
                                     <p className="mb-0">
-                                      {user.fullname ||
-                                        user.name ||
+                                      {displayUser.fullname ||
+                                        displayUser.name ||
                                         "Chưa cập nhật"}
                                     </p>
                                   </Col>
@@ -375,7 +335,7 @@ export default function UserProfile() {
                                   </Col>
                                   <Col md={8}>
                                     <p className="mb-0">
-                                      {user.email || "Chưa cập nhật"}
+                                      {displayUser.email || "Chưa cập nhật"}
                                     </p>
                                   </Col>
                                 </Row>
@@ -386,7 +346,7 @@ export default function UserProfile() {
                                   </Col>
                                   <Col md={8}>
                                     <p className="mb-0">
-                                      {user.phone || "Chưa cập nhật"}
+                                      {displayUser.phone || "Chưa cập nhật"}
                                     </p>
                                   </Col>
                                 </Row>
@@ -397,7 +357,7 @@ export default function UserProfile() {
                                   </Col>
                                   <Col md={8}>
                                     <p className="mb-0">
-                                      {user.address || "Chưa cập nhật"}
+                                      {displayUser.address || "Chưa cập nhật"}
                                     </p>
                                   </Col>
                                 </Row>
@@ -408,7 +368,7 @@ export default function UserProfile() {
                                   </Col>
                                   <Col md={8}>
                                     <p className="mb-0">
-                                      {user.profession || "Freelancer"}
+                                      {displayUser.profession || "Freelancer"}
                                     </p>
                                   </Col>
                                 </Row>
@@ -419,7 +379,7 @@ export default function UserProfile() {
                                   </Col>
                                   <Col md={8}>
                                     <p className="mb-0">
-                                      {user.bio ||
+                                      {displayUser.bio ||
                                         "Chưa có thông tin giới thiệu"}
                                     </p>
                                   </Col>

@@ -49,6 +49,12 @@ async function verifyOTP(req, res) {
         .json({ success: false, error: "Không tìm thấy người dùng" });
     }
 
+    // Update last login and activity time
+    await User.findByIdAndUpdate(user._id, {
+      lastLoginAt: new Date(),
+      lastActivityAt: new Date()
+    });
+
     const token = jwt.sign(
       {
         user,

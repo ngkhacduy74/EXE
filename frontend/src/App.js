@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
+// Import Bootstrap JavaScript
+import * as bootstrap from 'bootstrap';
+
 import {
   BrowserRouter as Router,
   Route,
@@ -32,6 +35,13 @@ import ProductView from "./Pages/ProductView";
 
 const App = () => {
   const [message, setMessage] = useState("");
+
+  // Make Bootstrap available globally
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.bootstrap = bootstrap;
+    }
+  }, []);
 
   useEffect(() => {
     fetch("/api/test")
