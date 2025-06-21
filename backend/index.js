@@ -20,10 +20,26 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use(express.json());
-Router(app);
-configs.connect();
 
-const port = process.env.PORT || 4000;
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+// Function to start the server
+const startServer = () => {
+  const port = process.env.PORT || 4000;
+  
+  // Register API routes
+  Router(app);
+
+  app.listen(port, () => {
+    console.log(`✅ Server running on port ${port}`);
+  });
+};
+
+// Connect to DB and then start the server
+configs.connect()
+  .then(() => {
+    console.log("✅ MongoDB connected successfully");
+    startServer();
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err.message);
+    process.exit(1); // Exit process with failure
+  });
