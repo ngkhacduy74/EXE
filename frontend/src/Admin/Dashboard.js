@@ -39,34 +39,45 @@ class GA4Analytics {
   constructor(measurementId, apiSecret) {
     this.measurementId = measurementId;
     this.apiSecret = apiSecret;
-    this.baseUrl = `${process.env.REACT_APP_BACKEND_URL}/api/dashboard`;
+    // Use proxy in development, full URL in production
+    this.baseUrl = process.env.NODE_ENV === 'development' 
+      ? '/api/dashboard'
+      : `${process.env.REACT_APP_BACKEND_URL}/api/dashboard`;
   }
 
   // Track custom events using official GA4 gtag
   trackEvent(eventName, parameters = {}) {
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', eventName, {
-        event_category: parameters.category || 'Admin Dashboard',
-        event_label: parameters.label || eventName,
-        value: parameters.value || 1,
-        custom_parameter_1: parameters.dashboard_section || 'overview',
-        custom_parameter_2: parameters.user_role || 'admin',
-        ...parameters
-      });
-      console.log(`📊 GA4 Event tracked: ${eventName}`, parameters);
-    } else {
-      console.warn('⚠️ GA4 gtag not available for event tracking');
+    try {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', eventName, {
+          event_category: parameters.category || 'Admin Dashboard',
+          event_label: parameters.label || eventName,
+          value: parameters.value || 1,
+          custom_parameter_1: parameters.dashboard_section || 'overview',
+          custom_parameter_2: parameters.user_role || 'admin',
+          ...parameters
+        });
+        console.log(`📊 GA4 Event tracked: ${eventName}`, parameters);
+      } else {
+        console.warn('⚠️ GA4 gtag not available for event tracking');
+      }
+    } catch (error) {
+      console.error('❌ Error tracking GA4 event:', error);
     }
   }
 
   // Track page views
   trackPageView(pageTitle, pageLocation) {
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('config', this.measurementId, {
-        page_title: pageTitle,
-        page_location: pageLocation
-      });
-      console.log(`📊 GA4 Page view tracked: ${pageTitle}`);
+    try {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('config', this.measurementId, {
+          page_title: pageTitle,
+          page_location: pageLocation
+        });
+        console.log(`📊 GA4 Page view tracked: ${pageTitle}`);
+      }
+    } catch (error) {
+      console.error('❌ Error tracking GA4 page view:', error);
     }
   }
 
@@ -188,8 +199,23 @@ class GA4Analytics {
 function AdminDashboard() {
   const location = useLocation();
   
-  // Initialize GA4 (replace with your actual Measurement ID)
-  const [ga4] = useState(new GA4Analytics('G-0DRKJH48YN', 'your-api-secret'));
+  // Initialize GA4 with error handling
+  const [ga4] = useState(() => {
+    try {
+      return new GA4Analytics('G-0DRKJH48YN', 'your-api-secret');
+    } catch (error) {
+      console.error('❌ Error initializing GA4 client:', error);
+      // Return a fallback object with basic methods
+      return {
+        trackEvent: () => console.warn('GA4 not available'),
+        trackPageView: () => console.warn('GA4 not available'),
+        getRealTimeUsers: async () => 0,
+        getPageViews: async () => null,
+        getTopPages: async () => [],
+        getUserDemographics: async () => null
+      };
+    }
+  });
   
   // Existing token state
   const [tokens, setTokens] = useState(() => {
@@ -234,6 +260,10 @@ function AdminDashboard() {
     demographics: null
   });
   
+  // Auto refresh tracking
+  const [nextRefreshTime, setNextRefreshTime] = useState(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState(null);
+  
   const [postsByMonth, setPostsByMonth] = useState(Array(12).fill(0));
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [availableYears, setAvailableYears] = useState([]);
@@ -248,72 +278,88 @@ function AdminDashboard() {
 
   // Load Google Analytics script
   useEffect(() => {
-    // Check if GA4 is already loaded
-    if (window.gtag) {
-      console.log("✅ GA4 đã được tải từ index.html");
+    try {
+      // Check if GA4 is already loaded
+      if (typeof window !== 'undefined' && window.gtag) {
+        console.log("✅ GA4 đã được tải từ index.html");
+        
+        // Track dashboard load event
+        setTimeout(() => {
+          try {
+            window.gtag('event', 'dashboard_loaded', {
+              event_category: 'Admin',
+              event_label: 'Dashboard Load',
+              value: 1,
+              custom_parameter_1: 'overview',
+              custom_parameter_2: 'admin'
+            });
+            console.log("📊 Đã gửi event dashboard_loaded đến GA4");
+          } catch (error) {
+            console.error('❌ Error sending GA4 event:', error);
+          }
+        }, 1000);
+        
+        return;
+      }
+
+      console.log("⚠️ GA4 chưa được tải, đang thử tải lại...");
       
+      // Fallback: Load GA4 script if not already loaded
+      const script1 = document.createElement('script');
+      script1.async = true;
+      script1.src = `https://www.googletagmanager.com/gtag/js?id=G-0DRKJH48YN`;
+      script1.onload = () => {
+        console.log("✅ GA4 script đã tải thành công (fallback)");
+      };
+      script1.onerror = () => {
+        console.error("❌ Lỗi khi tải GA4 script");
+      };
+      document.head.appendChild(script1);
+
+      const script2 = document.createElement('script');
+      script2.innerHTML = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-0DRKJH48YN', {
+          page_title: 'Admin Dashboard',
+          page_location: window.location.href,
+          custom_map: {
+            'custom_parameter_1': 'dashboard_section',
+            'custom_parameter_2': 'user_role'
+          }
+        });
+        console.log('✅ GA4 đã được khởi tạo với ID: G-0DRKJH48YN');
+      `;
+      document.head.appendChild(script2);
+
       // Track dashboard load event
       setTimeout(() => {
-        window.gtag('event', 'dashboard_loaded', {
-          event_category: 'Admin',
-          event_label: 'Dashboard Load',
-          value: 1,
-          custom_parameter_1: 'overview',
-          custom_parameter_2: 'admin'
-        });
-        console.log("📊 Đã gửi event dashboard_loaded đến GA4");
-      }, 1000);
-      
-      return;
-    }
-
-    console.log("⚠️ GA4 chưa được tải, đang thử tải lại...");
-    
-    // Fallback: Load GA4 script if not already loaded
-    const script1 = document.createElement('script');
-    script1.async = true;
-    script1.src = `https://www.googletagmanager.com/gtag/js?id=G-0DRKJH48YN`;
-    script1.onload = () => {
-      console.log("✅ GA4 script đã tải thành công (fallback)");
-    };
-    script1.onerror = () => {
-      console.error("❌ Lỗi khi tải GA4 script");
-    };
-    document.head.appendChild(script1);
-
-    const script2 = document.createElement('script');
-    script2.innerHTML = `
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-0DRKJH48YN', {
-        page_title: 'Admin Dashboard',
-        page_location: window.location.href,
-        custom_map: {
-          'custom_parameter_1': 'dashboard_section',
-          'custom_parameter_2': 'user_role'
+        try {
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'dashboard_loaded', {
+              event_category: 'Admin',
+              event_label: 'Dashboard Load',
+              value: 1
+            });
+            console.log("📊 Đã gửi event dashboard_loaded đến GA4");
+          }
+        } catch (error) {
+          console.error('❌ Error sending GA4 event (fallback):', error);
         }
-      });
-      console.log('✅ GA4 đã được khởi tạo với ID: G-0DRKJH48YN');
-    `;
-    document.head.appendChild(script2);
+      }, 1000);
 
-    // Track dashboard load event
-    setTimeout(() => {
-      if (window.gtag) {
-        window.gtag('event', 'dashboard_loaded', {
-          event_category: 'Admin',
-          event_label: 'Dashboard Load',
-          value: 1
-        });
-        console.log("📊 Đã gửi event dashboard_loaded đến GA4");
-      }
-    }, 1000);
-
-    return () => {
-      if (script1.parentNode) script1.parentNode.removeChild(script1);
-      if (script2.parentNode) script2.parentNode.removeChild(script2);
-    };
+      return () => {
+        try {
+          if (script1.parentNode) script1.parentNode.removeChild(script1);
+          if (script2.parentNode) script2.parentNode.removeChild(script2);
+        } catch (error) {
+          console.error('❌ Error cleaning up GA4 scripts:', error);
+        }
+      };
+    } catch (error) {
+      console.error('❌ Error initializing GA4:', error);
+    }
   }, []);
 
   // Token refresh function (existing)
@@ -585,6 +631,71 @@ function AdminDashboard() {
     return () => clearInterval(interval);
   }, [tokens.accessToken]);
 
+  // Auto refresh dashboard data every 1 hour
+  useEffect(() => {
+    const autoRefreshDashboard = async () => {
+      console.log('🔄 Auto refreshing dashboard data...');
+      
+      // Update refresh times
+      const now = new Date();
+      setLastRefreshTime(now);
+      setNextRefreshTime(new Date(now.getTime() + 3600000)); // 1 hour from now
+      
+      // Track auto refresh event
+      ga4.trackEvent('dashboard_auto_refresh', {
+        category: 'Admin',
+        label: 'Auto Refresh',
+        value: 1,
+        dashboard_section: 'overview'
+      });
+
+      // Refresh all dashboard data
+      try {
+        // Refresh main dashboard data
+        const dashboardData = await fetchRealDashboardData();
+        if (dashboardData) {
+          setDashboardData({
+            totalUsers: dashboardData.totalUsers || 0,
+            newUsersToday: dashboardData.newUsersToday || 0,
+            totalProducts: dashboardData.totalProducts || 0,
+            totalPosts: dashboardData.totalPosts || 0,
+            activeUsers: dashboardData.activeUsers || 0,
+            todayPageViews: dashboardData.todayPageViews || 0,
+          });
+        }
+
+        // Refresh real-time data
+        const realTimeData = await fetchRealTimeData();
+        if (realTimeData) {
+          setRealTimeUsers(realTimeData.onlineUsers || 0);
+        }
+
+        // Refresh analytics data
+        const analyticsData = await ga4.getPageViews();
+        if (analyticsData) {
+          setAnalyticsData(prev => ({
+            ...prev,
+            pageViews: analyticsData
+          }));
+        }
+
+        console.log('✅ Dashboard auto refresh completed');
+      } catch (error) {
+        console.error('❌ Error during auto refresh:', error);
+      }
+    };
+
+    // Set up auto refresh every 1 hour (3600000 milliseconds)
+    const autoRefreshInterval = setInterval(autoRefreshDashboard, 3600000);
+    
+    // Also refresh immediately when component mounts
+    autoRefreshDashboard();
+
+    return () => {
+      clearInterval(autoRefreshInterval);
+    };
+  }, [tokens.accessToken, ga4]);
+
   // Track year selection change
   const handleYearChange = (year) => {
     setSelectedYear(year);
@@ -720,6 +831,20 @@ function AdminDashboard() {
                 🔄 Làm Mới Dữ Liệu
               </button>
             </div>
+          </Alert>
+
+          {/* Auto Refresh Status */}
+          <Alert variant="info" className="mb-3">
+            ⏰ <strong>Tự Động Làm Mới:</strong> Dashboard sẽ tự động cập nhật dữ liệu mỗi 1 tiếng
+            <br />
+            <small>
+              {lastRefreshTime && (
+                <>🕐 Lần cập nhật cuối: {lastRefreshTime.toLocaleString('vi-VN')} | </>
+              )}
+              {nextRefreshTime && (
+                <>⏳ Lần cập nhật tiếp theo: {nextRefreshTime.toLocaleString('vi-VN')}</>
+              )}
+            </small>
           </Alert>
 
           {/* Token Status Display */}
