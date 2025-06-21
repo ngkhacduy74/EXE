@@ -19,5 +19,5 @@ module.exports = (app) => {
   app.use("/user", userRouter);
   app.use("/chat", chatRouter);
   app.use("/banner", bannerRouter);
-  app.use("/dashboard", dashboardRouter);
+  app.use("/api/dashboard", dashboardRouter);
 };

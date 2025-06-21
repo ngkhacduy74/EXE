@@ -28,6 +28,34 @@ const startServer = () => {
   // Register API routes
   Router(app);
 
+  // 404 handler for API routes
+  app.use('/api/*', (req, res) => {
+    res.status(404).json({
+      success: false,
+      message: 'API endpoint not found',
+      path: req.originalUrl
+    });
+  });
+
+  // General 404 handler
+  app.use('*', (req, res) => {
+    res.status(404).json({
+      success: false,
+      message: 'Route not found',
+      path: req.originalUrl
+    });
+  });
+
+  // Error handling middleware
+  app.use((error, req, res, next) => {
+    console.error('Server error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    });
+  });
+
   app.listen(port, () => {
     console.log(`✅ Server running on port ${port}`);
   });

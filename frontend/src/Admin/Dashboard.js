@@ -17,7 +17,8 @@ import {
   ArcElement,
   Title, 
   Tooltip, 
-  Legend 
+  Legend,
+  Filler
 } from "chart.js";
 
 ChartJS.register(
@@ -29,7 +30,8 @@ ChartJS.register(
   ArcElement,
   Title, 
   Tooltip, 
-  Legend
+  Legend,
+  Filler
 );
 
 // Google Analytics 4 Integration Helper
@@ -37,7 +39,7 @@ class GA4Analytics {
   constructor(measurementId, apiSecret) {
     this.measurementId = measurementId;
     this.apiSecret = apiSecret;
-    this.baseUrl = '/api/dashboard';
+    this.baseUrl = 'http://localhost:4000/api/dashboard';
   }
 
   // Track custom events using official GA4 gtag
@@ -365,7 +367,7 @@ function AdminDashboard() {
 
     try {
       console.log("🔍 Đang lấy dữ liệu dashboard từ API...");
-      const response = await fetch('/api/dashboard/stats', {
+      const response = await fetch('http://localhost:4000/api/dashboard/stats', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${tokens.accessToken}`,
@@ -392,6 +394,12 @@ function AdminDashboard() {
       }
 
       if (response.ok) {
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          console.error("❌ Response không phải JSON:", contentType);
+          return null;
+        }
+        
         const data = await response.json();
         console.log("✅ Dữ liệu API Response:", data);
         return data.data;
@@ -412,7 +420,7 @@ function AdminDashboard() {
     if (!tokens.accessToken) return null;
 
     try {
-      const response = await fetch('/api/dashboard/realtime', {
+      const response = await fetch('http://localhost:4000/api/dashboard/realtime', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${tokens.accessToken}`,
