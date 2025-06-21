@@ -702,7 +702,7 @@ function AdminDashboard() {
 
           {/* GA4 Configuration Info */}
           <Alert variant="success" className="mb-3">
-            📊 <strong>Google Analytics 4 Đã Kết Nối:</strong> 
+            📊 <strong>Google Analytics 4.2 Đã Kết Nối:</strong> 
             <br />
             <small>
               <strong>Stream:</strong> Vinsaky | 
