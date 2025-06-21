@@ -185,18 +185,8 @@ const ManagePost = () => {
         setLoading(true);
         setError(null);
 
-        // Check if we have tokens
-        if (!tokens.accessToken) {
-          console.log("No access token available");
-          setError("No access token available. Please log in again.");
-          setLoading(false);
-          return;
-        }
-
-        const response = await makeAuthenticatedRequest({
-          method: "GET",
-          url: "/post/",
-        });
+        // Fetch posts without authentication since the endpoint doesn't require it
+        const response = await api.get("/post/");
 
         console.log("API Response:", response.data);
 
@@ -230,11 +220,9 @@ const ManagePost = () => {
       }
     };
 
-    // Only fetch if we have access token
-    if (tokens.accessToken) {
-      fetchPosts();
-    }
-  }, [tokens.accessToken]); // Add tokens.accessToken as dependency
+    // Fetch posts immediately without waiting for tokens
+    fetchPosts();
+  }, []); // Remove tokens.accessToken dependency
 
   // Apply filters whenever searchTerm, statusFilter, conditionFilter, or selectedCategories change
   useEffect(() => {

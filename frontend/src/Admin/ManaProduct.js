@@ -222,17 +222,8 @@ const ManageProduct = () => {
         setLoading(true);
         setError(null);
 
-        // Check if we have tokens
-        if (!tokens.accessToken) {
-          setError("No access token available. Please log in again.");
-          setLoading(false);
-          return;
-        }
-
-        const response = await makeAuthenticatedRequest({
-          method: "GET",
-          url: "/product/",
-        });
+        // Fetch products without authentication since the endpoint doesn't require it
+        const response = await api.get("/product/");
 
         const productData = Array.isArray(response.data.data)
           ? response.data.data
@@ -262,11 +253,9 @@ const ManageProduct = () => {
       }
     };
 
-    // Only fetch if we have access token
-    if (tokens.accessToken) {
-      fetchProducts();
-    }
-  }, [tokens.accessToken]); // Add tokens.accessToken as dependency
+    // Fetch products immediately without waiting for tokens
+    fetchProducts();
+  }, []); // Remove tokens.accessToken dependency
 
   // Apply filters whenever searchTerm, statusFilter, selectedBrands, minPrice, or maxPrice change
   useEffect(() => {
