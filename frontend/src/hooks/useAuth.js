@@ -9,70 +9,44 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuthentication = async () => {
-      console.log('useAuth - checkAuthentication started');
-      console.log('useAuth - isLoggingOut:', isLoggingOut);
-      
-      if (isLoggingOut) {
-        console.log('useAuth - isLoggingOut is true, skipping auth check');
-        setLoading(false);
-        return;
-      }
-
+    const validateAndSetUser = async () => {
       try {
-        // Check if user is authenticated
-        const isAuth = isAuthenticated();
-        console.log('useAuth - isAuthenticated():', isAuth);
+        setLoading(true);
+        const { isValid, user: validatedUser } = await validateToken();
         
-        if (!isAuth) {
-          console.log('useAuth - not authenticated, setting loading to false');
-          setLoading(false);
-          // Don't redirect immediately, let the component handle it
-          return;
-        }
-
-        // Get user data from localStorage
-        const currentUser = getCurrentUser();
-        console.log('useAuth - getCurrentUser():', currentUser);
-        
-        if (!currentUser) {
-          console.log('useAuth - no current user, setting loading to false');
-          setLoading(false);
-          // Don't redirect immediately, let the component handle it
-          return;
-        }
-
-        // Validate token with server
-        console.log('useAuth - validating token...');
-        try {
-          const { isValid, user: validatedUser } = await validateToken();
-          console.log('useAuth - validateToken result:', { isValid, validatedUser });
-          
-          if (isValid && validatedUser) {
-            console.log('useAuth - token valid, setting user:', validatedUser);
-            setUser(validatedUser);
-          } else {
-            console.log('useAuth - token invalid, but keeping user from localStorage');
-            // Token invalid but keep user from localStorage for now
-            setUser(currentUser);
+        if (isValid && validatedUser) {
+          setUser(validatedUser);
+        } else {
+          // If token is invalid, try to keep user from localStorage for better UX
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            try {
+              const parsedUser = JSON.parse(storedUser);
+              setUser(parsedUser);
+            } catch (error) {
+              console.error('useAuth - error parsing stored user:', error);
+            }
           }
-        } catch (error) {
-          console.log('useAuth - validateToken error, but keeping user from localStorage:', error);
-          // API error but keep user from localStorage for now
-          setUser(currentUser);
         }
       } catch (error) {
-        console.error("useAuth - Authentication check failed:", error);
-        // Don't redirect on error, just set loading to false
-        setUser(null);
+        console.error('useAuth - validateToken error:', error);
+        // Try to keep user from localStorage even if validation fails
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+          } catch (parseError) {
+            console.error('useAuth - error parsing stored user:', parseError);
+          }
+        }
       } finally {
-        console.log('useAuth - setting loading to false');
         setLoading(false);
       }
     };
 
-    checkAuthentication();
-  }, [isLoggingOut]);
+    validateAndSetUser();
+  }, []);
 
   const handleLogout = () => {
     setIsLoggingOut(true);

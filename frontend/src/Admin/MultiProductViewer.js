@@ -51,7 +51,10 @@ const MultiProductViewer = () => {
   const fetchAllProducts = async () => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) {
+        navigate("/login");
+        return;
+      }
 
       const response = await api.get("/product", {
         headers: {
@@ -284,8 +287,6 @@ const MultiProductViewer = () => {
         );
         return;
       }
-
-      console.log("Token found:", token.substring(0, 20) + "...");
 
       // Save to database via API
       const response = await axios.post(

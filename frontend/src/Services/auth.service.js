@@ -145,39 +145,24 @@ const validateToken = async () => {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
 
-    console.log("🔍 Validating token...");
-    console.log("Token exists:", !!token);
-    console.log("User data exists:", !!userData);
-
     if (!token || !userData) {
-      console.log("❌ Missing token or user data");
       return { isValid: false, user: null };
     }
 
     const user = JSON.parse(userData);
-    console.log("📧 User email:", user.email);
     
     // Try to get user info from server to validate token
-    console.log("🌐 Calling /user/getUserByEmail...");
     const response = await authApiClient.get(`/user/getUserByEmail?email=${encodeURIComponent(user.email)}`);
-    console.log("✅ Server response:", response.data);
     
     if (response.data && response.data.user) {
       // Update user data in localStorage
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      console.log("💾 Updated user data in localStorage");
       return { isValid: true, user: response.data.user };
     } else {
-      console.log("❌ No user data in response");
       return { isValid: false, user: null };
     }
   } catch (error) {
     console.error("❌ Token validation failed:", error);
-    console.error("Error details:", {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data
-    });
     return { isValid: false, user: null };
   }
 };

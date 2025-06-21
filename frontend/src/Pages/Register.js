@@ -164,55 +164,14 @@ Email: privacy@vinsaky.com
 
     setLoading(true);
     
-    try {
-      // Prepare form data for file upload
-      const formData = new FormData();
-      formData.append('fullname', fullname);
-      formData.append('email', email);
-      formData.append('phone', phone);
-      formData.append('address', address);
-      formData.append('password', password);
-      formData.append('gender', gender);
-      
-      // Add image file if selected
-      if (imageFile) {
-        formData.append('ava_img_url', imageFile);
-      }
-
-      // Get API base URL from environment variable
-      const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:4000';
-      
-      console.log('🔄 Đang đăng ký với API:', `${API_BASE_URL}/auth/register`);
-      
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        body: formData, // Use FormData for file upload
-        // Don't set Content-Type header, let browser set it with boundary for FormData
+    // Simulate API call
+    setTimeout(() => {
+      console.log("Register data:", {
+        fullname, email, phone, address, gender, imageFile
       });
-
-      console.log('📡 API Response status:', response.status);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Đăng ký thành công:', data);
-        
-        if (data.success) {
-          alert('🎉 Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.');
-          navigate('/login');
-        } else {
-          alert(data.message || 'Đăng ký thất bại, vui lòng thử lại.');
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Đăng ký thất bại:', errorData);
-        alert(errorData.message || `Đăng ký thất bại (${response.status}). Vui lòng thử lại.`);
-      }
-    } catch (error) {
-      console.error('❌ Lỗi khi đăng ký:', error);
-      alert('Lỗi kết nối. Vui lòng kiểm tra internet và thử lại.');
-    } finally {
+      alert("Đây là demo - Thay thế bằng API thực tế");
       setLoading(false);
-    }
+    }, 2000);
   };
 
   const openModal = (type) => {
