@@ -37,7 +37,7 @@ class GA4Analytics {
   constructor(measurementId, apiSecret) {
     this.measurementId = measurementId;
     this.apiSecret = apiSecret;
-    this.baseUrl = 'https://analyticsdata.googleapis.com/v1beta';
+    this.baseUrl = '/api/dashboard';
   }
 
   // Track custom events using official GA4 gtag
@@ -68,46 +68,92 @@ class GA4Analytics {
     }
   }
 
-  // Get real-time users (requires GA4 Reporting API)
+  // Get real-time users from backend API
   async getRealTimeUsers() {
     try {
-      // This should be implemented with actual GA4 API
-      // For now, return 0 until proper GA4 integration is set up
-      console.log('ℹ️ GA4 Real-time users: API not implemented yet');
-      return 0;
+      const response = await fetch(`${this.baseUrl}/realtime`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.data.onlineUsers || 0;
+      }
+      throw new Error('Không thể lấy dữ liệu người dùng trực tiếp');
     } catch (error) {
       console.error('Lỗi khi lấy dữ liệu người dùng trực tiếp:', error);
       return 0;
     }
   }
 
-  // Get page views data (requires GA4 Reporting API)
+  // Get page views data from backend API
   async getPageViews(dateRange = '7daysAgo') {
     try {
-      // This should be implemented with actual GA4 API
-      // For now, return null until proper GA4 integration is set up
-      console.log('ℹ️ GA4 Page views: API not implemented yet');
-      return null;
+      const response = await fetch(`${this.baseUrl}/ga4`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.data.pageViews || null;
+      }
+      throw new Error('Không thể lấy dữ liệu lượt xem trang');
     } catch (error) {
       console.error('Lỗi khi lấy dữ liệu lượt xem trang:', error);
       return null;
     }
   }
 
-  // Get top pages (requires GA4 Reporting API)
+  // Get top pages from backend API
   async getTopPages() {
-    // This should be implemented with actual GA4 API
-    // For now, return empty array until proper GA4 integration is set up
-    console.log('ℹ️ GA4 Top pages: API not implemented yet');
-    return [];
+    try {
+      const response = await fetch(`${this.baseUrl}/ga4`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.data.topPages || [];
+      }
+      throw new Error('Không thể lấy dữ liệu trang phổ biến');
+    } catch (error) {
+      console.error('Lỗi khi lấy dữ liệu trang phổ biến:', error);
+      return [];
+    }
   }
 
-  // Get user demographics (requires GA4 Reporting API)
+  // Get user demographics from backend API
   async getUserDemographics() {
-    // This should be implemented with actual GA4 API
-    // For now, return null until proper GA4 integration is set up
-    console.log('ℹ️ GA4 Demographics: API not implemented yet');
-    return null;
+    try {
+      const response = await fetch(`${this.baseUrl}/ga4`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.data.demographics || null;
+      }
+      throw new Error('Không thể lấy dữ liệu nhân khẩu học');
+    } catch (error) {
+      console.error('Lỗi khi lấy dữ liệu nhân khẩu học:', error);
+      return null;
+    }
   }
 
   // Helper method to make GA4 API calls (requires backend implementation)
@@ -202,17 +248,31 @@ function AdminDashboard() {
   useEffect(() => {
     // Check if GA4 is already loaded
     if (window.gtag) {
-      console.log("✅ GA4 đã được tải trước đó");
+      console.log("✅ GA4 đã được tải từ index.html");
+      
+      // Track dashboard load event
+      setTimeout(() => {
+        window.gtag('event', 'dashboard_loaded', {
+          event_category: 'Admin',
+          event_label: 'Dashboard Load',
+          value: 1,
+          custom_parameter_1: 'overview',
+          custom_parameter_2: 'admin'
+        });
+        console.log("📊 Đã gửi event dashboard_loaded đến GA4");
+      }, 1000);
+      
       return;
     }
 
-    console.log("🔄 Đang tải Google Analytics 4...");
+    console.log("⚠️ GA4 chưa được tải, đang thử tải lại...");
     
+    // Fallback: Load GA4 script if not already loaded
     const script1 = document.createElement('script');
     script1.async = true;
     script1.src = `https://www.googletagmanager.com/gtag/js?id=G-0DRKJH48YN`;
     script1.onload = () => {
-      console.log("✅ GA4 script đã tải thành công");
+      console.log("✅ GA4 script đã tải thành công (fallback)");
     };
     script1.onerror = () => {
       console.error("❌ Lỗi khi tải GA4 script");
