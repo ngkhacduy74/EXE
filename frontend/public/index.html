@@ -18,20 +18,39 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRKJH48YN"></script>
+    <!-- Set window.DISABLE_GA4 = true to disable GA4 completely -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-0DRKJH48YN', {
-        page_title: 'Vinsaky Admin Dashboard',
-        page_location: window.location.href,
-        custom_map: {
-          'custom_parameter_1': 'dashboard_section',
-          'custom_parameter_2': 'user_role'
-        }
-      });
-      console.log('✅ GA4 đã được khởi tạo toàn cục với ID: G-0DRKJH48YN');
+      if (!window.DISABLE_GA4) {
+        // Load GA4 script
+        const ga4Script = document.createElement('script');
+        ga4Script.async = true;
+        ga4Script.src = 'https://www.googletagmanager.com/gtag/js?id=G-0DRKJH48YN';
+        ga4Script.onerror = function() {
+          console.warn('⚠️ GA4 script failed to load - analytics disabled');
+        };
+        document.head.appendChild(ga4Script);
+        
+        // Initialize GA4
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        
+        ga4Script.onload = function() {
+          if (typeof gtag === 'function') {
+            gtag('js', new Date());
+            gtag('config', 'G-0DRKJH48YN', {
+              page_title: 'Vinsaky Admin Dashboard',
+              page_location: window.location.href,
+              custom_map: {
+                'custom_parameter_1': 'dashboard_section',
+                'custom_parameter_2': 'user_role'
+              }
+            });
+            console.log('✅ GA4 đã được khởi tạo toàn cục với ID: G-0DRKJH48YN');
+          }
+        };
+      } else {
+        console.log('ℹ️ GA4 disabled by DISABLE_GA4 flag');
+      }
     </script>
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
