@@ -326,7 +326,7 @@ function Header() {
             <div className="main-logo">
               <a href="/" className="d-flex align-items-center">
                 <img
-                  src="../images/Logo.jpg"
+                  src="../images/Logo.png"
                   alt="logo"
                   className="img-fluid"
                   style={{ width: "50px", height: "auto" }}
