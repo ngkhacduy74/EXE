@@ -56,12 +56,10 @@ const App = () => {
     try {
       if (accessToken) {
         localStorage.setItem("token", accessToken);
-        console.log("Access token saved to localStorage:", accessToken.substring(0, 20) + "...");
       }
       
       if (refreshToken) {
         localStorage.setItem("refreshToken", refreshToken);
-        console.log("Refresh token saved to localStorage:", refreshToken.substring(0, 20) + "...");
       }
       
       return true;
@@ -125,29 +123,17 @@ const App = () => {
             console.log("💾 Storing user data:", userRes.data.user);
             localStorage.setItem("user", JSON.stringify(userRes.data.user));
             
-            // Navigate based on user role and returnUrl
-            const userRole = userRes.data.user.role;
-            let destination;
+            // Save tokens to localStorage
+            localStorage.setItem("token", token);
+            localStorage.setItem("refreshToken", refresh_token);
+            localStorage.setItem("user", JSON.stringify(userRes.data.user));
             
+            // Navigate based on return URL or default to home
             if (returnUrl) {
-              // If there's a returnUrl, go to home first with success message
-              destination = "/";
+              navigate(returnUrl);
             } else {
-              // Otherwise, go to admin or home based on role
-              destination = userRole === "Admin" ? "/admin" : "/";
+              navigate("/");
             }
-            
-            console.log("🚀 Navigating to:", destination);
-            
-            navigate(destination, {
-              state: {
-                token,
-                refresh_token,
-                user: userRes.data.user,
-                message: returnUrl ? "Đăng nhập thành công!" : "Đăng nhập thành công!",
-                returnUrl: returnUrl
-              },
-            });
           } else {
             console.log("❌ Invalid user data received:", userRes.data);
             throw new Error("Invalid user data received");
@@ -167,7 +153,6 @@ const App = () => {
           });
 
           // Still navigate to home page with tokens
-          console.log("🚀 Navigating to home page with tokens only");
           navigate("/", {
             state: {
               token,

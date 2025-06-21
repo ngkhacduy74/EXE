@@ -161,6 +161,22 @@ const CompareProduct = () => {
     );
   };
 
+  // Helper function to get safe image URL
+  const getSafeImageUrl = (imageUrl, productName) => {
+    if (!imageUrl) {
+      return "./styles/images/product-thumb-1.png";
+    }
+    
+    // Check if URL is valid
+    try {
+      new URL(imageUrl);
+      return imageUrl;
+    } catch (error) {
+      console.warn(`Invalid image URL for product ${productName}:`, imageUrl);
+      return "./styles/images/product-thumb-1.png";
+    }
+  };
+
   // Render feature value
   const renderFeatureValue = (product, feature) => {
     const value = product[feature.key];
@@ -169,10 +185,14 @@ const CompareProduct = () => {
       case "image":
         return (
           <img
-            src={value || "./styles/images/product-thumb-1.png"}
+            src={getSafeImageUrl(value, product.name)}
             alt={product.name}
             className="img-fluid rounded mx-auto d-block"
             style={{ height: "60px", width: "60px", objectFit: "cover" }}
+            onError={(e) => {
+              console.warn(`Failed to load image for product ${product.name}:`, value);
+              e.target.src = "./styles/images/product-thumb-1.png";
+            }}
           />
         );
       case "price":
@@ -383,16 +403,17 @@ const CompareProduct = () => {
                                 }
                               >
                                 <img
-                                  src={
-                                    product.image ||
-                                    "./styles/images/product-thumb-1.png"
-                                  }
+                                  src={getSafeImageUrl(product.image, product.name)}
                                   alt={product.name}
                                   className="me-3 rounded"
                                   style={{
                                     width: "50px",
                                     height: "50px",
                                     objectFit: "cover",
+                                  }}
+                                  onError={(e) => {
+                                    console.warn(`Failed to load image for product ${product.name}:`, product.image);
+                                    e.target.src = "./styles/images/product-thumb-1.png";
                                   }}
                                 />
                                 <div className="flex-grow-1">
