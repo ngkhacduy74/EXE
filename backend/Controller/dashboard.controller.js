@@ -8,22 +8,17 @@ const path = require('path');
 // Google Analytics 4 Helper Class
 class GA4Helper {
   constructor() {
-    this.measurementId = 'G-0DRKJH48YN';
-    // TODO: Replace with your actual GA4 property ID
-    // To find your Property ID:
-    // 1. Go to Google Analytics (https://analytics.google.com)
-    // 2. Select your property "Vinsaky"
-    // 3. Go to Admin > Property Settings
-    // 4. Copy the Property ID (format: 123456789)
-    this.propertyId = '494181948'; // Updated with actual GA4 property ID
+    this.measurementId = process.env.GA4_MEASUREMENT_ID || 'G-0DRKJH48YN';
+    this.propertyId = process.env.GA4_PROPERTY_ID || '494181948';
     
     // Initialize GA4 client with service account
     try {
-      const keyFilePath = path.join(__dirname, '..', 'vinsaky-0578a851fdad.json');
+      const keyFilePath = path.join(__dirname, '..', process.env.GOOGLE_APPLICATION_CREDENTIALS || 'vinsaky-0578a851fdad.json');
       this.analyticsDataClient = new BetaAnalyticsDataClient({
         keyFilename: keyFilePath
       });
       console.log('✅ GA4 Analytics Data Client initialized successfully');
+      console.log(`📊 Using Property ID: ${this.propertyId}`);
     } catch (error) {
       console.error('❌ Error initializing GA4 client:', error.message);
       this.analyticsDataClient = null;
