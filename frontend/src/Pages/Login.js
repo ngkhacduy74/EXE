@@ -479,9 +479,15 @@ Tất cả sản phẩm/dịch vụ đều được bảo hành theo quy định
               <div style={styles.bgOverlay}></div>
               <div style={styles.branding}>
                 <div style={styles.logo}>
-                  <svg style={styles.logoSvg} fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clipRule="evenodd" />
-                  </svg>
+                  <img
+                    src="../images/Logo.png"
+                    alt="logo"
+                    style={{
+                      width: '3rem',
+                      height: '3rem',
+                      objectFit: 'contain'
+                    }}
+                  />
                 </div>
                 <h1 style={styles.brandTitle}>Vinsaky</h1>
                 <p style={styles.brandSubtitle}>Nền tảng dịch vụ hiện đại</p>
