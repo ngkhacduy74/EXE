@@ -39,7 +39,7 @@ class GA4Analytics {
   constructor(measurementId, apiSecret) {
     this.measurementId = measurementId;
     this.apiSecret = apiSecret;
-    this.baseUrl = 'http://localhost:4000/api/dashboard';
+    this.baseUrl = `${process.env.REACT_APP_BACKEND_URL}/api/dashboard`;
   }
 
   // Track custom events using official GA4 gtag
@@ -367,7 +367,7 @@ function AdminDashboard() {
 
     try {
       console.log("🔍 Đang lấy dữ liệu dashboard từ API...");
-      const response = await fetch('http://localhost:4000/api/dashboard/stats', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/dashboard/stats`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${tokens.accessToken}`,
@@ -420,7 +420,7 @@ function AdminDashboard() {
     if (!tokens.accessToken) return null;
 
     try {
-      const response = await fetch('http://localhost:4000/api/dashboard/realtime', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/dashboard/realtime`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${tokens.accessToken}`,
