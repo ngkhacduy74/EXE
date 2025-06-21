@@ -2,7 +2,6 @@
 const fetch = require('node-fetch');
 
 const BASE_URL = 'http://localhost:5000';
-const TEST_TOKEN = 'your-test-token-here'; // Replace with actual test token
 
 async function testGA4Integration() {
   console.log('🧪 Testing Google Analytics 4 Integration...\n');
@@ -23,7 +22,6 @@ async function testGA4Integration() {
     console.log('\n2️⃣ Testing GA4 API Endpoint...');
     const ga4Response = await fetch(`${BASE_URL}/api/dashboard/ga4`, {
       headers: {
-        'Authorization': `Bearer ${TEST_TOKEN}`,
         'Content-Type': 'application/json'
       }
     });
@@ -40,7 +38,6 @@ async function testGA4Integration() {
     console.log('\n3️⃣ Testing Real-time Analytics...');
     const realtimeResponse = await fetch(`${BASE_URL}/api/dashboard/realtime`, {
       headers: {
-        'Authorization': `Bearer ${TEST_TOKEN}`,
         'Content-Type': 'application/json'
       }
     });

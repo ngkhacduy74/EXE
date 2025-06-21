@@ -39,7 +39,7 @@ class GA4Analytics {
   constructor(measurementId, apiSecret) {
     this.measurementId = measurementId;
     this.apiSecret = apiSecret;
-    this.baseUrl = `${process.env.REACT_APP_BACKEND_URL}/api/dashboard`;
+    this.baseUrl = `http://localhost:4000/api/dashboard`;
   }
 
   // Track custom events using official GA4 gtag
@@ -852,216 +852,189 @@ function AdminDashboard() {
           </div>
 
           {/* Google Analytics Section */}
-          {analyticsData.pageViews && (
-            <div className="mb-5">
-              <h3 className="mb-4">📈 Thống Kê Google Analytics</h3>
-              <Row className="g-4">
-                <Col md={3}>
-                  <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
-                    <Card.Body>
-                      <div className="display-6 text-primary">{analyticsData.pageViews.totalPageViews || 0}</div>
-                      <div className="text-muted">Lượt Xem Trang</div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-                <Col md={3}>
-                  <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
-                    <Card.Body>
-                      <div className="display-6 text-success">{analyticsData.pageViews.uniquePageViews || 0}</div>
-                      <div className="text-muted">Lượt Xem Duy Nhất</div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-                <Col md={3}>
-                  <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
-                    <Card.Body>
-                      <div className="display-6 text-info">
-                        {Math.floor((analyticsData.pageViews.avgSessionDuration || 0) / 60)}p {(analyticsData.pageViews.avgSessionDuration || 0) % 60}s
-                      </div>
-                      <div className="text-muted">Thời Gian Trung Bình</div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-                <Col md={3}>
-                  <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
-                    <Card.Body>
-                      <div className="display-6 text-warning">{analyticsData.pageViews.bounceRate || 0}%</div>
-                      <div className="text-muted">Tỷ Lệ Thoát</div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
-            </div>
-          )}
-
-          {/* Google Analytics Setup Notice */}
-          {!analyticsData.pageViews && (
-            <Alert variant="info" className="mb-4">
-              📊 <strong>Cần Thiết Lập Google Analytics:</strong> 
-              <br />
-              <small>
-                Để xem dữ liệu Google Analytics, bạn cần triển khai tích hợp GA4 API trên backend.
-                Hiện tại chỉ hiển thị thống kê từ cơ sở dữ liệu.
-              </small>
-            </Alert>
-          )}
-
-          {/* Charts Section */}
           <div className="mb-5">
-            <h3 className="mb-4">📊 Biểu Đồ Thống Kê</h3>
-            <Row className="g-4">
-              <Col md={6}>
-                <Card className="shadow-sm h-100" style={{ borderRadius: "15px" }}>
-                  <Card.Header>
-                    <h5>Bài Viết Theo Tháng</h5>
-                    <select
-                      value={selectedYear}
-                      onChange={(e) => handleYearChange(parseInt(e.target.value))}
-                      className="form-select form-select-sm"
-                      style={{ width: "120px" }}
-                    >
-                      {availableYears.map((year) => (
-                        <option key={year} value={year}>{year}</option>
-                      ))}
-                    </select>
-                  </Card.Header>
+            <h3 className="mb-4">📈 Thống Kê Google Analytics</h3>
+            
+            {/* GA4 Data Status */}
+            <Alert variant={analyticsData.pageViews ? "success" : "warning"} className="mb-4">
+              {analyticsData.pageViews ? (
+                <>
+                  ✅ <strong>Dữ liệu GA4 đã được tải thành công!</strong>
+                  <br />
+                  <small>Cập nhật lần cuối: {new Date().toLocaleString('vi-VN')}</small>
+                </>
+              ) : (
+                <>
+                  ⚠️ <strong>Đang tải dữ liệu GA4...</strong>
+                  <br />
+                  <small>Vui lòng đợi hoặc kiểm tra kết nối</small>
+                </>
+              )}
+            </Alert>
+
+            {/* GA4 Metrics Cards */}
+            <Row className="g-4 mb-4">
+              <Col md={3}>
+                <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
                   <Card.Body>
-                    <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false }} height={250} />
+                    <div className="display-6 text-primary">
+                      {analyticsData.pageViews?.totalPageViews || 0}
+                    </div>
+                    <div className="text-muted">Tổng Lượt Xem</div>
+                    <small className="text-primary">📊 Từ GA4</small>
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={6}>
-                <Card className="shadow-sm h-100" style={{ borderRadius: "15px" }}>
-                  <Card.Header>
-                    <h5>Tăng Trưởng Người Dùng</h5>
-                  </Card.Header>
+              <Col md={3}>
+                <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
                   <Card.Body>
-                    <Line data={userGrowthData} options={{ responsive: true, maintainAspectRatio: false }} height={250} />
+                    <div className="display-6 text-success">
+                      {analyticsData.pageViews?.uniquePageViews || 0}
+                    </div>
+                    <div className="text-muted">Lượt Xem Duy Nhất</div>
+                    <small className="text-success">👥 Người dùng</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={3}>
+                <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
+                  <Card.Body>
+                    <div className="display-6 text-info">
+                      {Math.floor((analyticsData.pageViews?.avgSessionDuration || 0) / 60)}p {(analyticsData.pageViews?.avgSessionDuration || 0) % 60}s
+                    </div>
+                    <div className="text-muted">Thời Gian TB</div>
+                    <small className="text-info">⏱️ Phiên làm việc</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={3}>
+                <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
+                  <Card.Body>
+                    <div className="display-6 text-warning">
+                      {analyticsData.pageViews?.bounceRate || 0}%
+                    </div>
+                    <div className="text-muted">Tỷ Lệ Thoát</div>
+                    <small className="text-warning">🚪 Rời trang</small>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+
+            {/* Real-time Users */}
+            <Row className="g-4 mb-4">
+              <Col md={12}>
+                <Card className="text-center shadow-sm" style={{ borderRadius: "15px", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", color: "white" }}>
+                  <Card.Body>
+                    <div className="display-4">🟢 {realTimeUsers}</div>
+                    <div className="h5">Người dùng đang online</div>
+                    <small>Dữ liệu real-time từ GA4</small>
                   </Card.Body>
                 </Card>
               </Col>
             </Row>
           </div>
 
-          {/* Revenue and Device Analytics */}
-          <Row className="g-4 mb-5">
-            <Col md={6}>
-              <Card className="shadow-sm h-100" style={{ borderRadius: "15px" }}>
-                <Card.Header>
-                  <h5>💰 Xu Hướng Doanh Thu</h5>
-                </Card.Header>
+          {/* Top Pages Table */}
+          {analyticsData.topPages && analyticsData.topPages.length > 0 && (
+            <div className="mb-5">
+              <h3 className="mb-4">🔝 Trang Phổ Biến (GA4)</h3>
+              <Card className="shadow-sm" style={{ borderRadius: "15px" }}>
                 <Card.Body>
-                  <Line data={revenueData} options={{ responsive: true, maintainAspectRatio: false }} height={250} />
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={6}>
-              <Card className="shadow-sm h-100" style={{ borderRadius: "15px" }}>
-                <Card.Header>
-                  <h5>📱 Phân Bố Thiết Bị</h5>
-                  {!realData.analytics?.devices && !analyticsData.demographics?.devices && (
-                    <small className="text-muted">(Dữ liệu mẫu - GA4 chưa được kết nối)</small>
-                  )}
-                </Card.Header>
-                <Card.Body>
-                  <Doughnut data={deviceData} options={{ responsive: true, maintainAspectRatio: false }} height={250} />
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Top Pages and Demographics */}
-          <Row className="g-4 mb-5">
-            <Col md={8}>
-              {analyticsData.topPages && analyticsData.topPages.length > 0 ? (
-                <Card className="shadow-sm" style={{ borderRadius: "15px" }}>
-                  <Card.Header>
-                    <h5>🔝 Trang Phổ Biến</h5>
-                  </Card.Header>
-                  <Card.Body>
-                    <Table responsive striped>
-                      <thead>
-                        <tr>
-                          <th>Trang</th>
-                          <th>Lượt Xem</th>
-                          <th>Lượt Xem Duy Nhất</th>
-                          <th>Tương Tác</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {analyticsData.topPages.map((page, index) => (
+                  <Table responsive striped>
+                    <thead>
+                      <tr>
+                        <th>Trang</th>
+                        <th>Lượt Xem</th>
+                        <th>Tỷ Lệ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analyticsData.topPages.map((page, index) => {
+                        const totalViews = analyticsData.topPages.reduce((sum, p) => sum + (p.views || 0), 0);
+                        const percentage = totalViews > 0 ? ((page.views || 0) / totalViews * 100).toFixed(1) : 0;
+                        return (
                           <tr key={index}>
-                            <td><code>{page.page}</code></td>
-                            <td>{(page.views || 0).toLocaleString()}</td>
-                            <td>{(page.uniqueViews || 0).toLocaleString()}</td>
                             <td>
-                              <div className="progress" style={{ height: "6px" }}>
-                                <div 
-                                  className="progress-bar" 
-                                  style={{ width: `${((page.uniqueViews || 0) / (page.views || 1)) * 100}%` }}
-                                ></div>
+                              <code>{page.page}</code>
+                            </td>
+                            <td>
+                              <strong>{(page.views || 0).toLocaleString()}</strong>
+                            </td>
+                            <td>
+                              <div className="d-flex align-items-center">
+                                <div className="progress flex-grow-1 me-2" style={{ height: "8px" }}>
+                                  <div 
+                                    className="progress-bar bg-primary" 
+                                    style={{ width: `${percentage}%` }}
+                                  ></div>
+                                </div>
+                                <small className="text-muted">{percentage}%</small>
                               </div>
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </Card.Body>
-                </Card>
-              ) : (
-                <Card className="shadow-sm" style={{ borderRadius: "15px" }}>
-                  <Card.Header>
-                    <h5>🔝 Trang Phổ Biến</h5>
-                    <small className="text-muted">(Cần kết nối GA4 để xem dữ liệu thực)</small>
-                  </Card.Header>
-                  <Card.Body>
-                    <div className="text-center text-muted py-4">
-                      <p>Dữ liệu trang phổ biến sẽ hiển thị khi Google Analytics 4 được kết nối</p>
-                    </div>
-                  </Card.Body>
-                </Card>
-              )}
-            </Col>
-            <Col md={4}>
-              <Card className="shadow-sm h-100" style={{ borderRadius: "15px" }}>
-                <Card.Header>
-                  <h5>🌍 Quốc Gia</h5>
-                  {!analyticsData.demographics?.countries && (
-                    <small className="text-muted">(Dữ liệu mẫu)</small>
-                  )}
-                </Card.Header>
-                <Card.Body>
-                  <Pie data={countryData} options={{ responsive: true, maintainAspectRatio: false }} height={250} />
+                        );
+                      })}
+                    </tbody>
+                  </Table>
                 </Card.Body>
               </Card>
-            </Col>
-          </Row>
+            </div>
+          )}
+
+          {/* Demographics Charts */}
+          {analyticsData.demographics && (
+            <div className="mb-5">
+              <h3 className="mb-4">🌍 Phân Tích Người Dùng (GA4)</h3>
+              <Row className="g-4">
+                {/* Countries */}
+                {analyticsData.demographics.countries && analyticsData.demographics.countries.length > 0 && (
+                  <Col md={6}>
+                    <Card className="shadow-sm h-100" style={{ borderRadius: "15px" }}>
+                      <Card.Header>
+                        <h5>🌍 Quốc Gia</h5>
+                      </Card.Header>
+                      <Card.Body>
+                        <Pie data={countryData} options={{ responsive: true, maintainAspectRatio: false }} height={250} />
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                )}
+                
+                {/* Devices */}
+                {analyticsData.demographics.devices && analyticsData.demographics.devices.length > 0 && (
+                  <Col md={6}>
+                    <Card className="shadow-sm h-100" style={{ borderRadius: "15px" }}>
+                      <Card.Header>
+                        <h5>📱 Thiết Bị</h5>
+                      </Card.Header>
+                      <Card.Body>
+                        <Doughnut data={deviceData} options={{ responsive: true, maintainAspectRatio: false }} height={250} />
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                )}
+              </Row>
+            </div>
+          )}
 
           {/* Browser Statistics */}
-          <Card className="shadow-sm mb-5" style={{ borderRadius: "15px" }}>
-            <Card.Header>
-              <h5>🌐 Thống Kê Trình Duyệt</h5>
-              {!realData.analytics?.browsers && !analyticsData.demographics?.browsers && (
-                <small className="text-muted">(Dữ liệu mẫu)</small>
-              )}
-            </Card.Header>
-            <Card.Body>
-              <Row>
-                {(realData.analytics?.browsers || analyticsData.demographics?.browsers || [
-                  { browser: 'Chrome', percentage: 65 },
-                  { browser: 'Safari', percentage: 20 },
-                  { browser: 'Firefox', percentage: 8 },
-                  { browser: 'Edge', percentage: 5 },
-                  { browser: 'Others', percentage: 2 }
-                ]).map((browser, index) => (
-                  <Col md={2} key={index} className="text-center mb-3">
-                    <div className="display-6 text-primary">{browser.percentage}%</div>
-                    <div className="text-muted">{browser.browser}</div>
-                  </Col>
-                ))}
-              </Row>
-            </Card.Body>
-          </Card>
+          {analyticsData.demographics?.browsers && analyticsData.demographics.browsers.length > 0 && (
+            <div className="mb-5">
+              <h3 className="mb-4">🌐 Trình Duyệt (GA4)</h3>
+              <Card className="shadow-sm" style={{ borderRadius: "15px" }}>
+                <Card.Body>
+                  <Row>
+                    {analyticsData.demographics.browsers.map((browser, index) => (
+                      <Col md={2} key={index} className="text-center mb-3">
+                        <div className="display-6 text-primary">{browser.percentage}%</div>
+                        <div className="text-muted">{browser.browser}</div>
+                      </Col>
+                    ))}
+                  </Row>
+                </Card.Body>
+              </Card>
+            </div>
+          )}
 
           {/* Real Data Section */}
           {realData.summary && (

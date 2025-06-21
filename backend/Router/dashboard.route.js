@@ -12,6 +12,9 @@ router.get("/realtime", authMiddleware.verifyAdmin, DashboardController.getRealT
 // Get GA4 analytics data
 router.get("/ga4", authMiddleware.verifyAdmin, DashboardController.getGA4Data);
 
+// Test GA4 endpoint (no auth required for debugging)
+router.get("/ga4-test", DashboardController.getGA4Data);
+
 // Get detailed analytics
 router.get("/analytics", authMiddleware.verifyAdmin, DashboardController.getDetailedAnalytics);
 
