@@ -56,30 +56,6 @@ function Header() {
     }
   }, []);
 
-  // Listen for tag search events from RecommendTagCarousel
-  useEffect(() => {
-    const handleTagSearch = (event) => {
-      const { searchTerm: tagSearchTerm } = event.detail;
-      setSearchTerm(tagSearchTerm);
-      saveRecentSearch(tagSearchTerm);
-    };
-
-    // Listen for custom event
-    window.addEventListener('tagSearch', handleTagSearch);
-
-    // Check for search term from localStorage (when navigating from tag)
-    const searchFromTag = localStorage.getItem('searchFromTag');
-    if (searchFromTag) {
-      setSearchTerm(searchFromTag);
-      saveRecentSearch(searchFromTag);
-      localStorage.removeItem('searchFromTag'); // Clear after use
-    }
-
-    return () => {
-      window.removeEventListener('tagSearch', handleTagSearch);
-    };
-  }, []);
-
   // Fetch all products for better search
   useEffect(() => {
     const fetchAllProducts = async () => {

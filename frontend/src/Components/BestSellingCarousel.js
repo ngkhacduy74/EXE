@@ -59,7 +59,7 @@ const BestSellingCarousel = () => {
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/product/`
         );
-
+        console.log("kjqekqwe", response);
         // Handle different response structures
         const productData = Array.isArray(response.data.data)
           ? response.data.data
@@ -111,33 +111,10 @@ const BestSellingCarousel = () => {
 
   // Get product image (handle array format)
   const getProductImage = (product) => {
-    if (product.image) {
-      if (Array.isArray(product.image) && product.image.length > 0) {
-        const firstImage = product.image[0];
-        if (firstImage && firstImage.trim() !== "") {
-          // If it's a relative URL, make it absolute
-          if (firstImage.startsWith("/") || firstImage.startsWith("./")) {
-            const baseUrl = `${process.env.REACT_APP_BACKEND_URL}`;
-            const fullUrl = firstImage.startsWith("/")
-              ? `${baseUrl}${firstImage}`
-              : `${baseUrl}/${firstImage.replace("./", "")}`;
-            return fullUrl;
-          }
-          return firstImage;
-        }
-      } else if (typeof product.image === "string") {
-        if (product.image.trim() !== "") {
-          // If it's a relative URL, make it absolute
-          if (product.image.startsWith("/") || product.image.startsWith("./")) {
-            const baseUrl = `${process.env.REACT_APP_BACKEND_URL}`;
-            const fullUrl = product.image.startsWith("/")
-              ? `${baseUrl}${product.image}`
-              : `${baseUrl}/${product.image.replace("./", "")}`;
-            return fullUrl;
-          }
-          return product.image;
-        }
-      }
+    if (Array.isArray(product.image) && product.image.length > 0) {
+      return product.image[0];
+    } else if (typeof product.image === "string") {
+      return product.image;
     }
     return backUpImg;
   };
@@ -147,7 +124,7 @@ const BestSellingCarousel = () => {
     e.target.src = backUpImg;
   };
 
-  // Filter products by category/brand for tabs (all products, no status filter)
+  // Filter products by category/brand for tabs
   const allProducts = products;
   const fushimavinaProducts = products.filter(
     (product) => product.brand === "Fushimavina"

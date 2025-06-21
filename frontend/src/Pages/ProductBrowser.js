@@ -31,7 +31,6 @@ const ProductBrowse = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
-  const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [rating, setRating] = useState(0);
@@ -44,7 +43,6 @@ const ProductBrowse = () => {
   const [expandedFilters, setExpandedFilters] = useState({
     category: true,
     brand: true,
-    status: true,
     price: true,
     rating: true,
   });
@@ -52,7 +50,6 @@ const ProductBrowse = () => {
   // Available filter options
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
-  const [statuses, setStatuses] = useState([]);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,10 +61,7 @@ const ProductBrowse = () => {
     const searchParam = urlParams.get("search");
 
     if (searchParam) {
-      // Decode URL parameter properly
-      const decodedSearchParam = decodeURIComponent(searchParam);
-      setSearchTerm(decodedSearchParam);
-      console.log("Setting search term from URL:", decodedSearchParam);
+      setSearchTerm(searchParam);
     }
   }, [location.search]);
 
@@ -84,7 +78,7 @@ const ProductBrowse = () => {
           : [];
 
         setProducts(productData);
-        // Don't set filteredProducts here, let the filter useEffect handle it
+        setFilteredProducts(productData);
 
         // Extract unique categories and brands
         const uniqueCategories = [
@@ -93,13 +87,9 @@ const ProductBrowse = () => {
         const uniqueBrands = [
           ...new Set(productData.map((p) => p.brand).filter(Boolean)),
         ];
-        const uniqueStatuses = [
-          ...new Set(productData.map((p) => p.status).filter(Boolean)),
-        ];
 
         setCategories(uniqueCategories);
         setBrands(uniqueBrands);
-        setStatuses(uniqueStatuses);
       } catch (err) {
         console.error("Fetch Error:", err);
         setError("Failed to fetch products. Please try again later.");
@@ -113,28 +103,18 @@ const ProductBrowse = () => {
     fetchProducts();
   }, []);
 
-  // Initialize filteredProducts when products are loaded
-  useEffect(() => {
-    if (products.length > 0) {
-      setFilteredProducts(products);
-    }
-  }, [products]);
-
   // Apply filters whenever any filter state changes
   useEffect(() => {
     let result = products;
 
     // Filter by search term
-    if (searchTerm && searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim();
+    if (searchTerm) {
       result = result.filter(
         (product) =>
-          product.name?.toLowerCase().includes(searchLower) ||
-          product.brand?.toLowerCase().includes(searchLower) ||
-          product.category?.toLowerCase().includes(searchLower) ||
-          product.status?.toLowerCase().includes(searchLower)
+          product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.category?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      console.log("Filtering by search term:", searchTerm, "Results:", result.length);
     }
 
     // Filter by categories
@@ -148,13 +128,6 @@ const ProductBrowse = () => {
     if (selectedBrands.length > 0) {
       result = result.filter((product) =>
         selectedBrands.includes(product.brand)
-      );
-    }
-
-    // Filter by status (New/Second Hand)
-    if (selectedStatuses.length > 0) {
-      result = result.filter((product) =>
-        selectedStatuses.includes(product.status)
       );
     }
 
@@ -212,7 +185,6 @@ const ProductBrowse = () => {
     searchTerm,
     selectedCategories,
     selectedBrands,
-    selectedStatuses,
     minPrice,
     maxPrice,
     rating,
@@ -236,17 +208,10 @@ const ProductBrowse = () => {
     );
   };
 
-  const handleStatusChange = (status) => {
-    setSelectedStatuses((prev) =>
-      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
-    );
-  };
-
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCategories([]);
     setSelectedBrands([]);
-    setSelectedStatuses([]);
     setMinPrice("");
     setMaxPrice("");
     setRating(0);
@@ -301,7 +266,7 @@ const ProductBrowse = () => {
           <input
             type="text"
             className="form-control"
-            placeholder="Search by name, brand, category, status..."
+            placeholder="Search by name, brand, category..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -397,45 +362,6 @@ const ProductBrowse = () => {
           </div>
         )}
 
-        {/* Status Filter */}
-        {statuses.length > 0 && (
-          <div className="filter-group mb-4">
-            <div
-              className="filter-header d-flex justify-content-between align-items-center cursor-pointer"
-              onClick={() => toggleFilterExpand("status")}
-            >
-              <h6 className="mb-0">Product Status</h6>
-              {expandedFilters.status ? (
-                <ChevronUp size={16} />
-              ) : (
-                <ChevronDown size={16} />
-              )}
-            </div>
-            {expandedFilters.status && (
-              <div className="filter-content mt-2">
-                {statuses.map((status) => (
-                  <div key={status} className="form-check mb-2">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id={`status-${status}`}
-                      checked={selectedStatuses.includes(status)}
-                      onChange={() => handleStatusChange(status)}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor={`status-${status}`}
-                    >
-                      {status === "New" ? "Sản phẩm mới" : 
-                       status === "SecondHand" ? "Đồ cũ" : status}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Price Range Filter */}
         <div className="filter-group mb-4">
           <div
@@ -505,38 +431,18 @@ const ProductBrowse = () => {
     const getProductImage = (product) => {
       if (product.image) {
         if (Array.isArray(product.image) && product.image.length > 0) {
-          const firstImage = product.image[0];
-          if (firstImage && firstImage.trim() !== "") {
-            // If it's a relative URL, make it absolute
-            if (firstImage.startsWith("/") || firstImage.startsWith("./")) {
-              const baseUrl = `${process.env.REACT_APP_BACKEND_URL}`;
-              const fullUrl = firstImage.startsWith("/")
-                ? `${baseUrl}${firstImage}`
-                : `${baseUrl}/${firstImage.replace("./", "")}`;
-              return fullUrl;
-            }
-            return firstImage;
-          }
+          return product.image[0];
         } else if (typeof product.image === "string") {
-          if (product.image.trim() !== "") {
-            // If it's a relative URL, make it absolute
-            if (product.image.startsWith("/") || product.image.startsWith("./")) {
-              const baseUrl = `${process.env.REACT_APP_BACKEND_URL}`;
-              const fullUrl = product.image.startsWith("/")
-                ? `${baseUrl}${product.image}`
-                : `${baseUrl}/${product.image.replace("./", "")}`;
-              return fullUrl;
-            }
-            return product.image;
-          }
+          return product.image;
         }
       }
       // Fallback image
-      return "/images/frigde.png";
+      return "./styles/images/product-thumb-1.png";
     };
 
     const handleImageError = (e) => {
-      e.target.src = "/images/frigde.png";
+      e.target.src = "./styles/images/product-thumb-1.png";
+      e.target.alt = "product placeholder";
     };
 
     const handleProductClick = () => {
@@ -583,14 +489,10 @@ const ProductBrowse = () => {
               </span>
             )}
 
-            {/* Status Badge */}
-            {product.status && (
-              <span className={`badge position-absolute ${
-                product.status === "New" ? "bg-success" : 
-                product.status === "SecondHand" ? "bg-warning" : "bg-info"
-              } ${product.quantity <= 0 ? "bottom-0 start-0" : "top-0 end-0"} m-2`}>
-                {product.status === "New" ? "Mới" : 
-                 product.status === "SecondHand" ? "Đồ cũ" : product.status}
+            {/* New Badge */}
+            {product.isNew && (
+              <span className="badge bg-success position-absolute bottom-0 start-0 m-2">
+                New
               </span>
             )}
           </div>
