@@ -651,10 +651,10 @@ function AdminDashboard() {
   };
 
   const deviceData = {
-    labels: realData.analytics?.devices?.map(d => d.device) || analyticsData.demographics?.devices?.map(d => d.device) || ['Desktop', 'Mobile', 'Tablet'],
+    labels: (realData.analytics?.devices?.map(d => d.device) || analyticsData.demographics?.devices?.map(d => d.device) || ['Desktop', 'Mobile', 'Tablet']).filter(Boolean),
     datasets: [
       {
-        data: realData.analytics?.devices?.map(d => d.percentage) || analyticsData.demographics?.devices?.map(d => d.percentage) || [45, 40, 15],
+        data: (realData.analytics?.devices?.map(d => d.percentage) || analyticsData.demographics?.devices?.map(d => d.percentage) || [45, 40, 15]).filter(Boolean),
         backgroundColor: [
           '#FF6384',
           '#36A2EB',
@@ -670,10 +670,10 @@ function AdminDashboard() {
   };
 
   const countryData = {
-    labels: analyticsData.demographics?.countries?.map(c => c.country) || ['Việt Nam', 'Hoa Kỳ', 'Nhật Bản', 'Hàn Quốc', 'Singapore'],
+    labels: (analyticsData.demographics?.countries?.map(c => c.country) || ['Việt Nam', 'Hoa Kỳ', 'Nhật Bản', 'Hàn Quốc', 'Singapore']).filter(Boolean),
     datasets: [
       {
-        data: analyticsData.demographics?.countries?.map(c => c.users) || [60, 20, 10, 5, 5],
+        data: (analyticsData.demographics?.countries?.map(c => c.percentage || c.users || 0) || [60, 20, 10, 5, 5]).filter(Boolean),
         backgroundColor: [
           '#FF6384',
           '#36A2EB',
@@ -841,7 +841,7 @@ function AdminDashboard() {
                 <Col md={3}>
                   <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
                     <Card.Body>
-                      <div className="display-6 text-primary">{analyticsData.pageViews.totalPageViews}</div>
+                      <div className="display-6 text-primary">{analyticsData.pageViews.totalPageViews || 0}</div>
                       <div className="text-muted">Lượt Xem Trang</div>
                     </Card.Body>
                   </Card>
@@ -849,7 +849,7 @@ function AdminDashboard() {
                 <Col md={3}>
                   <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
                     <Card.Body>
-                      <div className="display-6 text-success">{analyticsData.pageViews.uniquePageViews}</div>
+                      <div className="display-6 text-success">{analyticsData.pageViews.uniquePageViews || 0}</div>
                       <div className="text-muted">Lượt Xem Duy Nhất</div>
                     </Card.Body>
                   </Card>
@@ -857,7 +857,9 @@ function AdminDashboard() {
                 <Col md={3}>
                   <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
                     <Card.Body>
-                      <div className="display-6 text-info">{Math.floor(analyticsData.pageViews.avgSessionDuration / 60)}p {analyticsData.pageViews.avgSessionDuration % 60}s</div>
+                      <div className="display-6 text-info">
+                        {Math.floor((analyticsData.pageViews.avgSessionDuration || 0) / 60)}p {(analyticsData.pageViews.avgSessionDuration || 0) % 60}s
+                      </div>
                       <div className="text-muted">Thời Gian Trung Bình</div>
                     </Card.Body>
                   </Card>
@@ -865,7 +867,7 @@ function AdminDashboard() {
                 <Col md={3}>
                   <Card className="text-center shadow-sm" style={{ borderRadius: "15px" }}>
                     <Card.Body>
-                      <div className="display-6 text-warning">{analyticsData.pageViews.bounceRate}%</div>
+                      <div className="display-6 text-warning">{analyticsData.pageViews.bounceRate || 0}%</div>
                       <div className="text-muted">Tỷ Lệ Thoát</div>
                     </Card.Body>
                   </Card>
@@ -972,13 +974,13 @@ function AdminDashboard() {
                         {analyticsData.topPages.map((page, index) => (
                           <tr key={index}>
                             <td><code>{page.page}</code></td>
-                            <td>{page.views.toLocaleString()}</td>
-                            <td>{page.uniqueViews.toLocaleString()}</td>
+                            <td>{(page.views || 0).toLocaleString()}</td>
+                            <td>{(page.uniqueViews || 0).toLocaleString()}</td>
                             <td>
                               <div className="progress" style={{ height: "6px" }}>
                                 <div 
                                   className="progress-bar" 
-                                  style={{ width: `${(page.uniqueViews / page.views) * 100}%` }}
+                                  style={{ width: `${((page.uniqueViews || 0) / (page.views || 1)) * 100}%` }}
                                 ></div>
                               </div>
                             </td>
