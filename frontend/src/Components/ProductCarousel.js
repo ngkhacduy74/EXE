@@ -83,10 +83,33 @@ const Product2Carousel = () => {
 
   // Get product image (handle array format)
   const getProductImage = (product) => {
-    if (Array.isArray(product.image) && product.image.length > 0) {
-      return product.image[0];
-    } else if (typeof product.image === "string") {
-      return product.image;
+    if (product.image) {
+      if (Array.isArray(product.image) && product.image.length > 0) {
+        const firstImage = product.image[0];
+        if (firstImage && firstImage.trim() !== "") {
+          // If it's a relative URL, make it absolute
+          if (firstImage.startsWith("/") || firstImage.startsWith("./")) {
+            const baseUrl = `${process.env.REACT_APP_BACKEND_URL}`;
+            const fullUrl = firstImage.startsWith("/")
+              ? `${baseUrl}${firstImage}`
+              : `${baseUrl}/${firstImage.replace("./", "")}`;
+            return fullUrl;
+          }
+          return firstImage;
+        }
+      } else if (typeof product.image === "string") {
+        if (product.image.trim() !== "") {
+          // If it's a relative URL, make it absolute
+          if (product.image.startsWith("/") || product.image.startsWith("./")) {
+            const baseUrl = `${process.env.REACT_APP_BACKEND_URL}`;
+            const fullUrl = product.image.startsWith("/")
+              ? `${baseUrl}${product.image}`
+              : `${baseUrl}/${product.image.replace("./", "")}`;
+            return fullUrl;
+          }
+          return product.image;
+        }
+      }
     }
     return backUpImg;
   };
@@ -99,9 +122,11 @@ const Product2Carousel = () => {
   // Filter products by category/brand for tabs (only Second Hand products)
   const allProducts = products;
   const fushimavinaProducts = products.filter(
-    (product) => product.brand === "Fushimavina"
+    (product) => product.brand === "Fushimavina" && product.status === "SecondHand"
   );
-  const ababaProducts = products.filter((product) => product.brand === "ABABA");
+  const ababaProducts = products.filter(
+    (product) => product.brand === "ABABA" && product.status === "SecondHand"
+  );
 
   // Hide component if no Second Hand products exist
   if (loading) {
@@ -293,14 +318,14 @@ const Product2Carousel = () => {
                 <nav>
                   <div
                     className="nav nav-tabs border-0"
-                    id="nav-tab"
+                    id="nav-tab-secondhand"
                     role="tablist"
                   >
                     <button
                       className="nav-link text-uppercase fs-6 active fw-medium px-4"
-                      id="nav-all-tab"
+                      id="nav-all-secondhand-tab"
                       data-bs-toggle="tab"
-                      data-bs-target="#nav-all"
+                      data-bs-target="#nav-all-secondhand"
                       type="button"
                       role="tab"
                     >
@@ -308,9 +333,9 @@ const Product2Carousel = () => {
                     </button>
                     <button
                       className="nav-link text-uppercase fs-6 fw-medium px-4"
-                      id="nav-fushima-tab"
+                      id="nav-fushima-secondhand-tab"
                       data-bs-toggle="tab"
-                      data-bs-target="#nav-fushima"
+                      data-bs-target="#nav-fushima-secondhand"
                       type="button"
                       role="tab"
                     >
@@ -318,9 +343,9 @@ const Product2Carousel = () => {
                     </button>
                     <button
                       className="nav-link text-uppercase fs-6 fw-medium px-4"
-                      id="nav-ababa-tab"
+                      id="nav-ababa-secondhand-tab"
                       data-bs-toggle="tab"
-                      data-bs-target="#nav-ababa"
+                      data-bs-target="#nav-ababa-secondhand"
                       type="button"
                       role="tab"
                     >
@@ -330,13 +355,13 @@ const Product2Carousel = () => {
                 </nav>
               </div>
 
-              <div className="tab-content" id="nav-tabContent">
+              <div className="tab-content" id="nav-tabContent-secondhand">
                 {/* Tab Pane: All */}
                 <div
                   className="tab-pane fade show active"
-                  id="nav-all"
+                  id="nav-all-secondhand"
                   role="tabpanel"
-                  aria-labelledby="nav-all-tab"
+                  aria-labelledby="nav-all-secondhand-tab"
                 >
                   {renderSwiper(allProducts)}
                 </div>
@@ -344,9 +369,9 @@ const Product2Carousel = () => {
                 {/* Tab Pane: Fushimavina */}
                 <div
                   className="tab-pane fade"
-                  id="nav-fushima"
+                  id="nav-fushima-secondhand"
                   role="tabpanel"
-                  aria-labelledby="nav-fushima-tab"
+                  aria-labelledby="nav-fushima-secondhand-tab"
                 >
                   {renderSwiper(fushimavinaProducts)}
                 </div>
@@ -354,9 +379,9 @@ const Product2Carousel = () => {
                 {/* Tab Pane: ABABA */}
                 <div
                   className="tab-pane fade"
-                  id="nav-ababa"
+                  id="nav-ababa-secondhand"
                   role="tabpanel"
-                  aria-labelledby="nav-ababa-tab"
+                  aria-labelledby="nav-ababa-secondhand-tab"
                 >
                   {renderSwiper(ababaProducts)}
                 </div>
