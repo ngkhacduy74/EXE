@@ -82,8 +82,17 @@ Tất cả sản phẩm/dịch vụ đều được bảo hành theo quy định
       if (response.data.success) {
         const { token, user } = response.data;
         localStorage.setItem("token", token); // Lưu token
-        // Nếu flow có xác thực OTP, chuyển hướng sang trang OTP
-        navigate("/otp", { state: { email } });
+        
+        // Check if there's a return URL from previous page
+        const returnUrl = location.state?.returnUrl;
+        
+        // Always go through OTP verification first
+        navigate("/otp", { 
+          state: { 
+            email,
+            returnUrl: returnUrl // Pass returnUrl to OTP page for later use
+          } 
+        });
       } else {
         throw new Error(response.data.message || "Đăng nhập thất bại.");
       }

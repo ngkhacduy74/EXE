@@ -375,7 +375,7 @@ const ManagePost = () => {
 
   if (loading) {
     return (
-      <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+      <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
         <HeaderAdmin />
         <div
           className="d-flex justify-content-center align-items-center"
@@ -393,7 +393,7 @@ const ManagePost = () => {
   }
 
   return (
-    <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+    <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
       <HeaderAdmin />
       <Row>
         <Col

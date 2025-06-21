@@ -115,7 +115,7 @@ export default function UserDetails() {
   }
 
   return (
-    <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+    <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
       <Header />
       <Row className="h-100">
         <Col

@@ -42,7 +42,7 @@ const Footer = () => {
           <div className="row">
             <div className="col-lg-3 col-md-6 col-sm-6">
               <div className="footer-menu">
-                <img src="/images/Logo.png" alt="Ultras Logo" style={{ maxWidth: '150px', height: 'auto', marginBottom: '1rem' }} />
+                <img src="/images/Logo.png" alt="Vinsaky Logo" style={{ maxWidth: '150px', height: 'auto', marginBottom: '1rem' }} />
                 <p style={{ marginBottom: '1.5rem', lineHeight: '1.6' }}>
                   Chúng tôi cung cấp các sản phẩm chất lượng cao với dịch vụ khách hàng tốt nhất.
                 </p>
@@ -109,7 +109,7 @@ const Footer = () => {
                     <a href="#" className="nav-link" style={linkStyle}>Chương trình liên kết</a>
                   </li>
                   <li className="menu-item" style={{ marginBottom: '0.5rem' }}>
-                    <a href="#" className="nav-link" style={linkStyle}>Báo chí Ultras</a>
+                    <a href="#" className="nav-link" style={linkStyle}>Báo chí Vinsaky</a>
                   </li>
                 </ul>
               </div>

@@ -41,6 +41,7 @@ function Header() {
 
   const searchRef = useRef(null);
   const suggestionsRef = useRef(null);
+  const headerRef = useRef(null);
   const navigate = useNavigate();
 
   // Load recent searches from localStorage
@@ -276,6 +277,8 @@ function Header() {
 
   const handleSuggestionClick = (suggestion) => {
     if (suggestion.type === "product") {
+      // Scroll to top before navigating
+      window.scrollTo(0, 0);
       navigate(`/productView/${suggestion.id}`);
     } else {
       setSearchTerm(suggestion.name);
@@ -306,6 +309,19 @@ function Header() {
     setSelectedCategory(e.target.value);
   };
 
+  // Ensure sticky positioning works
+  useEffect(() => {
+    const header = headerRef.current;
+    if (header) {
+      // Force sticky positioning
+      header.style.position = 'sticky';
+      header.style.top = '0';
+      header.style.zIndex = '1030';
+      header.style.backgroundColor = 'white';
+      header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+    }
+  }, []);
+
   // Debug logs
   console.log('Header render - user:', user);
   console.log('Header render - loading:', loading);
@@ -317,7 +333,14 @@ function Header() {
   }
 
   return (
-    <header className="sticky-top bg-white shadow-sm">
+    <header className="sticky-top bg-white shadow-sm" style={{ 
+      position: 'sticky', 
+      top: 0, 
+      zIndex: 1030,
+      backgroundColor: 'white',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+      transition: 'all 0.3s ease'
+    }} ref={headerRef}>
       {/* Top Header */}
       <div className="container-fluid border-bottom">
         <div className="row py-3 align-items-center">

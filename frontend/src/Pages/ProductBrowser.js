@@ -446,6 +446,8 @@ const ProductBrowse = () => {
     };
 
     const handleProductClick = () => {
+      // Scroll to top before navigating
+      window.scrollTo(0, 0);
       navigate(`/productView/${product.id}`);
     };
 

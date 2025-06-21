@@ -688,7 +688,7 @@ function AdminDashboard() {
   if (isLoading) return <div className="d-flex justify-content-center p-5"><div className="spinner-border" role="status"><span className="visually-hidden">Đang tải...</span></div></div>;
 
   return (
-    <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+    <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
       <HeaderAdmin />
       <Row>
         <Col md="auto" style={{ width: "250px", background: "#2c3e50", color: "white", padding: 0 }}>

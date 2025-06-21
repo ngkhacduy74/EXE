@@ -46,6 +46,7 @@ const App = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email;
+  const returnUrl = location.state?.returnUrl;
   const [otp, setOTP] = useState("");
   const [loading, setLoading] = useState(false);
   const { styles } = useStyle();
@@ -124,9 +125,18 @@ const App = () => {
             console.log("💾 Storing user data:", userRes.data.user);
             localStorage.setItem("user", JSON.stringify(userRes.data.user));
             
-            // Navigate based on user role
+            // Navigate based on user role and returnUrl
             const userRole = userRes.data.user.role;
-            const destination = userRole === "Admin" ? "/admin" : "/";
+            let destination;
+            
+            if (returnUrl) {
+              // If there's a returnUrl, go to home first with success message
+              destination = "/";
+            } else {
+              // Otherwise, go to admin or home based on role
+              destination = userRole === "Admin" ? "/admin" : "/";
+            }
+            
             console.log("🚀 Navigating to:", destination);
             
             navigate(destination, {
@@ -134,6 +144,8 @@ const App = () => {
                 token,
                 refresh_token,
                 user: userRes.data.user,
+                message: returnUrl ? "Đăng nhập thành công!" : "Đăng nhập thành công!",
+                returnUrl: returnUrl
               },
             });
           } else {

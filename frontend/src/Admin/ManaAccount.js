@@ -91,7 +91,7 @@ function ManaAccount() {
   }
 
   return (
-    <Container fluid className="bg-light" style={{ minHeight: "100vh" }}>
+    <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
       <HeaderAdmin />
       <Row>
         <Col

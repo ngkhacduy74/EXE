@@ -13,6 +13,15 @@ const authApiClient = axios.create({
   },
 });
 
+// Create public API client for routes that don't require authentication
+const publicApiClient = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 // Request interceptor to add auth token
 authApiClient.interceptors.request.use(
   (config) => {
@@ -64,8 +73,12 @@ authApiClient.interceptors.response.use(
         console.error("Token refresh failed:", refreshError);
       }
 
-      // If refresh failed or no refresh token, logout user
-      handleTokenExpired();
+      // If refresh failed or no refresh token, clear auth data but don't redirect
+      // Let the component handle the 401 error
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("refresh_token");
     }
 
     return Promise.reject(error);
@@ -170,6 +183,7 @@ const validateToken = async () => {
 // Export the auth client and utility functions
 export {
   authApiClient,
+  publicApiClient,
   handleTokenExpired,
   isAuthenticated,
   getCurrentUser,

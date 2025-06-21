@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { authApiClient } from "../Services/auth.service";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { authApiClient, publicApiClient } from "../Services/auth.service";
 import {
   Container,
   Row,
@@ -30,6 +30,7 @@ import {
 const ProductView = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [product, setProduct] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -39,11 +40,41 @@ const ProductView = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // Check if user is authenticated
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.log("🔒 No token found - Redirecting to login");
+      navigate("/login", { 
+        state: { 
+          message: "Vui lòng đăng nhập để xem sản phẩm",
+          returnUrl: `/productView/${productId}`
+        } 
+      });
+      return;
+    }
+    setAuthChecked(true);
+  }, [navigate, productId]);
 
   const fetchProduct = async () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Check if user is authenticated before making API call
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.log("🔒 No token found in fetchProduct - Redirecting to login");
+        navigate("/login", { 
+          state: { 
+            message: "Vui lòng đăng nhập để xem sản phẩm",
+            returnUrl: `/productView/${productId}`
+          } 
+        });
+        return;
+      }
 
       if (!productId) {
         setError("Product ID is missing from the URL.");
@@ -55,14 +86,20 @@ const ProductView = () => {
       const productData =
         response.data.data || response.data.product || response.data;
       setProduct(productData);
-      addToRecentlyViewed(productData);
+      // Don't add to recently viewed immediately - wait for user interaction
     } catch (err) {
       if (err.response) {
         switch (err.response.status) {
           case 401:
-            // Token expired or invalid - authApiClient will handle this automatically
-            setError("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
-            break;
+            console.log("🔒 401 Unauthorized - Redirecting to login");
+            // Token expired or invalid - redirect to login
+            navigate("/login", { 
+              state: { 
+                message: "Vui lòng đăng nhập để xem sản phẩm",
+                returnUrl: `/productView/${productId}`
+              } 
+            });
+            return;
           case 403:
             setError("Sản phẩm này không khả dụng để xem.");
             break;
@@ -92,22 +129,66 @@ const ProductView = () => {
   };
 
   useEffect(() => {
-    fetchProduct();
-  }, [productId, navigate]);
+    if (authChecked) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        fetchProduct();
+      }
+    }
+  }, [productId, navigate, authChecked]);
+
+  // Scroll to top when component mounts or productId changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [productId]);
 
   // Load recently viewed products
   useEffect(() => {
     const loadRecentlyViewedProducts = () => {
       const recentlyViewedProducts = loadRecentlyViewed();
-      // Filter out current product
+      // Filter out current product by both id and productId
       const filteredProducts = recentlyViewedProducts.filter(
-        (p) => p.id !== productId
+        (p) => p.id !== productId && p.id !== product?.id
       );
       setRecentlyViewed(filteredProducts.slice(0, 4)); // Show only 4 products
     };
 
     loadRecentlyViewedProducts();
-  }, [productId]);
+  }, [productId, product]);
+
+  // Add product to recently viewed when user scrolls down to view details
+  useEffect(() => {
+    if (product) {
+      const handleScroll = () => {
+        const scrollPosition = window.scrollY;
+        const windowHeight = window.innerHeight;
+        
+        // If user scrolls down more than 50% of the page, consider they're viewing the product
+        if (scrollPosition > windowHeight * 0.5) {
+          addToRecentlyViewed(product);
+          // Remove scroll listener after adding to recently viewed
+          window.removeEventListener('scroll', handleScroll);
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll);
+      
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, [product]);
+
+  // Redirect to login if productId is missing
+  useEffect(() => {
+    if (!productId) {
+      navigate("/login", {
+        state: {
+          message: "Vui lòng chọn sản phẩm để xem chi tiết.",
+        },
+      });
+    }
+  }, [productId, navigate]);
 
   const getQuantityStatus = useCallback((quantity) => {
     if (quantity === undefined || quantity === null)
@@ -169,6 +250,11 @@ const ProductView = () => {
   };
 
   const handleContactUs = () => {
+    // Add to recently viewed when user shows interest
+    if (product) {
+      addToRecentlyViewed(product);
+    }
+    
     // Redirect to contact page or show contact modal
     navigate("/contact", {
       state: {
@@ -178,7 +264,13 @@ const ProductView = () => {
     });
   };
 
-  if (loading) {
+  const handleNavigateToProduct = (productId) => {
+    // Scroll to top before navigating
+    window.scrollTo(0, 0);
+    navigate(`/productView/${productId}`);
+  };
+
+  if (loading || !authChecked) {
     return (
       <>
         <Header />
@@ -213,10 +305,53 @@ const ProductView = () => {
   }
 
   if (error) {
+    if (location.pathname !== "/login" && location.pathname !== "/otp") {
+      navigate("/login", {
+        state: {
+          message: error || "Vui lòng đăng nhập để xem sản phẩm",
+          returnUrl: `/productView/${productId}`
+        },
+      });
+    }
+    return null;
+  }
+
+  // Show authentication required message if no token
+  if (authChecked && !localStorage.getItem("token")) {
     return (
       <>
         <Header />
-        <ErrorPage message={error} />
+        <Container className="py-5" style={{ minHeight: "60vh" }}>
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ minHeight: "40vh" }}
+          >
+            <Card className="shadow-sm w-100" style={{ maxWidth: "600px" }}>
+              <Card.Body className="text-center">
+                <div className="mb-4">
+                  <i className="fas fa-lock text-warning" style={{ fontSize: "3rem" }}></i>
+                </div>
+                <h4 className="mb-3">Yêu cầu đăng nhập</h4>
+                <p className="text-muted mb-4">
+                  Bạn cần đăng nhập để xem chi tiết sản phẩm này.
+                </p>
+                <Button 
+                  variant="primary" 
+                  size="lg"
+                  onClick={() => navigate("/login", { 
+                    state: { 
+                      message: "Vui lòng đăng nhập để xem sản phẩm",
+                      returnUrl: `/productView/${productId}`
+                    } 
+                  })}
+                >
+                  <i className="fas fa-sign-in-alt me-2"></i>
+                  Đăng nhập ngay
+                </Button>
+              </Card.Body>
+            </Card>
+          </div>
+        </Container>
         <Footer />
       </>
     );
@@ -595,6 +730,20 @@ const ProductView = () => {
                     <i className="fas fa-phone me-2"></i>
                     Liên hệ
                   </Button>
+                  <Button
+                    variant="outline-secondary"
+                    size="lg"
+                    onClick={() => {
+                      if (product) {
+                        addToRecentlyViewed(product);
+                        alert("Đã lưu vào danh sách xem gần đây!");
+                      }
+                    }}
+                    className="py-3 fw-medium"
+                  >
+                    <i className="fas fa-bookmark me-2"></i>
+                    Lưu vào danh sách xem
+                  </Button>
                 </div>
               </Card.Body>
             </Card>
@@ -810,7 +959,7 @@ const ProductView = () => {
                       className="position-relative"
                       style={{ cursor: "pointer" }}
                       onClick={() =>
-                        navigate(`/productView/${recentProduct.id}`)
+                        handleNavigateToProduct(recentProduct.id)
                       }
                     >
                       <img
@@ -852,7 +1001,7 @@ const ProductView = () => {
                           size="sm"
                           className="w-100"
                           onClick={() =>
-                            navigate(`/productView/${recentProduct.id}`)
+                            handleNavigateToProduct(recentProduct.id)
                           }
                         >
                           Xem lại

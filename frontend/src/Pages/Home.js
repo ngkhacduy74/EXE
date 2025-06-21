@@ -15,10 +15,14 @@ import Header from '../Components/Header';
 import { House, Edit, LogOut } from 'lucide-react';
 import BannerSection from '../Components/BannerSection';
 import BannerSection2 from '../Components/BannerSection2'; 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Alert, Button } from 'react-bootstrap';
 
 const Home = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const message = location.state?.message;
+  const returnUrl = location.state?.returnUrl;
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -39,7 +43,7 @@ const Home = () => {
   return (
 
     <HelmetProvider>
-      <div style={{ overflowX: 'hidden', paddingLeft: '10px', paddingRight: '10px' }}>
+      <div style={{ paddingLeft: '10px', paddingRight: '10px' }}>
         <Helmet>
           <title>Vinsaky Shop</title>
           <meta charSet="utf-8" />
@@ -126,9 +130,6 @@ const Home = () => {
           </div>
         </div>
         <Header />
-
-        
-
 
         <BannerSection2 />
         <BannerSection />

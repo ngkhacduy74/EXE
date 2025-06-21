@@ -36,3 +36,73 @@
   }
 }
 
+/* Sticky Header Styles - Override all conflicting styles */
+.sticky-top {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1020 !important;
+}
+
+/* Ensure header stays on top */
+header.sticky-top {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1030 !important;
+  background: white !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Override any CSS variables that might interfere */
+:root {
+  --header-height: auto !important;
+  --header-height-min: auto !important;
+}
+
+/* Fix for any potential body/html issues */
+html, body {
+  scroll-behavior: smooth;
+  overflow-x: visible !important;
+}
+
+/* Ensure proper stacking context */
+.container-fluid {
+  position: relative;
+}
+
+/* Fix for dropdown menus in sticky header */
+.dropdown-menu {
+  z-index: 1040 !important;
+}
+
+/* Ensure search suggestions appear above other elements */
+.position-absolute {
+  z-index: 1050 !important;
+}
+
+/* Override any conflicting position styles */
+header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1030 !important;
+}
+
+/* Ensure the main container doesn't interfere */
+.App {
+  position: relative;
+  overflow-x: visible !important;
+}
+
+/* Fix for any potential transform issues */
+header * {
+  transform: none !important;
+}
+
+/* Ensure proper viewport */
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+

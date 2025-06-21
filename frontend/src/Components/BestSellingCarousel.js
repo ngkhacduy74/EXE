@@ -88,6 +88,8 @@ const BestSellingCarousel = () => {
     if (product) {
       handleAddToRecentlyViewed(product);
     }
+    // Scroll to top before navigating
+    window.scrollTo(0, 0);
     navigate(`/productView/${productId}`);
   };
 

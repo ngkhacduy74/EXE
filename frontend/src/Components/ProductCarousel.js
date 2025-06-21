@@ -60,6 +60,8 @@ const Product2Carousel = () => {
 
   // Handle navigation to product details
   const handleProductClick = (productId) => {
+    // Scroll to top before navigating
+    window.scrollTo(0, 0);
     navigate(`/productView/${productId}`);
   };
 
