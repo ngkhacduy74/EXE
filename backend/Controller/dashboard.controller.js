@@ -6,7 +6,6 @@ const Banner = require("../Model/banner.model");
 // Google Analytics 4 Helper Class
 class GA4Helper {
   constructor() {
-<<<<<<< HEAD
     this.measurementId = process.env.GA4_MEASUREMENT_ID || 'G-0DRKJH48YN';
     this.propertyId = process.env.GA4_PROPERTY_ID || '494181948';
     
@@ -22,10 +21,8 @@ class GA4Helper {
       console.error('❌ Error initializing GA4 client:', error.message);
       this.analyticsDataClient = null;
     }
-=======
     this.measurementId = 'G-0DRKJH48YN';
     this.propertyId = '123456789'; // Replace with your actual GA4 property ID
->>>>>>> parent of e9376f9 (SKILL TRACKING SIÊU CẤP 1 1 TỐC ĐỘ CAO DASH BOÁT)
   }
 
   // Mock GA4 data for now - replace with actual GA4 API calls

@@ -1,14 +1,13 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
 
 module.exports = function (app) {
+  // Proxy all API calls to backend
   app.use(
-    "/api",
+    ["/auth", "/otp", "/user", "/product", "/post", "/file", "/chat", "/banner"],
     createProxyMiddleware({
-      target: process.env.REACT_APP_BACKEND_URL || "http://localhost:4000", // Use environment variable or default to localhost
+      target: process.env.REACT_APP_BACKEND_URL || "http://localhost:4000",
       changeOrigin: true,
-      pathRewrite: {
-        "^/api": "/api", // Keep /api prefix when forwarding to backend
-      },
+      logLevel: 'debug', // Add logging for debugging
     })
   );
 };

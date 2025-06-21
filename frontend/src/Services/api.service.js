@@ -1,7 +1,9 @@
 import axios from "axios";
 
-// Base URL for API calls
-const API_BASE_URL = `${process.env.REACT_APP_BACKEND_URL}`;
+// Base URL for API calls - use proxy in development
+const API_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? '' // Use proxy in development
+  : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:4000');
 
 // Create axios instance with default config
 const apiClient = axios.create({
