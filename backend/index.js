@@ -6,18 +6,47 @@ const app = express();
 const configs = require("./Config/index");
 
 const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "https://exe-frontend-ou98.onrender.com",
-    "https://vinsaky.com",
-    "https://www.vinsaky.com",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "http://localhost:5000",
+      "https://exe-frontend-ou98.onrender.com",
+      "https://vinsaky.com",
+      "https://www.vinsaky.com",
+      "https://exe-08k7.onrender.com"
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('🚫 CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: [
+    "Origin", 
+    "X-Requested-With", 
+    "Content-Type", 
+    "Accept", 
+    "Authorization",
+    "Access-Control-Allow-Origin",
+    "Access-Control-Allow-Headers",
+    "Access-Control-Allow-Methods"
   ],
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
   optionsSuccessStatus: 200,
+  preflightContinue: false
 };
 
+// Apply CORS middleware
 app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 

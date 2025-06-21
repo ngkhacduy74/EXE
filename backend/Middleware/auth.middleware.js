@@ -10,6 +10,11 @@ const validateUser = (req, res, next) => {
 };
 
 const verifyToken = (req, res, next) => {
+  // Allow OPTIONS requests to pass through for CORS preflight
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  
   try {
     // Support both token and authorization headers
     let token = req.headers.token;
@@ -51,6 +56,11 @@ const verifyToken = (req, res, next) => {
 
 //CẦN CHÚ Ý CHỖ NÀY
 const verifyAdmin = (req, res, next) => {
+  // Allow OPTIONS requests to pass through for CORS preflight
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  
   try {
     // Support both token and authorization headers
     let token = req.headers.token;
@@ -87,6 +97,11 @@ const verifyAdmin = (req, res, next) => {
   }
 };
 const verifyUser = (req, res, next) => {
+  // Allow OPTIONS requests to pass through for CORS preflight
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  
   try {
     const token = req.headers.token;
     if (!token) {
