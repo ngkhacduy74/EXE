@@ -639,8 +639,6 @@ function AdminDashboard() {
             <small>
               <strong>Stream:</strong> Vinsaky | 
               <strong> URL:</strong> https://Vinsaky.com | 
-              <strong> Stream ID:</strong> 11382084448 | 
-              <strong> Measurement ID:</strong> G-0DRKJH48YN
             </small>
             <br />
             <small className="text-success">
@@ -1075,58 +1073,7 @@ function AdminDashboard() {
             </div>
           )}
 
-          {/* Debug Section - Show when no real data */}
-          {!realData.summary && !isLoading && (
-            <div className="mb-5">
-              <h3 className="mb-4">🔧 Thông Tin Gỡ Lỗi</h3>
-              <Card className="shadow-sm" style={{ borderRadius: "15px" }}>
-                <Card.Header>
-                  <h5>📋 Các Bước Khắc Phục</h5>
-                </Card.Header>
-                <Card.Body>
-                  <Row>
-                    <Col md={6}>
-                      <h6>🔍 Kiểm Tra Backend:</h6>
-                      <ul>
-                        <li>Server backend đang chạy trên port 4000</li>
-                        <li>Kết nối MongoDB đã thiết lập</li>
-                        <li>Dashboard routes đã đăng ký</li>
-                        <li>Authentication middleware hoạt động</li>
-                      </ul>
-                    </Col>
-                    <Col md={6}>
-                      <h6>🔐 Kiểm Tra Xác Thực:</h6>
-                      <ul>
-                        <li>Bạn đã đăng nhập với quyền Admin</li>
-                        <li>Token hợp lệ và chưa hết hạn</li>
-                        <li>Token có định dạng đúng (Bearer token)</li>
-                        <li>User có role "Admin" trong database</li>
-                      </ul>
-                    </Col>
-                  </Row>
-                  <Row className="mt-3">
-                    <Col md={12}>
-                      <h6>📊 Kiểm Tra Cơ Sở Dữ Liệu:</h6>
-                      <ul>
-                        <li>Ít nhất 1 user tồn tại trong database</li>
-                        <li>User có role "Admin"</li>
-                        <li>Tùy chọn: Tạo một số posts, products, banners</li>
-                        <li>Kiểm tra connection string MongoDB</li>
-                      </ul>
-                    </Col>
-                  </Row>
-                  <Row className="mt-3">
-                    <Col md={12}>
-                      <Alert variant="info">
-                        <strong>💡 Kiểm Tra Nhanh:</strong> Mở browser console (F12) và kiểm tra logs API call. 
-                        Tìm các message bắt đầu bằng 🔍, 📡, ✅, hoặc ❌ để hiểu chuyện gì đang xảy ra.
-                      </Alert>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Card>
-            </div>
-          )}
+          
         </Col>
       </Row>
     </Container>
