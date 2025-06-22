@@ -21,6 +21,38 @@ const BannerSection = () => {
 
   const isCustomProducts = savedProducts.length > 0;
 
+  // Function to calculate discounted price
+  const calculateDiscountedPrice = (originalPrice, discountText) => {
+    if (!originalPrice || !discountText) return { original: originalPrice, discounted: originalPrice };
+    
+    // Extract percentage from discount text (e.g., "Giảm 15%" -> 15)
+    const percentageMatch = discountText.match(/(\d+)/);
+    if (!percentageMatch) return { original: originalPrice, discounted: originalPrice };
+    
+    const discountPercentage = parseInt(percentageMatch[1]);
+    
+    // Extract numeric value from formatted price (e.g., "1.500.000 ₫" -> 1500000)
+    const priceMatch = originalPrice.match(/[\d,]+/);
+    if (!priceMatch) return { original: originalPrice, discounted: originalPrice };
+    
+    // Remove commas and convert to number
+    const originalPriceNum = parseInt(priceMatch[0].replace(/,/g, ''));
+    
+    if (isNaN(originalPriceNum) || isNaN(discountPercentage)) {
+      return { original: originalPrice, discounted: originalPrice };
+    }
+    
+    const discountedPrice = originalPriceNum * (1 - discountPercentage / 100);
+    
+    return {
+      original: originalPrice,
+      discounted: new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }).format(discountedPrice)
+    };
+  };
+
   // Animation effect for slides appearing one by one
   useEffect(() => {
     if (isCustomProducts && savedProducts.length > 0) {
@@ -206,12 +238,30 @@ const BannerSection = () => {
                           </h5>
 
                           <div className="d-flex align-items-center gap-2 mb-2">
-                            <span className="h6 text-success fw-bold mb-0">
-                              {product.price}
-                            </span>
-                            <span className="badge bg-danger small px-2 py-1">
-                              {product.discount}
-                            </span>
+                            <div className="price-display">
+                              {(() => {
+                                const priceInfo = calculateDiscountedPrice(product.price, product.discount);
+                                const hasValidDiscount = product.discount && product.discount.match(/(\d+)/);
+                                
+                                return (
+                                  <>
+                                    {hasValidDiscount && (
+                                      <span className="original-price">
+                                        {priceInfo.original}
+                                      </span>
+                                    )}
+                                    <span className="discounted-price">
+                                      {hasValidDiscount ? priceInfo.discounted : product.price}
+                                    </span>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                            {product.discount && (
+                              <span className="badge bg-danger small px-2 py-1">
+                                {product.discount}
+                              </span>
+                            )}
                           </div>
 
                           <button
@@ -276,6 +326,26 @@ const BannerSection = () => {
               
               .product-banner-swiper .swiper-slide {
                 height: auto;
+              }
+              
+              .price-display {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 2px;
+              }
+              
+              .original-price {
+                text-decoration: line-through;
+                color: #6c757d;
+                font-size: 0.85em;
+                font-weight: normal;
+              }
+              
+              .discounted-price {
+                color: #28a745;
+                font-weight: bold;
+                font-size: 1.1em;
               }
             `}</style>
           </div>

@@ -21,6 +21,22 @@ import {
 import HeaderAdmin from "../Components/HeaderAdmin";
 import Sidebar from "../Components/Sidebar";
 import { useBanner } from "../context/BannerContext";
+import { 
+  Search, 
+  Trash2, 
+  Tag, 
+  Percent, 
+  Star, 
+  Eye, 
+  ExternalLink, 
+  RefreshCw, 
+  Info, 
+  Box, 
+  AlertTriangle,
+  CheckCircle,
+  X,
+  Save
+} from "lucide-react";
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL,
@@ -30,6 +46,7 @@ const api = axios.create({
 const MultiProductViewer = () => {
   const navigate = useNavigate();
   const [productNames, setProductNames] = useState(["", "", "", "", ""]); // 5 product names
+  const [productDiscounts, setProductDiscounts] = useState(["", "", "", "", ""]); // 5 product discounts
   const [products, setProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]); // Store all products for search
   const [loading, setLoading] = useState(false);
@@ -103,6 +120,19 @@ const MultiProductViewer = () => {
       }
     }
 
+    // Load saved product discounts
+    const savedDiscounts = localStorage.getItem("savedProductDiscounts");
+    if (savedDiscounts) {
+      try {
+        const parsedDiscounts = JSON.parse(savedDiscounts);
+        if (Array.isArray(parsedDiscounts) && parsedDiscounts.length === 5) {
+          setProductDiscounts(parsedDiscounts);
+        }
+      } catch (error) {
+        console.error("Error parsing saved product discounts:", error);
+      }
+    }
+
     // Load saved banner selections
     const savedBannerSelections = localStorage.getItem("savedBannerSelections");
     if (savedBannerSelections) {
@@ -120,6 +150,11 @@ const MultiProductViewer = () => {
     localStorage.setItem("savedProductNames", JSON.stringify(productNames));
   }, [productNames]);
 
+  // Save product discounts to localStorage
+  useEffect(() => {
+    localStorage.setItem("savedProductDiscounts", JSON.stringify(productDiscounts));
+  }, [productDiscounts]);
+
   // Save banner selections to localStorage
   useEffect(() => {
     localStorage.setItem(
@@ -134,8 +169,15 @@ const MultiProductViewer = () => {
     setProductNames(newNames);
   };
 
+  const handleDiscountChange = (index, value) => {
+    const newDiscounts = [...productDiscounts];
+    newDiscounts[index] = value;
+    setProductDiscounts(newDiscounts);
+  };
+
   const clearAllInputs = () => {
     setProductNames(["", "", "", "", ""]);
+    setProductDiscounts(["", "", "", "", ""]);
     setProducts([]);
     setShowProducts(false);
     setErrors([]);
@@ -187,6 +229,7 @@ const MultiProductViewer = () => {
             originalIndex: i + 1,
             searchName: productName,
             matchCount: matchedProducts.length,
+            discount: productDiscounts[i] || "Giảm 15%", // Use custom discount or default
           });
         } else {
           fetchErrors.push(
@@ -288,7 +331,7 @@ const MultiProductViewer = () => {
         description:
           product.description || `${product.name} - Sản phẩm chất lượng cao`,
         price: formatPrice(product.price),
-        discount: "Giảm 15%", // Default discount
+        discount: product.discount || "Giảm 15%", // Use product discount or default
         image: (product.image && product.image[0]) || backUpImg,
         badge: index === 0 ? "Bán Chạy #1" : `Top ${index + 1}`,
         buttonText: "Mua Ngay",
@@ -373,7 +416,7 @@ const MultiProductViewer = () => {
             <Card.Header className="bg-white border-bottom">
               <div className="d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">
-                  <i className="fas fa-star text-warning me-2"></i>
+                  <Star className="text-warning me-2" size={20} />
                   Banner Product IDs Management
                 </h5>
                 <div className="d-flex gap-2">
@@ -386,7 +429,7 @@ const MultiProductViewer = () => {
                     {loadingBannerIds ? (
                       <Spinner size="sm" />
                     ) : (
-                      <i className="fas fa-sync-alt"></i>
+                      <RefreshCw size={16} />
                     )}
                   </Button>
                   <Badge bg="info" className="fs-6">
@@ -412,14 +455,14 @@ const MultiProductViewer = () => {
                         className="p-0"
                         style={{ width: "20px", height: "20px" }}
                       >
-                        <i className="fas fa-times"></i>
+                        <X size={12} />
                       </Button>
                     </Badge>
                   ))}
                 </div>
               ) : (
                 <Alert variant="info" className="mb-0">
-                  <i className="fas fa-info-circle me-2"></i>
+                  <Info size={16} className="me-2" />
                   Chưa có sản phẩm nào được thêm vào banner. Hãy tìm kiếm và chọn sản phẩm bên dưới.
                 </Alert>
               )}
@@ -431,7 +474,7 @@ const MultiProductViewer = () => {
             <Card.Header className="bg-white border-bottom">
               <div className="d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">
-                  <i className="fas fa-search text-primary me-2"></i>
+                  <Search className="text-primary me-2" size={20} />
                   Product Names
                 </h5>
                 <Button
@@ -439,7 +482,7 @@ const MultiProductViewer = () => {
                   size="sm"
                   onClick={clearAllInputs}
                 >
-                  <i className="fas fa-trash me-1"></i>
+                  <Trash2 size={16} className="me-1" />
                   Clear All
                 </Button>
               </div>
@@ -454,7 +497,7 @@ const MultiProductViewer = () => {
                       </Form.Label>
                       <InputGroup>
                         <InputGroup.Text>
-                          <i className="fas fa-tag"></i>
+                          <Tag size={16} />
                         </InputGroup.Text>
                         <Form.Control
                           type="text"
@@ -473,6 +516,28 @@ const MultiProductViewer = () => {
                           )}
                         </datalist>
                       </InputGroup>
+                    </Form.Group>
+                    
+                    <Form.Group className="mt-2">
+                      <Form.Label className="small fw-bold text-muted">
+                        DISCOUNT {index + 1}
+                      </Form.Label>
+                      <InputGroup>
+                        <InputGroup.Text>
+                          <Percent size={16} />
+                        </InputGroup.Text>
+                        <Form.Control
+                          type="text"
+                          placeholder="Giảm 15%"
+                          value={productDiscounts[index]}
+                          onChange={(e) =>
+                            handleDiscountChange(index, e.target.value)
+                          }
+                        />
+                      </InputGroup>
+                      <Form.Text className="text-muted">
+                        Ví dụ: Giảm 15%, Sale 20%, Khuyến mãi 30%
+                      </Form.Text>
                     </Form.Group>
                   </Col>
                 ))}
@@ -493,7 +558,7 @@ const MultiProductViewer = () => {
                     </>
                   ) : (
                     <>
-                      <i className="fas fa-search me-2"></i>
+                      <Search size={20} className="me-2" />
                       Search Products
                     </>
                   )}
@@ -506,7 +571,7 @@ const MultiProductViewer = () => {
                     onClick={saveToBanner}
                     className="px-4"
                   >
-                    <i className="fas fa-save me-2"></i>
+                    <Save size={20} className="me-2" />
                     Save to Banner ({selectedForBanner.size})
                   </Button>
                 )}
@@ -518,7 +583,7 @@ const MultiProductViewer = () => {
           {errors.length > 0 && (
             <Alert variant="warning" className="mb-4">
               <Alert.Heading className="h6">
-                <i className="fas fa-exclamation-triangle me-2"></i>
+                <AlertTriangle size={16} className="me-2" />
                 Search Results
               </Alert.Heading>
               <ul className="mb-0">
@@ -535,7 +600,7 @@ const MultiProductViewer = () => {
               <Card.Header className="bg-white border-bottom">
                 <div className="d-flex justify-content-between align-items-center">
                   <h5 className="mb-0">
-                    <i className="fas fa-box text-primary me-2"></i>
+                    <Box className="text-primary me-2" size={20} />
                     Products Found ({products.length})
                   </h5>
                   <div className="d-flex gap-2">
@@ -563,6 +628,7 @@ const MultiProductViewer = () => {
                       <th className="border-0">Product</th>
                       <th className="border-0">Brand</th>
                       <th className="border-0">Price</th>
+                      <th className="border-0">Discount</th>
                       <th className="border-0">Status</th>
                       <th className="border-0">Stock</th>
                       <th className="border-0">Actions</th>
@@ -636,6 +702,9 @@ const MultiProductViewer = () => {
                             {formatPrice(product.price)}
                           </td>
                           <td>
+                            {product.discount || "N/A"}
+                          </td>
+                          <td>
                             <Badge bg={getStatusColor(product.status)}>
                               {product.status || "Unknown"}
                             </Badge>
@@ -654,7 +723,7 @@ const MultiProductViewer = () => {
                                 size="sm"
                                 onClick={() => handleViewDetail(product)}
                               >
-                                <i className="fas fa-eye"></i>
+                                <Eye size={16} />
                               </Button>
                               <Button
                                 variant="outline-success"
@@ -663,7 +732,7 @@ const MultiProductViewer = () => {
                                   handleGoToProductDetail(productId)
                                 }
                               >
-                                <i className="fas fa-external-link-alt"></i>
+                                <ExternalLink size={16} />
                               </Button>
                               {bannerProductIds.includes(productId) ? (
                                 <Button
@@ -672,7 +741,7 @@ const MultiProductViewer = () => {
                                   onClick={() => handleRemoveProductIdFromBanner(productId)}
                                   title="Remove from banner"
                                 >
-                                  <i className="fas fa-star"></i>
+                                  <Star size={16} />
                                 </Button>
                               ) : (
                                 <Button
@@ -681,7 +750,7 @@ const MultiProductViewer = () => {
                                   onClick={() => handleAddProductIdToBanner(productId)}
                                   title="Add to banner"
                                 >
-                                  <i className="far fa-star"></i>
+                                  <Star size={16} />
                                 </Button>
                               )}
                             </div>
@@ -697,7 +766,7 @@ const MultiProductViewer = () => {
 
           {showProducts && products.length === 0 && errors.length === 0 && (
             <Alert variant="info" className="text-center">
-              <i className="fas fa-info-circle me-2"></i>
+              <Info size={16} className="me-2" />
               No products found. Please check your search terms and try again.
             </Alert>
           )}
@@ -713,7 +782,7 @@ const MultiProductViewer = () => {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            <i className="fas fa-box text-primary me-2"></i>
+            <Box className="text-primary me-2" size={20} />
             Product Details
           </Modal.Title>
         </Modal.Header>
@@ -751,6 +820,13 @@ const MultiProductViewer = () => {
                   <span className="text-success fw-bold ms-2">
                     {formatPrice(selectedProduct.price)}
                   </span>
+                </div>
+
+                <div className="mb-3">
+                  <strong>Discount:</strong>
+                  <Badge bg="danger" className="ms-2">
+                    {selectedProduct.discount || "N/A"}
+                  </Badge>
                 </div>
 
                 <div className="mb-3">
@@ -801,7 +877,7 @@ const MultiProductViewer = () => {
                 );
               }}
             >
-              <i className="fas fa-external-link-alt me-1"></i>
+              <ExternalLink size={16} className="me-1" />
               View Full Details
             </Button>
           )}
