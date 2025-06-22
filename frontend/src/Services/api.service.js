@@ -87,11 +87,8 @@ const createPost = (postData) => {
 };
 
 // File upload
-const uploadFile = (file, onUploadProgress) => {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  return apiClient.post("/file/upload", formData, {
+const uploadFile = (formData, onUploadProgress) => {
+  return apiClient.post("/file/upload-image", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

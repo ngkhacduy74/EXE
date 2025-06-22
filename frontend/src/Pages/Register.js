@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
+import { registerApi, uploadFile } from "../Services/api.service";
 
 function Register() {
   const [fullname, setFullname] = useState("");
@@ -141,9 +142,48 @@ Email: privacy@vinsaky.com
     e.preventDefault();
     
     // Validation
+    if (!fullname.trim()) {
+      alert("Vui lòng nhập họ và tên!");
+      return;
+    }
+
+    // Check fullname pattern (only letters and spaces)
+    const nameRegex = /^[A-Za-zÀ-Ỹà-ỹ\s]+$/;
+    if (!nameRegex.test(fullname.trim())) {
+      alert("Họ tên chỉ được chứa chữ cái và khoảng trắng!");
+      return;
+    }
+
+    if (fullname.trim().length < 5) {
+      alert("Họ tên phải có ít nhất 5 ký tự!");
+      return;
+    }
+
+    if (fullname.trim().length > 30) {
+      alert("Họ tên không được vượt quá 30 ký tự!");
+      return;
+    }
+
+    if (!email.trim()) {
+      alert("Vui lòng nhập email!");
+      return;
+    }
+
+    // Check email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      alert("Email không hợp lệ!");
+      return;
+    }
+
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phone)) {
       alert("Số điện thoại phải đúng 10 chữ số!");
+      return;
+    }
+
+    if (!gender) {
+      alert("Vui lòng chọn giới tính!");
       return;
     }
 
@@ -157,21 +197,86 @@ Email: privacy@vinsaky.com
       return;
     }
 
-    if (password.length < 6) {
-      alert("Mật khẩu phải có ít nhất 6 ký tự!");
+    if (password.length < 8) {
+      alert("Mật khẩu phải có ít nhất 8 ký tự!");
+      return;
+    }
+
+    if (password.length > 30) {
+      alert("Mật khẩu không được vượt quá 30 ký tự!");
       return;
     }
 
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Register data:", {
-        fullname, email, phone, address, gender, imageFile
+    try {
+      let ava_img_url = null;
+      
+      // Upload image if provided
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('img', imageFile);
+        
+        const uploadResponse = await uploadFile(formData);
+        if (uploadResponse.data && uploadResponse.data.path) {
+          ava_img_url = uploadResponse.data.path;
+        }
+      }
+
+      // Prepare registration data
+      const registerData = {
+        fullname: fullname.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+        password: password,
+        gender: gender,
+        ava_img_url: ava_img_url
+      };
+
+      console.log("Registering with data:", registerData);
+
+      // Call register API
+      const response = await registerApi(registerData);
+      
+      if (response.data.success) {
+        alert("Đăng ký thành công! Vui lòng đăng nhập.");
+        navigate("/login", {
+          state: {
+            message: "Đăng ký thành công! Vui lòng đăng nhập với tài khoản mới.",
+            email: email
+          }
+        });
+      } else {
+        alert(response.data.message || "Đăng ký thất bại. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      console.error("Error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        config: error.config
       });
-      alert("Đây là demo - Thay thế bằng API thực tế");
+      
+      if (error.response) {
+        // Handle validation errors from backend
+        if (error.response.status === 400 && error.response.data.errors) {
+          const errorMessages = error.response.data.errors.map(err => err.message).join('\n');
+          alert(`Lỗi validation:\n${errorMessages}`);
+        } else {
+          const errorMessage = error.response.data?.message || error.response.data?.error || "Đăng ký thất bại";
+          alert(errorMessage);
+        }
+      } else if (error.request) {
+        alert("Lỗi kết nối. Vui lòng kiểm tra mạng và thử lại.");
+      } else {
+        alert("Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.");
+      }
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const openModal = (type) => {
@@ -737,7 +842,7 @@ Email: privacy@vinsaky.com
                         <input
                           type={showPassword ? "text" : "password"}
                           className="form-input"
-                          placeholder="Ít nhất 6 ký tự"
+                          placeholder="Ít nhất 8 ký tự"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           required
