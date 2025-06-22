@@ -446,6 +446,12 @@ const ManagePost = () => {
             )}
 
             {/* Header with title and Create button */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h2 className="mb-0">Quản lý bài viết</h2>
+              <Button variant="primary" onClick={handleCreatePost}>
+                <Plus className="me-2" /> Tạo bài viết mới
+              </Button>
+            </div>
 
             {/* Filter Controls */}
             <Row className="mb-4">

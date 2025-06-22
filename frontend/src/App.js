@@ -31,6 +31,7 @@ import CompareProduct from "./Pages/CompareProduct";
 import MultiProductViewer from "./Admin/MultiProductViewer";
 import Profile from "./Pages/Profile";
 import ProductView from "./Pages/ProductView";
+import CreatePost from "./Admin/CreatePost";
 
 
 const App = () => {
@@ -77,6 +78,7 @@ const App = () => {
           
           
           <Route path="/create-product" element={<CreateProduct />} />
+          <Route path="/create-post" element={<CreatePost />} />
           <Route path="/product-browser" element={<ProductBrowser />} />
           <Route path="/compare-product" element={<CompareProduct />} />
           {/* 404 Error Page */}
