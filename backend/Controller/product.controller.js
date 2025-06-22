@@ -1,7 +1,7 @@
 const Product = require("../Model/product.model");
 const mongoose = require("mongoose");
 const { v1 } = require("uuid");
-
+const stripHtmlTags = (str) => str.replace(/<[^>]*>?/gm, "").trim();
 const createProduct = async (data, user) => {
   const {
     image,
@@ -27,11 +27,11 @@ const createProduct = async (data, user) => {
     name: name,
     brand: brand,
     price: price,
-    description: description,
+    description: stripHtmlTags(description),
     size: size,
     weight: weight,
     status: status,
-   // business_phone: business_phone,
+    // business_phone: business_phone,
     warranty_period: warranty_period,
     capacity: capacity,
     voltage: voltage,

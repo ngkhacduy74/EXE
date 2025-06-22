@@ -48,22 +48,24 @@ const CreateProduct = () => {
   // Hàm kiểm tra và làm sạch văn bản (loại bỏ ký tự đặc biệt, emoji)
   const sanitizeText = (text) => {
     // Loại bỏ các ký tự đặc biệt, emoji, chỉ giữ lại chữ cái, số, dấu cách và một số ký tự cơ bản
-    return text.replace(/[^\w\s\u00C0-\u024F\u1E00-\u1EFF.,!?()%-]/g, '').trim();
+    return text
+      .replace(/[^\w\s\u00C0-\u024F\u1E00-\u1EFF.,!?()%-]/g, "")
+      .trim();
   };
 
   // Hàm kiểm tra chỉ cho phép số và dấu chấm
   const sanitizeNumber = (value) => {
-    return value.replace(/[^0-9.]/g, '');
+    return value.replace(/[^0-9.]/g, "");
   };
 
   // Hàm kiểm tra chỉ cho phép số nguyên
   const sanitizeInteger = (value) => {
-    return value.replace(/[^0-9]/g, '');
+    return value.replace(/[^0-9]/g, "");
   };
 
   // Hàm kiểm tra kích thước (chỉ cho phép số, x, và dấu cách)
   const sanitizeSize = (value) => {
-    return value.replace(/[^0-9x\s]/g, '').trim();
+    return value.replace(/[^0-9x\s]/g, "").trim();
   };
 
   // Handle input changes với validation
@@ -73,26 +75,21 @@ const CreateProduct = () => {
 
     // Áp dụng sanitization dựa trên loại trường
     switch (name) {
-      case 'name':
-      case 'brand':
-      case 'description':
-        sanitizedValue = sanitizeText(value);
-        break;
-      case 'price':
-      case 'capacity':
-      case 'weight':
+      case "price":
+      case "capacity":
+      case "weight":
         sanitizedValue = sanitizeNumber(value);
         break;
-      case 'quantity':
-      case 'warranty_period':
+      case "quantity":
+      case "warranty_period":
         sanitizedValue = sanitizeInteger(value);
         break;
-      case 'size':
+      case "size":
         sanitizedValue = sanitizeSize(value);
         break;
-      case 'voltage':
+      case "voltage":
         // Voltage có thể có ký tự V hoặc số
-        sanitizedValue = value.replace(/[^0-9V\s]/g, '').trim();
+        sanitizedValue = value.replace(/[^0-9V\s]/g, "").trim();
         break;
       default:
         sanitizedValue = value;
@@ -200,7 +197,7 @@ const CreateProduct = () => {
   // Enhanced form validation
   const validateForm = () => {
     const newErrors = {};
-    
+
     // Kiểm tra tên sản phẩm
     if (!formData.name.trim()) {
       newErrors.name = "Tên sản phẩm là bắt buộc";
@@ -243,8 +240,9 @@ const CreateProduct = () => {
     // Kiểm tra kích thước
     if (!formData.size.trim()) {
       newErrors.size = "Kích thước là bắt buộc";
-    } else if (!/^\d+(\s*x\s*\d+)*$/.test(formData.size.replace(/\s/g, ''))) {
-      newErrors.size = "Kích thước phải theo định dạng: số x số x số (VD: 60x55x85)";
+    } else if (!/^\d+(\s*x\s*\d+)*$/.test(formData.size.replace(/\s/g, ""))) {
+      newErrors.size =
+        "Kích thước phải theo định dạng: số x số x số (VD: 60x55x85)";
     }
 
     // Kiểm tra trọng lượng
@@ -257,7 +255,7 @@ const CreateProduct = () => {
     // Kiểm tra điện áp
     if (!formData.voltage.trim()) {
       newErrors.voltage = "Điện áp là bắt buộc";
-    } else if (!/^\d+(\s*V)?$/.test(formData.voltage.replace(/\s/g, ''))) {
+    } else if (!/^\d+(\s*V)?$/.test(formData.voltage.replace(/\s/g, ""))) {
       newErrors.voltage = "Điện áp phải là số (VD: 220 hoặc 220V)";
     }
 
@@ -269,10 +267,17 @@ const CreateProduct = () => {
     }
 
     // Kiểm tra tính năng
-    if (formData.features.some((f) => !f.title.trim() || !f.description.trim())) {
+    if (
+      formData.features.some((f) => !f.title.trim() || !f.description.trim())
+    ) {
       newErrors.features = "Tất cả tính năng phải có tiêu đề và mô tả";
-    } else if (formData.features.some((f) => f.title.length < 3 || f.description.length < 5)) {
-      newErrors.features = "Tiêu đề tính năng ít nhất 3 ký tự, mô tả ít nhất 5 ký tự";
+    } else if (
+      formData.features.some(
+        (f) => f.title.length < 3 || f.description.length < 5
+      )
+    ) {
+      newErrors.features =
+        "Tiêu đề tính năng ít nhất 3 ký tự, mô tả ít nhất 5 ký tự";
     }
 
     // Validate image URLs
@@ -300,7 +305,9 @@ const CreateProduct = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      setError("Vui lòng điền đầy đủ các trường bắt buộc và kiểm tra lại thông tin");
+      setError(
+        "Vui lòng điền đầy đủ các trường bắt buộc và kiểm tra lại thông tin"
+      );
       return;
     }
 
@@ -316,11 +323,16 @@ const CreateProduct = () => {
 
     try {
       // Prepare data to send với dữ liệu đã được làm sạch
+      const plainTextDescription = formData.description
+        .replace(/\s+/g, " ")
+        .replace(/\u00A0/g, " ")
+        .replace(/\r?\n|\r/g, " ")
+        .trim();
       const dataToSend = {
         name: formData.name.trim(),
         brand: formData.brand.trim(),
         price: parseFloat(formData.price),
-        description: formData.description.trim(),
+        description: plainTextDescription, // chỉ lưu text thuần, không giữ định dạng
         size: formData.size.trim(),
         weight: parseFloat(formData.weight),
         status: formData.status,
@@ -386,9 +398,15 @@ const CreateProduct = () => {
   const handleUploadImageFile = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     // Kiểm tra loại file
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
     if (!allowedTypes.includes(file.type)) {
       alert("Chỉ chấp nhận file ảnh: JPG, PNG, GIF, WebP");
       return;
@@ -428,7 +446,11 @@ const CreateProduct = () => {
   };
 
   return (
-    <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
+    <Container
+      fluid
+      className="bg-light admin-page"
+      style={{ minHeight: "100vh" }}
+    >
       <HeaderAdmin />
       <Row>
         <Col
@@ -577,15 +599,39 @@ const CreateProduct = () => {
                         rows={4}
                         name="description"
                         value={formData.description}
-                        onChange={handleInputChange}
+                        onChange={(e) => {
+                          const plainText = e.target.value.replace(
+                            /<\/?[^>]+(>|$)/g,
+                            ""
+                          );
+                          setFormData((prev) => ({
+                            ...prev,
+                            description: plainText,
+                          }));
+                        }}
+                        style={{
+                          fontFamily: "'Times New Roman', Times, serif",
+                          whiteSpace: "pre-line",
+                        }}
                         isInvalid={!!errors.description}
                         placeholder="Nhập mô tả chi tiết sản phẩm"
                         maxLength={2000}
+                        className="description-textarea time-new-roman-font"
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const rawText = e.clipboardData.getData("text/plain");
+
+                          const plainText = rawText
+                            .normalize("NFKD")
+                            .replace(/[^\p{L}\p{N}\p{P}\p{Zs}]/gu, "");
+
+                          setFormData((prev) => ({
+                            ...prev,
+                            description: prev.description + plainText,
+                          }));
+                        }}
                       />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.description}
-                      </Form.Control.Feedback>
-                      <Form.Text className="text-muted">
+                      <Form.Text muted>
                         {formData.description.length}/2000 ký tự
                       </Form.Text>
                     </Form.Group>
@@ -770,7 +816,8 @@ const CreateProduct = () => {
                           disabled={imageUrls.length >= 3}
                         />
                         <Form.Text className="text-muted">
-                          Tối đa 3 ảnh. Ảnh upload sẽ tự động thêm vào danh sách URL.
+                          Tối đa 3 ảnh. Ảnh upload sẽ tự động thêm vào danh sách
+                          URL.
                         </Form.Text>
                       </Form.Group>
                     </div>
