@@ -319,7 +319,7 @@ const ProductView = () => {
   // Show authentication required message if no token
   if (authChecked && !localStorage.getItem("token")) {
     return (
-      <>
+      <div style={{ zoom: 0.8 }}>
         <Header />
         <Container className="py-5" style={{ minHeight: "60vh" }}>
           <div
@@ -353,7 +353,7 @@ const ProductView = () => {
           </div>
         </Container>
         <Footer />
-      </>
+        </div>
     );
   }
 
@@ -371,7 +371,7 @@ const ProductView = () => {
   const quantityStatus = getQuantityStatus(product.quantity);
 
   return (
-    <>
+    <div style={{ zoom: 0.8 }}>
       <Header />
       <style>
         {`
@@ -1018,7 +1018,7 @@ const ProductView = () => {
 
       <WigdetChat></WigdetChat>
       <Footer />
-    </>
+    </div>
   );
 };
 

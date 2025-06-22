@@ -11,6 +11,7 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import { BannerProvider } from "./context/BannerContext";
 import AdminPage from "./Admin/Dashboard";
 import Login from "./Pages/Login";
 import Home from "./Pages/Home";
@@ -32,6 +33,7 @@ import MultiProductViewer from "./Admin/MultiProductViewer";
 import Profile from "./Pages/Profile";
 import ProductView from "./Pages/ProductView";
 import CreatePost from "./Admin/CreatePost";
+import PhoneFixed from "./Components/Phonefixed";
 
 
 const App = () => {
@@ -52,43 +54,46 @@ const App = () => {
   }, []);
 
   return (
-    <Router>
-      <div>
-        <Routes>
+    <BannerProvider>
+      <Router>
+        <div>
+          <Routes>
 
-          {/* UI USER */}
-          <Route path='/' element={<Home/>}/>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/otp" element={<OTP />} />
-          <Route path="/newPost" element={<NewPostForm />} />
-          <Route path="/profile" element={<Profile />} />
-            <Route path="/productView/:productId" element={<ProductView />} />
-          {/* UI ADMIN */}
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/manaAccount" element={<ManaAccount />} />
-         <Route path="/user/:userId" element={<UserDetails />} />
-          <Route path="/user/:userId" element={<UserDetails />} />
-          <Route path="/manaProduct" element={<ManaProduct />} />
-          <Route path="/manaPost" element={<ManaPost />} />
-          <Route path="/multiProductViewer" element={<MultiProductViewer />} />
-          <Route path="/post/:postId" element={<PostDetails />} />
-          {/* Error Page */}
-          <Route path="/product/:productId" element={<ProductDetails />} />
-          
-          
-          <Route path="/create-product" element={<CreateProduct />} />
-          <Route path="/create-post" element={<CreatePost />} />
-          <Route path="/product-browser" element={<ProductBrowser />} />
-          <Route path="/compare-product" element={<CompareProduct />} />
-          {/* 404 Error Page */}
+            {/* UI USER */}
+            <Route path='/' element={<Home/>}/>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/otp" element={<OTP />} />
+            <Route path="/newPost" element={<NewPostForm />} />
+            <Route path="/profile" element={<Profile />} />
+              <Route path="/productView/:productId" element={<ProductView />} />
+            {/* UI ADMIN */}
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/manaAccount" element={<ManaAccount />} />
+           <Route path="/user/:userId" element={<UserDetails />} />
+            <Route path="/user/:userId" element={<UserDetails />} />
+            <Route path="/manaProduct" element={<ManaProduct />} />
+            <Route path="/manaPost" element={<ManaPost />} />
+            <Route path="/multiProductViewer" element={<MultiProductViewer />} />
+            <Route path="/post/:postId" element={<PostDetails />} />
+            {/* Error Page */}
+            <Route path="/product/:productId" element={<ProductDetails />} />
+            
+            
+            <Route path="/create-product" element={<CreateProduct />} />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/product-browser" element={<ProductBrowser />} />
+            <Route path="/compare-product" element={<CompareProduct />} />
+            {/* 404 Error Page */}
 
 
 
 
-        </Routes>
-      </div>
-    </Router>
+          </Routes>
+          <PhoneFixed />
+        </div>
+      </Router>
+    </BannerProvider>
   );
 };
 

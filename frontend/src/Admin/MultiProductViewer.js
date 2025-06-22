@@ -20,6 +20,7 @@ import {
 } from "react-bootstrap";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import Sidebar from "../Components/Sidebar";
+import { useBanner } from "../context/BannerContext";
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL,
@@ -42,11 +43,28 @@ const MultiProductViewer = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [toastVariant, setToastVariant] = useState("success");
   const backUpImg = "/images/frigde.jpg";
+  
+  // Use BannerContext
+  const { 
+    bannerProductIds, 
+    loading: loadingBannerIds, 
+    refreshBannerData,
+    addProductIdToBanner,
+    removeProductIdFromBanner,
+    saveBannerProducts
+  } = useBanner();
+  
   // Load all products for search suggestions
   useEffect(() => {
     fetchAllProducts();
     loadSavedData();
   }, []);
+
+  // Update selected products when banner product IDs change
+  useEffect(() => {
+    const existingSelection = new Set(bannerProductIds);
+    setSelectedForBanner(existingSelection);
+  }, [bannerProductIds]);
 
   const fetchAllProducts = async () => {
     try {
@@ -225,7 +243,7 @@ const MultiProductViewer = () => {
   };
 
   const handleGoToProductDetail = (productId) => {
-    navigate(`/products/${productId}`);
+    navigate(`/product/${productId}`);
   };
 
   const toggleBannerSelection = (productId) => {
@@ -278,52 +296,28 @@ const MultiProductViewer = () => {
 
       console.log("Banner products to save:", bannerProducts);
 
-      // Get token for authentication
-      const token = localStorage.getItem("token");
-      if (!token) {
-        showToastMessage(
-          "Vui lòng đăng nhập lại để thực hiện thao tác này!",
-          "warning"
-        );
-        return;
+      // Use BannerContext to save
+      const result = await saveBannerProducts(bannerProducts);
+      
+      if (result.success) {
+        showToastMessage(result.message, "success");
+      } else {
+        showToastMessage(result.message, "danger");
       }
-
-      // Save to database via API
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/banner/save`,
-        { products: bannerProducts },
-        {
-          headers: {
-            token: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      console.log("API Response:", response.data);
-
-      showToastMessage(
-        response.data.message ||
-          `Đã lưu ${selectedProducts.length} sản phẩm vào banner thành công!`,
-        "success"
-      );
     } catch (error) {
       console.error("Error saving banner products:", error);
-      console.error("Error response:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-
-      let errorMessage = "Lỗi khi lưu banner products!";
-
-      if (error.response?.status === 401) {
-        errorMessage = "Vui lòng đăng nhập lại!";
-      } else if (error.response?.status === 403) {
-        errorMessage = "Bạn không có quyền thực hiện thao tác này!";
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      }
-
-      showToastMessage(errorMessage, "danger");
+      showToastMessage("Lỗi khi lưu banner products!", "danger");
     }
+  };
+
+  const handleAddProductIdToBanner = async (productId) => {
+    const result = await addProductIdToBanner(productId);
+    showToastMessage(result.message, result.success ? "success" : "warning");
+  };
+
+  const handleRemoveProductIdFromBanner = async (productId) => {
+    const result = await removeProductIdFromBanner(productId);
+    showToastMessage(result.message, result.success ? "success" : "warning");
   };
 
   const showToastMessage = (message, variant = "success") => {
@@ -373,6 +367,64 @@ const MultiProductViewer = () => {
               Back
             </Button>
           </div>
+
+          {/* Banner Product IDs Management */}
+          <Card className="shadow-sm mb-4">
+            <Card.Header className="bg-white border-bottom">
+              <div className="d-flex justify-content-between align-items-center">
+                <h5 className="mb-0">
+                  <i className="fas fa-star text-warning me-2"></i>
+                  Banner Product IDs Management
+                </h5>
+                <div className="d-flex gap-2">
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={refreshBannerData}
+                    disabled={loadingBannerIds}
+                  >
+                    {loadingBannerIds ? (
+                      <Spinner size="sm" />
+                    ) : (
+                      <i className="fas fa-sync-alt"></i>
+                    )}
+                  </Button>
+                  <Badge bg="info" className="fs-6">
+                    {bannerProductIds.length} IDs in banner
+                  </Badge>
+                </div>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              {bannerProductIds.length > 0 ? (
+                <div className="d-flex flex-wrap gap-2">
+                  {bannerProductIds.map((productId, index) => (
+                    <Badge
+                      key={productId}
+                      bg="primary"
+                      className="fs-6 p-2 d-flex align-items-center gap-2"
+                    >
+                      <span>#{index + 1}: {productId}</span>
+                      <Button
+                        variant="outline-light"
+                        size="sm"
+                        onClick={() => handleRemoveProductIdFromBanner(productId)}
+                        className="p-0"
+                        style={{ width: "20px", height: "20px" }}
+                      >
+                        <i className="fas fa-times"></i>
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <Alert variant="info" className="mb-0">
+                  <i className="fas fa-info-circle me-2"></i>
+                  Chưa có sản phẩm nào được thêm vào banner. Hãy tìm kiếm và chọn sản phẩm bên dưới.
+                </Alert>
+              )}
+            </Card.Body>
+          </Card>
 
           {/* Input Section */}
           <Card className="shadow-sm mb-4">
@@ -613,6 +665,25 @@ const MultiProductViewer = () => {
                               >
                                 <i className="fas fa-external-link-alt"></i>
                               </Button>
+                              {bannerProductIds.includes(productId) ? (
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleRemoveProductIdFromBanner(productId)}
+                                  title="Remove from banner"
+                                >
+                                  <i className="fas fa-star"></i>
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => handleAddProductIdToBanner(productId)}
+                                  title="Add to banner"
+                                >
+                                  <i className="far fa-star"></i>
+                                </Button>
+                              )}
                             </div>
                           </td>
                         </tr>

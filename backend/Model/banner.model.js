@@ -50,5 +50,26 @@ const bannerProductSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
+// Schema mới để quản lý danh sách ID sản phẩm banner
+const bannerProductIdsSchema = new mongoose.Schema(
+  {
+    productIds: {
+      type: [String],
+      default: [],
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    maxProducts: {
+      type: Number,
+      default: 10, // Số lượng sản phẩm tối đa trong banner
+    },
+  },
+  { timestamps: true, versionKey: false }
+);
+
 const BannerProduct = mongoose.model("BannerProduct", bannerProductSchema);
-module.exports = BannerProduct; 
+const BannerProductIds = mongoose.model("BannerProductIds", bannerProductIdsSchema);
+
+module.exports = { BannerProduct, BannerProductIds }; 
