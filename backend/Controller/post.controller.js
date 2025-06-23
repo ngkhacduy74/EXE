@@ -1,5 +1,6 @@
 const Post = require("../Model/post.model");
 const { v1 } = require("uuid");
+const User = require("../Model/user.model");
 const createPost = async (data, token) => {
   const {
     category,
@@ -14,6 +15,12 @@ const createPost = async (data, token) => {
     email,
   } = data;
   const seller = token;
+  // Lấy avatar từ DB
+  let sellerAvatar = "";
+  try {
+    const userDb = await User.findOne({ id: seller.user.id });
+    if (userDb && userDb.ava_img_url) sellerAvatar = userDb.ava_img_url;
+  } catch (e) {}
   console.log("21812", seller);
   try {
     const newPost = new Post({
@@ -33,6 +40,7 @@ const createPost = async (data, token) => {
         phone: seller.user.phone,
         address: seller.user.address,
         gender: seller.user.gender,
+        ava_img_url: sellerAvatar,
       },
       phone,
       email,
@@ -56,7 +64,15 @@ const createPost = async (data, token) => {
   }
 };
 const getPostById = async (id) => {
-  const post = await Post.findOne({ id: id });
+  let post = await Post.findOne({ id: id });
+  if (!post) {
+    // Thử tìm theo _id (ObjectId)
+    try {
+      post = await Post.findById(id);
+    } catch (e) {
+      // Không phải ObjectId hợp lệ, bỏ qua
+    }
+  }
   if (!post) {
     return {
       success: false,
@@ -183,6 +199,31 @@ const getPostByUserId = async (userId) => {
     };
   }
 };
+const addComment = async (postId, user, content) => {
+  const post = await Post.findOne({ id: postId });
+  if (!post) return { success: false, message: "Không tìm thấy bài viết" };
+  post.comments.push({ user, content });
+  await post.save();
+  return { success: true, comments: post.comments };
+};
+const toggleLike = async (postId, userId) => {
+  const post = await Post.findOne({ id: postId });
+  if (!post) return { success: false, message: "Không tìm thấy bài viết" };
+  const idx = post.likes.indexOf(userId);
+  if (idx === -1) post.likes.push(userId);
+  else post.likes.splice(idx, 1);
+  await post.save();
+  return { success: true, likes: post.likes };
+};
+const toggleFavorite = async (postId, userId) => {
+  const post = await Post.findOne({ id: postId });
+  if (!post) return { success: false, message: "Không tìm thấy bài viết" };
+  const idx = post.favorites.indexOf(userId);
+  if (idx === -1) post.favorites.push(userId);
+  else post.favorites.splice(idx, 1);
+  await post.save();
+  return { success: true, favorites: post.favorites };
+};
 module.exports = {
   createPost,
   updatePost,
@@ -191,4 +232,7 @@ module.exports = {
   getPostByUserId,
   loadAllPost,
   getPostById,
+  addComment,
+  toggleLike,
+  toggleFavorite,
 };

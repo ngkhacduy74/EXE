@@ -22,7 +22,7 @@ import UserDetails from "./Admin/UserDetails";
 import ManaProduct from "./Admin/ManaProduct";
 import ProductDetails from "./Admin/ProductDetail";
 import ManaPost from "./Admin/ManaPost";
-import PostDetails from "./Admin/PostDetatil";
+import PostDetails from "./Admin/PostDetail";
 // import ProductDetail from "./Pages/ProductDetail";
 import ErrorPage from "./Components/ErrorPage";
 import NewPostForm from "./Components/NewPost";
@@ -34,7 +34,7 @@ import Profile from "./Pages/Profile";
 import ProductView from "./Pages/ProductView";
 import CreatePost from "./Admin/CreatePost";
 import PhoneFixed from "./Components/Phonefixed";
-
+import PostView from "./Pages/PostView";
 
 const App = () => {
   const [message, setMessage] = useState("");
@@ -75,6 +75,7 @@ const App = () => {
             <Route path="/newPost" element={<NewPostForm />} />
             <Route path="/profile" element={<Profile />} />
               <Route path="/productView/:productId" element={<ProductView />} />
+              <Route path="/postView/:postId" element={<PostView />} />
             {/* UI ADMIN */}
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/manaAccount" element={<ManaAccount />} />
