@@ -33,9 +33,9 @@ const BlogCarousel = () => {
           : Array.isArray(response.data)
           ? response.data
           : [];
-        // Filter posts where condition is "Approved"
+        // Filter posts where condition is "Active"
         const approvedPosts = postData.filter(
-          (post) => post.condition === "Approved"
+          (post) => post.condition === "Active"
         );
         setPosts(approvedPosts);
         setLoading(false);
@@ -70,10 +70,10 @@ const BlogCarousel = () => {
     }
   }, [loading, posts]);
 
-  const BlogPost = ({ image, date, category, title, description }) => (
+  const BlogPost = ({ image, date, category, title, description, postId }) => (
     <article className="post-item card border-0 shadow-sm p-3">
       <div className="image-holder zoom-effect">
-        <a href="#">
+        <a href={`/postView/${postId}`}>
           <img src={image} alt={title || "post"} className="card-img-top" />
         </a>
       </div>
@@ -94,7 +94,7 @@ const BlogCarousel = () => {
         </div>
         <div className="post-header">
           <h3 className="post-title">
-            <a href="#" className="text-decoration-none">
+            <a href={`/post/${postId}`} className="text-decoration-none">
               {title}
             </a>
           </h3>
@@ -170,13 +170,12 @@ const BlogCarousel = () => {
                 {posts.map((post) => (
                   <div className="swiper-slide" key={post._id}>
                     <BlogPost
-                      image={post.image || "/images/default-post.jpg"}
+                      image={Array.isArray(post.image) ? post.image[0] : post.image || "/images/default-post.jpg"}
                       date={formatDate(post.createdAt)}
                       category={post.category || "N/A"}
                       title={post.title || "Untitled"}
-                      description={
-                        post.description || "No description available."
-                      }
+                      description={post.description || "No description available."}
+                      postId={post.id || post._id}
                     />
                   </div>
                 ))}

@@ -7,6 +7,7 @@ const peopleSchema = new mongoose.Schema(
     email: { type: String, require: true },
     address: { type: String, require: true },
     gender: { type: String, require: true },
+    ava_img_url: { type: String, require: false },
   },
   { _id: false }
 );
@@ -32,6 +33,15 @@ const postSchema = new mongoose.Schema(
       enum: ["Pending", "Active", "Inactive", "Reject"],
       default: "Pending"
     },
+    comments: [
+      {
+        user: { type: String, require: true }, // userId hoặc tên
+        content: { type: String, require: true },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
+    likes: [{ type: String }], // userId
+    favorites: [{ type: String }], // userId
   },
   {
     timestamps: true,
