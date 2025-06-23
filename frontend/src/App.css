@@ -116,3 +116,10 @@ body {
 .time-new-roman-font {
   font-family: 'Times New Roman', Times, serif !important;
 }
+
+/* Đã xóa hoàn toàn CSS zoom cho modal, modal và backdrop trở về mặc định */
+
+/* Zoom admin pages to 125% */
+.admin-page {
+  zoom: 125%;
+}

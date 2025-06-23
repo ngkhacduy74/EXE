@@ -42,7 +42,7 @@ const Home = () => {
 
   return (
     <HelmetProvider>
-      <div style={{ zoom: 0.8 }}>
+      <div>
         <div style={{ paddingLeft: '10px', paddingRight: '10px' }}>
           <Helmet>
             <title>Vinsaky Shop</title>

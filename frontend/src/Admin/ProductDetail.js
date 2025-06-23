@@ -11,6 +11,7 @@ import {
   Card,
   Modal,
   Spinner,
+  Form,
 } from "react-bootstrap";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import Sidebar from "../Components/Sidebar";
@@ -39,6 +40,25 @@ const ProductDetail = () => {
   const [selectedVideoType, setSelectedVideoType] = useState(""); // 'youtube' or 'direct'
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  // Edit modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    brand: "",
+    price: "",
+    capacity: "",
+    quantity: "",
+    status: "New",
+    description: "",
+    size: "",
+    weight: "",
+    voltage: "",
+    warranty_period: 12,
+  });
+  const [editErrors, setEditErrors] = useState({});
+  const [editSuccess, setEditSuccess] = useState("");
 
   const fetchProduct = async () => {
     try {
@@ -181,6 +201,176 @@ const ProductDetail = () => {
     }
   };
 
+  // Handle edit product - show edit modal
+  const handleEditProduct = () => {
+    if (!product) return;
+    
+    setEditForm({
+      name: product.name || "",
+      brand: product.brand || "",
+      price: product.price || "",
+      capacity: product.capacity || "",
+      quantity: product.quantity || "",
+      status: product.status || "New",
+      description: product.description || "",
+      size: product.size || "",
+      weight: product.weight || "",
+      voltage: product.voltage || "",
+      warranty_period: product.warranty_period || 12,
+    });
+    setEditErrors({});
+    setEditSuccess("");
+    setShowEditModal(true);
+  };
+
+  // Handle edit form change
+  const handleEditFormChange = (field, value) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear error for this field
+    if (editErrors[field]) {
+      setEditErrors(prev => ({
+        ...prev,
+        [field]: ""
+      }));
+    }
+  };
+
+  // Validate edit form
+  const validateEditForm = () => {
+    const newErrors = {};
+
+    if (!editForm.name.trim()) {
+      newErrors.name = "Tên sản phẩm là bắt buộc";
+    }
+
+    if (!editForm.brand.trim()) {
+      newErrors.brand = "Thương hiệu là bắt buộc";
+    }
+
+    if (!editForm.price || parseFloat(editForm.price) < 1000) {
+      newErrors.price = "Giá phải lớn hơn hoặc bằng 1.000 VND";
+    }
+
+    if (!editForm.capacity || parseFloat(editForm.capacity) <= 0) {
+      newErrors.capacity = "Dung tích phải lớn hơn 0";
+    }
+
+    if (!editForm.quantity || parseInt(editForm.quantity) <= 0) {
+      newErrors.quantity = "Số lượng phải lớn hơn 0";
+    }
+
+    if (!editForm.description.trim()) {
+      newErrors.description = "Mô tả là bắt buộc";
+    }
+
+    setEditErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Confirm edit product
+  const confirmEditProduct = async () => {
+    if (!validateEditForm()) return;
+
+    try {
+      setEditLoading(true);
+      setEditErrors({});
+      setEditSuccess("");
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setEditErrors({ general: "Authentication token not found. Please log in again." });
+        return;
+      }
+
+      const dataToSend = {
+        name: editForm.name.trim(),
+        brand: editForm.brand.trim(),
+        price: parseFloat(editForm.price),
+        capacity: parseFloat(editForm.capacity),
+        quantity: parseInt(editForm.quantity),
+        status: editForm.status,
+        description: editForm.description.trim(),
+        size: editForm.size.trim(),
+        weight: parseFloat(editForm.weight),
+        voltage: editForm.voltage.trim(),
+        warranty_period: parseInt(editForm.warranty_period),
+      };
+
+      const response = await api.put(`/product/update/${productId}`, dataToSend, {
+        headers: {
+          token,
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Update local product state
+      setProduct(prev => ({
+        ...prev,
+        ...dataToSend
+      }));
+
+      setEditSuccess("Cập nhật sản phẩm thành công!");
+      
+      // Close modal after 2 seconds
+      setTimeout(() => {
+        setShowEditModal(false);
+        setEditSuccess("");
+      }, 2000);
+
+    } catch (err) {
+      console.error("Error updating product:", err);
+      
+      if (err.response) {
+        switch (err.response.status) {
+          case 401:
+            setEditErrors({ general: "Session expired. Please log in again." });
+            break;
+          case 403:
+            setEditErrors({ general: "Access denied. You don't have permission to edit this product." });
+            break;
+          case 404:
+            setEditErrors({ general: "Product not found. It may have been deleted." });
+            break;
+          case 422:
+            setEditErrors({ general: err.response.data?.message || "Validation error. Please check your input." });
+            break;
+          default:
+            setEditErrors({ general: err.response.data?.message || "Failed to update product. Please try again." });
+        }
+      } else if (err.request) {
+        setEditErrors({ general: "Network error. Please check your connection and try again." });
+      } else {
+        setEditErrors({ general: "An unexpected error occurred. Please try again." });
+      }
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Cancel edit
+  const cancelEdit = () => {
+    setShowEditModal(false);
+    setEditForm({
+      name: "",
+      brand: "",
+      price: "",
+      capacity: "",
+      quantity: "",
+      status: "New",
+      description: "",
+      size: "",
+      weight: "",
+      voltage: "",
+      warranty_period: 12,
+    });
+    setEditErrors({});
+    setEditSuccess("");
+  };
+
   if (loading) {
     return (
       <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
@@ -282,7 +472,7 @@ const ProductDetail = () => {
             <div className="d-flex gap-2">
               <Button
                 variant="outline-primary"
-                onClick={() => navigate(`/products/edit/${productId}`)}
+                onClick={handleEditProduct}
               >
                 <i className="fas fa-edit me-1"></i> Edit Product
               </Button>
@@ -613,6 +803,231 @@ const ProductDetail = () => {
           <Button variant="secondary" onClick={() => setShowVideoModal(false)}>
             <i className="fas fa-times me-2"></i>
             Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Product Modal */}
+      <Modal
+        show={showEditModal}
+        onHide={cancelEdit}
+        size="xl"
+        centered
+        backdrop="static"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title className="text-primary">
+            <i className="fas fa-edit me-2"></i>
+            Edit Product - {product?.name}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {editSuccess && (
+            <Alert variant="success" className="mb-3">
+              <i className="fas fa-check-circle me-2"></i>
+              {editSuccess}
+            </Alert>
+          )}
+          
+          {editErrors.general && (
+            <Alert variant="danger" className="mb-3">
+              <i className="fas fa-exclamation-triangle me-2"></i>
+              {editErrors.general}
+            </Alert>
+          )}
+
+          <Form>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Tên sản phẩm *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => handleEditFormChange("name", e.target.value)}
+                    placeholder="Nhập tên sản phẩm"
+                    isInvalid={!!editErrors.name}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {editErrors.name}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Thương hiệu *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editForm.brand}
+                    onChange={(e) => handleEditFormChange("brand", e.target.value)}
+                    placeholder="Nhập thương hiệu"
+                    isInvalid={!!editErrors.brand}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {editErrors.brand}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Giá (VND) *</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={editForm.price}
+                    onChange={(e) => handleEditFormChange("price", e.target.value)}
+                    placeholder="1000"
+                    isInvalid={!!editErrors.price}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {editErrors.price}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Dung tích (kg) *</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={editForm.capacity}
+                    onChange={(e) => handleEditFormChange("capacity", e.target.value)}
+                    placeholder="0"
+                    isInvalid={!!editErrors.capacity}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {editErrors.capacity}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Số lượng *</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={editForm.quantity}
+                    onChange={(e) => handleEditFormChange("quantity", e.target.value)}
+                    placeholder="1"
+                    isInvalid={!!editErrors.quantity}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {editErrors.quantity}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Kích thước</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editForm.size}
+                    onChange={(e) => handleEditFormChange("size", e.target.value)}
+                    placeholder="VD: 60x55x85"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Trọng lượng (kg)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={editForm.weight}
+                    onChange={(e) => handleEditFormChange("weight", e.target.value)}
+                    placeholder="VD: 65"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Điện áp</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editForm.voltage}
+                    onChange={(e) => handleEditFormChange("voltage", e.target.value)}
+                    placeholder="VD: 220V"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Trạng thái</Form.Label>
+                  <Form.Select
+                    value={editForm.status}
+                    onChange={(e) => handleEditFormChange("status", e.target.value)}
+                  >
+                    <option value="New">Mới</option>
+                    <option value="SecondHand">Đã qua sử dụng</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Thời gian bảo hành (tháng)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={editForm.warranty_period}
+                    onChange={(e) => handleEditFormChange("warranty_period", e.target.value)}
+                    placeholder="12"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Mô tả *</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                value={editForm.description}
+                onChange={(e) => handleEditFormChange("description", e.target.value)}
+                placeholder="Nhập mô tả chi tiết sản phẩm"
+                isInvalid={!!editErrors.description}
+              />
+              <Form.Control.Feedback type="invalid">
+                {editErrors.description}
+              </Form.Control.Feedback>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={cancelEdit}
+            disabled={editLoading}
+          >
+            <i className="fas fa-times me-1"></i>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={confirmEditProduct}
+            disabled={editLoading}
+          >
+            {editLoading ? (
+              <>
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                  className="me-2"
+                />
+                Updating...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save me-1"></i>
+                Update Product
+              </>
+            )}
           </Button>
         </Modal.Footer>
       </Modal>

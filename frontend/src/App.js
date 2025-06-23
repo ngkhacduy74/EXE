@@ -53,6 +53,14 @@ const App = () => {
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
+  useEffect(() => {
+    // Đồng bộ zoom cho toàn bộ website
+    document.documentElement.style.zoom = "0.8";
+    return () => {
+      document.documentElement.style.zoom = ""; // reset khi unmount
+    };
+  }, []);
+
   return (
     <BannerProvider>
       <Router>
