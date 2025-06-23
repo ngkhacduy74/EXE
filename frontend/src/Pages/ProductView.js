@@ -47,11 +47,11 @@ const ProductView = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       console.log("🔒 No token found - Redirecting to login");
-      navigate("/login", { 
-        state: { 
+      navigate("/login", {
+        state: {
           message: "Vui lòng đăng nhập để xem sản phẩm",
           returnUrl: `/productView/${productId}`
-        } 
+        }
       });
       return;
     }
@@ -67,11 +67,11 @@ const ProductView = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         console.log("🔒 No token found in fetchProduct - Redirecting to login");
-        navigate("/login", { 
-          state: { 
+        navigate("/login", {
+          state: {
             message: "Vui lòng đăng nhập để xem sản phẩm",
             returnUrl: `/productView/${productId}`
-          } 
+          }
         });
         return;
       }
@@ -93,11 +93,11 @@ const ProductView = () => {
           case 401:
             console.log("🔒 401 Unauthorized - Redirecting to login");
             // Token expired or invalid - redirect to login
-            navigate("/login", { 
-              state: { 
+            navigate("/login", {
+              state: {
                 message: "Vui lòng đăng nhập để xem sản phẩm",
                 returnUrl: `/productView/${productId}`
-              } 
+              }
             });
             return;
           case 403:
@@ -113,8 +113,7 @@ const ProductView = () => {
             break;
           default:
             setError(
-              `Error ${err.response.status}: ${
-                err.response.data?.message || "Unknown error occurred"
+              `Error ${err.response.status}: ${err.response.data?.message || "Unknown error occurred"
               }`
             );
         }
@@ -162,7 +161,7 @@ const ProductView = () => {
       const handleScroll = () => {
         const scrollPosition = window.scrollY;
         const windowHeight = window.innerHeight;
-        
+
         // If user scrolls down more than 50% of the page, consider they're viewing the product
         if (scrollPosition > windowHeight * 0.5) {
           addToRecentlyViewed(product);
@@ -172,7 +171,7 @@ const ProductView = () => {
       };
 
       window.addEventListener('scroll', handleScroll);
-      
+
       return () => {
         window.removeEventListener('scroll', handleScroll);
       };
@@ -254,7 +253,7 @@ const ProductView = () => {
     if (product) {
       addToRecentlyViewed(product);
     }
-    
+
     // Redirect to contact page or show contact modal
     navigate("/contact", {
       state: {
@@ -335,14 +334,14 @@ const ProductView = () => {
                 <p className="text-muted mb-4">
                   Bạn cần đăng nhập để xem chi tiết sản phẩm này.
                 </p>
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   size="lg"
-                  onClick={() => navigate("/login", { 
-                    state: { 
+                  onClick={() => navigate("/login", {
+                    state: {
                       message: "Vui lòng đăng nhập để xem sản phẩm",
                       returnUrl: `/productView/${productId}`
-                    } 
+                    }
                   })}
                 >
                   <i className="fas fa-sign-in-alt me-2"></i>
@@ -353,7 +352,7 @@ const ProductView = () => {
           </div>
         </Container>
         <Footer />
-        </div>
+      </div>
     );
   }
 
@@ -590,9 +589,8 @@ const ProductView = () => {
                       {images.map((image, index) => (
                         <SwiperSlide key={index}>
                           <div
-                            className={`thumbnail-item ${
-                              selectedImageIndex === index ? "active" : ""
-                            }`}
+                            className={`thumbnail-item ${selectedImageIndex === index ? "active" : ""
+                              }`}
                             style={{ cursor: "pointer" }}
                           >
                             <img
@@ -884,7 +882,7 @@ const ProductView = () => {
             <div className="position-relative">
               {/* Check if it's a YouTube URL */}
               {selectedVideo.includes("youtube.com") ||
-              selectedVideo.includes("youtu.be") ? (
+                selectedVideo.includes("youtu.be") ? (
                 <div className="ratio ratio-16x9">
                   <iframe
                     src={selectedVideo
@@ -967,12 +965,15 @@ const ProductView = () => {
                         className="card-img-top"
                         alt={recentProduct.name}
                         style={{
-                          height: "200px",
+                          height: "300px",
+                          width: "100%",
                           objectFit: "cover",
+                          display: "block",
                         }}
                         onError={handleImageError}
                         loading="lazy"
                       />
+
                       {recentProduct.discount && (
                         <Badge
                           bg="danger"

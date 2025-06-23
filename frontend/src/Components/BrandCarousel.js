@@ -361,7 +361,7 @@ const BestSellingCarousel = () => {
         </div>
 
         <div className="mt-auto">
-          <div className="d-flex align-items-center justify-content-center mb-3">
+          {/* <div className="d-flex align-items-center justify-content-center mb-3">
             <div className="input-group" style={{ width: "130px" }}>
               <button
                 type="button"
@@ -387,7 +387,7 @@ const BestSellingCarousel = () => {
                 +
               </button>
             </div>
-          </div>
+          </div> */}
 
           <button
             onClick={() => handleProductClick(product.id)}

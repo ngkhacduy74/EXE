@@ -228,33 +228,7 @@ const BestSellingCarousel = () => {
         </div>
 
         <div className="mt-auto">
-          <div className="d-flex align-items-center justify-content-center mb-3">
-            <div className="input-group" style={{ width: "130px" }}>
-              <button
-                type="button"
-                className="btn btn-outline-secondary btn-sm px-2"
-                onClick={() => handleQuantityChange(product.id, -1)}
-                style={{ fontSize: "14px" }}
-              >
-                −
-              </button>
-              <input
-                type="text"
-                className="form-control form-control-sm text-center fw-medium"
-                value={quantities[product.id] || 1}
-                readOnly
-                style={{ maxWidth: "60px" }}
-              />
-              <button
-                type="button"
-                className="btn btn-outline-secondary btn-sm px-2"
-                onClick={() => handleQuantityChange(product.id, 1)}
-                style={{ fontSize: "14px" }}
-              >
-                +
-              </button>
-            </div>
-          </div>
+          
 
           <button
             onClick={() => handleProductClick(product.id)}

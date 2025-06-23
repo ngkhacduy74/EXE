@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Table, Button, Form } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { Plus, Eye, FileText } from "lucide-react";
+import { Plus, Eye, FileText, Edit, PlusCircle } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
@@ -294,7 +294,22 @@ const ManagePost = () => {
 
   // Handle create post
   const handleCreatePost = () => {
-    navigate("/create-post");
+    navigate("/create-post", {
+      state: {
+        token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+      },
+    });
+  };
+
+  // Handle edit post
+  const handleEditPost = (postId) => {
+    navigate(`/edit-post/${postId}`, {
+      state: {
+        token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+      },
+    });
   };
 
   // Handle toggle condition status with checkbox
@@ -396,41 +411,6 @@ const ManagePost = () => {
           <Sidebar />
         </Col>
         <Col style={{ marginLeft: "10px" }} className="p-4">
-          {/* Token Status Display */}
-          {/* <div className="mb-3">
-            <div className={`alert alert-${tokens.accessToken && tokens.refreshToken ? 'success' : 'warning'} py-2`}>
-              <Row>
-                <Col md={6}>
-                  <small className={`text-${tokens.accessToken ? 'success' : 'danger'}`}>
-                    {tokens.accessToken ? '✅' : '❌'} Access Token: {tokens.accessToken ? `${tokens.accessToken.substring(0, 15)}...` : 'Not found'}
-                  </small>
-                </Col>
-                <Col md={6}>
-                  <small className={`text-${tokens.refreshToken ? 'success' : 'danger'}`}>
-                    {tokens.refreshToken ? '✅' : '❌'} Refresh Token: {tokens.refreshToken ? `${tokens.refreshToken.substring(0, 15)}...` : 'Not found'}
-                  </small>
-                </Col>
-              </Row>
-              {tokens.accessToken && tokens.refreshToken && (
-                <div className="mt-2">
-                  <button 
-                    className="btn btn-sm btn-outline-primary"
-                    onClick={refreshAccessToken}
-                  >
-                    Refresh Access Token
-                  </button>
-                </div>
-              )}
-              {location.state?.token && (
-                <div className="mt-2">
-                  <small className="text-info">
-                    📍 Tokens loaded from navigation state
-                  </small>
-                </div>
-              )}
-            </div>
-          </div> */}
-
           <div id="manage-posts" className="mb-5">
             {/* Error Alert */}
             {error && !error.includes("Session expired") && (
@@ -447,9 +427,21 @@ const ManagePost = () => {
 
             {/* Header with title and Create button */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2 className="mb-0">Quản lý bài viết</h2>
-              <Button variant="primary" onClick={handleCreatePost}>
-                <Plus className="me-2" /> Tạo bài viết mới
+              <h2 className="mb-0">
+                <FileText className="me-2" style={{ color: "#007bff" }} />
+                Quản lý bài viết
+              </h2>
+              <Button 
+                variant="success" 
+                onClick={handleCreatePost}
+                className="d-flex align-items-center"
+                style={{ 
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  borderRadius: "8px"
+                }}
+              >
+                <PlusCircle className="me-2" size={18} />
+                Tạo bài viết mới
               </Button>
             </div>
 
@@ -537,10 +529,11 @@ const ManagePost = () => {
                 <p className="text-muted">No posts found.</p>
                 {posts.length === 0 && !error && (
                   <Button
-                    variant="primary"
+                    variant="success"
                     onClick={handleCreatePost}
-                    className="mt-2"
+                    className="mt-2 d-flex align-items-center mx-auto"
                   >
+                    <PlusCircle className="me-2" size={18} />
                     Create your first post
                   </Button>
                 )}
@@ -617,9 +610,19 @@ const ManagePost = () => {
                             variant="info"
                             size="sm"
                             onClick={() => handleViewDetails(post._id)}
-                            title="View Details"
+                            title="Xem chi tiết"
+                            style={{ borderRadius: "6px" }}
                           >
                             <Eye size={16} />
+                          </Button>
+                          <Button
+                            variant="warning"
+                            size="sm"
+                            onClick={() => handleEditPost(post._id)}
+                            title="Sửa bài viết"
+                            style={{ borderRadius: "6px" }}
+                          >
+                            <Edit size={16} />
                           </Button>
                         </div>
                       </td>

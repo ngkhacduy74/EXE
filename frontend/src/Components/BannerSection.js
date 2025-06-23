@@ -11,10 +11,10 @@ import 'swiper/css/pagination';
 
 const BannerSection = () => {
   const navigate = useNavigate();
-  const { 
-    bannerProducts: savedProducts, 
-    loading, 
-    clearBannerData 
+  const {
+    bannerProducts: savedProducts,
+    loading,
+    clearBannerData
   } = useBanner();
   const [visibleSlides, setVisibleSlides] = useState([]);
   const [animationComplete, setAnimationComplete] = useState(false);
@@ -24,26 +24,26 @@ const BannerSection = () => {
   // Function to calculate discounted price
   const calculateDiscountedPrice = (originalPrice, discountText) => {
     if (!originalPrice || !discountText) return { original: originalPrice, discounted: originalPrice };
-    
+
     // Extract percentage from discount text (e.g., "Giảm 15%" -> 15)
     const percentageMatch = discountText.match(/(\d+)/);
     if (!percentageMatch) return { original: originalPrice, discounted: originalPrice };
-    
+
     const discountPercentage = parseInt(percentageMatch[1]);
-    
+
     // Extract numeric value from formatted price (e.g., "1.500.000 ₫" -> 1500000)
-    const priceMatch = originalPrice.match(/[\d,]+/);
+    const priceMatch = originalPrice.match(/[\d.]+/g);
     if (!priceMatch) return { original: originalPrice, discounted: originalPrice };
-    
+
     // Remove commas and convert to number
-    const originalPriceNum = parseInt(priceMatch[0].replace(/,/g, ''));
-    
+    const originalPriceNum = parseInt(priceMatch.join('').replace(/\./g, ''));
+
     if (isNaN(originalPriceNum) || isNaN(discountPercentage)) {
       return { original: originalPrice, discounted: originalPrice };
     }
-    
+
     const discountedPrice = originalPriceNum * (1 - discountPercentage / 100);
-    
+
     return {
       original: originalPrice,
       discounted: new Intl.NumberFormat("vi-VN", {
@@ -58,7 +58,7 @@ const BannerSection = () => {
     if (isCustomProducts && savedProducts.length > 0) {
       setVisibleSlides([]);
       setAnimationComplete(false);
-      
+
       savedProducts.forEach((_, index) => {
         setTimeout(() => {
           setVisibleSlides(prev => [...prev, index]);
@@ -241,8 +241,8 @@ const BannerSection = () => {
                             <div className="price-display">
                               {(() => {
                                 const priceInfo = calculateDiscountedPrice(product.price, product.discount);
-                                const hasValidDiscount = product.discount && product.discount.match(/(\d+)/);
-                                
+                                const hasValidDiscount = product.discount && product.discount.trim() !== "" && product.discount.match(/(\d+)/);
+
                                 return (
                                   <>
                                     {hasValidDiscount && (
@@ -257,7 +257,7 @@ const BannerSection = () => {
                                 );
                               })()}
                             </div>
-                            {product.discount && (
+                            {product.discount && product.discount.trim() !== "" && product.discount.match(/(\d+)/) && (
                               <span className="badge bg-danger small px-2 py-1">
                                 {product.discount}
                               </span>
@@ -273,13 +273,13 @@ const BannerSection = () => {
                         </div>
                       </div>
                       <div className="p-2">
-                        <div className="position-relative">
+                        <div className="position-relative pe-3">
                           <img
                             src={product.image}
                             className="img-fluid rounded-3 shadow-sm"
                             alt={product.name}
                             style={{
-                              height: "200px",
+                              height: "300px",
                               width: "180px",
                               objectFit: "cover",
                             }}
@@ -290,6 +290,7 @@ const BannerSection = () => {
                             </span>
                           </div>
                         </div>
+
                       </div>
                     </div>
                   </div>

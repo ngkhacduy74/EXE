@@ -229,7 +229,7 @@ const MultiProductViewer = () => {
             originalIndex: i + 1,
             searchName: productName,
             matchCount: matchedProducts.length,
-            discount: productDiscounts[i] || "Giảm 15%", // Use custom discount or default
+            discount: productDiscounts[i] || "", // Không gán mặc định nếu để trống
           });
         } else {
           fetchErrors.push(
@@ -331,7 +331,7 @@ const MultiProductViewer = () => {
         description:
           product.description || `${product.name} - Sản phẩm chất lượng cao`,
         price: formatPrice(product.price),
-        discount: product.discount || "Giảm 15%", // Use product discount or default
+        discount: product.discount || "", // Không gán mặc định nếu để trống
         image: (product.image && product.image[0]) || backUpImg,
         badge: index === 0 ? "Bán Chạy #1" : `Top ${index + 1}`,
         buttonText: "Mua Ngay",
@@ -528,7 +528,7 @@ const MultiProductViewer = () => {
                         </InputGroup.Text>
                         <Form.Control
                           type="text"
-                          placeholder="Giảm 15%"
+                          placeholder="Để trống nếu không giảm giá"
                           value={productDiscounts[index]}
                           onChange={(e) =>
                             handleDiscountChange(index, e.target.value)
@@ -536,7 +536,7 @@ const MultiProductViewer = () => {
                         />
                       </InputGroup>
                       <Form.Text className="text-muted">
-                        Ví dụ: Giảm 15%, Sale 20%, Khuyến mãi 30%
+                        Ví dụ: Giảm 15%, Sale 20%, Khuyến mãi 30%. Để trống nếu không muốn giảm giá.
                       </Form.Text>
                     </Form.Group>
                   </Col>
