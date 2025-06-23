@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
 // Import Bootstrap JavaScript
-import * as bootstrap from 'bootstrap';
+import * as bootstrap from "bootstrap";
 
 import {
   BrowserRouter as Router,
@@ -27,7 +27,7 @@ import PostDetails from "./Admin/PostDetail";
 import ErrorPage from "./Components/ErrorPage";
 import NewPostForm from "./Components/NewPost";
 import CreateProduct from "./Admin/CreateProduct";
-import ProductBrowser  from "./Pages/ProductBrowser";
+import ProductBrowser from "./Pages/ProductBrowser";
 import CompareProduct from "./Pages/CompareProduct";
 import MultiProductViewer from "./Admin/MultiProductViewer";
 import Profile from "./Pages/Profile";
@@ -53,7 +53,7 @@ const App = () => {
 
   // Make Bootstrap available globally
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.bootstrap = bootstrap;
     }
   }, []);
@@ -78,38 +78,35 @@ const App = () => {
       <Router>
         <div>
           <Routes>
-
             {/* UI USER */}
-            <Route path='/' element={<Home/>}/>
+            <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/otp" element={<OTP />} />
             <Route path="/newPost" element={<NewPostForm />} />
             <Route path="/profile" element={<Profile />} />
-              <Route path="/productView/:productId" element={<ProductView />} />
-              <Route path="/postView/:postId" element={<PostView />} />
+            <Route path="/productView/:productId" element={<ProductView />} />
+            <Route path="/postView/:postId" element={<PostView />} />
             {/* UI ADMIN */}
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/manaAccount" element={<ManaAccount />} />
-           <Route path="/user/:userId" element={<UserDetails />} />
+            <Route path="/user/:userId" element={<UserDetails />} />
             <Route path="/user/:userId" element={<UserDetails />} />
             <Route path="/manaProduct" element={<ManaProduct />} />
             <Route path="/manaPost" element={<ManaPost />} />
-            <Route path="/multiProductViewer" element={<MultiProductViewer />} />
+            <Route
+              path="/multiProductViewer"
+              element={<MultiProductViewer />}
+            />
             <Route path="/post/:postId" element={<PostDetails />} />
             {/* Error Page */}
             <Route path="/product/:productId" element={<ProductDetails />} />
-            
-            
+
             <Route path="/create-product" element={<CreateProduct />} />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/product-browser" element={<ProductBrowser />} />
             <Route path="/compare-product" element={<CompareProduct />} />
             {/* 404 Error Page */}
-
-
-
-
           </Routes>
           <PhoneFixed />
         </div>

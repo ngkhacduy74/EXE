@@ -17,10 +17,10 @@ const upload = multer({
 });
 router.post(
   "/upload-image",
-  upload.fields([{ name: "img", maxCount: 1 }]),
+  upload.fields([{ name: "img", maxCount: 10 }]),
   async (req, res) => {
-    const link_img = req.files["img"][0];
-    res.send(link_img);
+    const link_imgs = req.files["img"];
+    res.send(link_imgs);
   }
 );
 router.post("/upload-video", uploadVideoMiddleware, (req, res) => {
