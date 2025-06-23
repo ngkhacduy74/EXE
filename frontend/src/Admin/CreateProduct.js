@@ -14,7 +14,6 @@ import axios from "axios";
 import { ArrowLeft, Upload, X, Save, Eye, Plus, Link } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
-import "react-quill/dist/quill.snow.css";
 
 const CreateProduct = () => {
   const navigate = useNavigate();
