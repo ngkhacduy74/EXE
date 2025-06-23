@@ -31,7 +31,7 @@ router.put("/update/:id", verifyAdmin, async (req, res) => {
   res.status(200).json(result);
 });
 
-router.get("/status/:status", async (req, res) => {
+router.get("/status/:status", verifyToken, async (req, res) => {
   try {
     const result = await loadProductStatus(req.params.status);
     if (result.success === false) {

@@ -1,6 +1,7 @@
 const userSchema = require("../Validator/user.validator");
 const jwt = require("jsonwebtoken");
 const env = require("dotenv");
+const User = require("../Model/user.model");
 const validateUser = (req, res, next) => {
   const { error } = userSchema.validate(req.body, { abortEarly: false });
   if (error) {
@@ -9,32 +10,24 @@ const validateUser = (req, res, next) => {
   next();
 };
 
-const verifyToken = (req, res, next) => {
-  // Allow OPTIONS requests to pass through for CORS preflight
-  if (req.method === 'OPTIONS') {
+const verifyToken = async (req, res, next) => {
+  if (req.method === "OPTIONS") {
     return next();
   }
-  
   try {
-    // Support both token and authorization headers
     let token = req.headers.token;
-    
     if (!token && req.headers.authorization) {
-      // Extract token from "Bearer <token>" format
       const authHeader = req.headers.authorization;
-      if (authHeader.startsWith('Bearer ')) {
+      if (authHeader.startsWith("Bearer ")) {
         token = authHeader.substring(7);
       }
     }
-
     if (!token) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Token không được cung cấp" });
     }
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    console.log("Token verified:", decoded);
     if (
       !decoded ||
       (decoded.user.role !== "Admin" && decoded.user.role !== "User")
@@ -43,7 +36,14 @@ const verifyToken = (req, res, next) => {
         .status(403)
         .json({ message: "Forbidden: Bạn không có quyền truy cập" });
     }
-
+    // Kiểm tra token hiện tại trong DB (tìm theo email)
+    const user = await User.findOne({ email: decoded.user.email });
+    console.log("tokendsksksk:", user);
+    if (!user || user.currentToken !== token) {
+      return res.status(401).json({
+        message: "Tài khoản đã đăng nhập ở nơi khác hoặc token không hợp lệ",
+      });
+    }
     req.user = decoded;
     next();
   } catch (error) {
@@ -54,39 +54,37 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-//CẦN CHÚ Ý CHỖ NÀY
-const verifyAdmin = (req, res, next) => {
-  // Allow OPTIONS requests to pass through for CORS preflight
-  if (req.method === 'OPTIONS') {
+const verifyAdmin = async (req, res, next) => {
+  if (req.method === "OPTIONS") {
     return next();
   }
-  
   try {
-    // Support both token and authorization headers
     let token = req.headers.token;
-    
     if (!token && req.headers.authorization) {
-      // Extract token from "Bearer <token>" format
       const authHeader = req.headers.authorization;
-      if (authHeader.startsWith('Bearer ')) {
+      if (authHeader.startsWith("Bearer ")) {
         token = authHeader.substring(7);
       }
     }
-    
     if (!token) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Token không được cung cấp" });
     }
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-
     if (!decoded || decoded.user.role !== "Admin") {
       return res
         .status(403)
         .json({ message: "Forbidden: Bạn không có quyền truy cập" });
     }
-
+    // Kiểm tra token hiện tại trong DB (tìm theo email)
+    const user = await User.findOne({ email: decoded.user.email });
+    console.log("verifyAdmin:", user);
+    if (!user || user.currentToken !== token) {
+      return res.status(401).json({
+        message: "Tài khoản đã đăng nhập ở nơi khác hoặc token không hợp lệ",
+      });
+    }
     req.user = decoded;
     next();
   } catch (error) {
@@ -96,28 +94,38 @@ const verifyAdmin = (req, res, next) => {
     });
   }
 };
-const verifyUser = (req, res, next) => {
-  // Allow OPTIONS requests to pass through for CORS preflight
-  if (req.method === 'OPTIONS') {
+
+const verifyUser = async (req, res, next) => {
+  if (req.method === "OPTIONS") {
     return next();
   }
-  
   try {
-    const token = req.headers.token;
+    let token = req.headers.token;
+    if (!token && req.headers.authorization) {
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+      }
+    }
     if (!token) {
       return res
         .status(401)
         .json({ message: "Unauthorized: Token không được cung cấp" });
     }
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-
     if (!decoded || decoded.user.role !== "User") {
       return res
         .status(403)
         .json({ message: "Forbidden: Bạn không có quyền truy cập" });
     }
 
+    const user = await User.findOne({ email: decoded.user.email });
+    console.log("vferrifyUser:", user);
+    if (!user || user.currentToken !== token) {
+      return res.status(401).json({
+        message: "Tài khoản đã đăng nhập ở nơi khác hoặc token không hợp lệ",
+      });
+    }
     req.user = decoded;
     next();
   } catch (error) {

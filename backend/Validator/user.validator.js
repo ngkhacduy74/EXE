@@ -16,6 +16,7 @@ const userSchema = Joi.object({
   // role: Joi.string().valid("User", "Admin").required(),
   license: Joi.string().optional(),
   ava_img_url: Joi.string().optional(),
+  currentToken: Joi.string().optional(),
 });
 
 module.exports = userSchema;

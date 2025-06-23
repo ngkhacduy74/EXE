@@ -19,9 +19,10 @@ const {
   token,
   verifyAdmin,
   verifyToken,
+  verifyUser,
 } = require("../Middleware/auth.middleware");
 
-router.get("/user-post", async (req, res) => {
+router.get("/user-post", verifyUser, async (req, res) => {
   const result = await getPostByUserId(req.user.id);
   if (result.success === false) {
     return res.status(500).json(result);
@@ -60,17 +61,22 @@ router.put(
     }
   }
 );
-router.post("/createPost", postMiddleware.postMiddleware, async (req, res) => {
-  const authHeader = req.headers.token;
+router.post(
+  "/createPost",
+  postMiddleware.postMiddleware,
+  verifyAdmin,
+  async (req, res) => {
+    const authHeader = req.headers.token;
 
-  const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
+    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
 
-  const result = await createPost(req.body, decoded);
-  if (result.success === false) {
-    return res.status(500).json(result);
+    const result = await createPost(req.body, decoded);
+    if (result.success === false) {
+      return res.status(500).json(result);
+    }
+    res.status(200).json(result);
   }
-  res.status(200).json(result);
-});
+);
 
 router.put("/update-post/:id", async (req, res) => {
   const id = req.params.id;

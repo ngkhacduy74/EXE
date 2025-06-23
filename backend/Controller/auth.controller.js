@@ -16,23 +16,22 @@ async function getUserByEmail(params) {
 
 async function Login(params) {
   const user = await User.findOne({ email: params.email });
-  console.log("account", params.email);
   if (!user) {
     throw new Error("Tài khoản không tồn tại!");
   }
-  console.log("alkjdasdj", params.password);
   const checkPassword = await bcrypt.compare(params.password, user.password);
   if (!checkPassword) {
     throw new Error("Mật khẩu không chính xác");
   }
+  // Khi đăng nhập thành công, gửi OTP và KHÔNG sinh token ở đây (token sinh ở verifyOTP)
   const sendotp = await sendOTP(params.email);
-  console.log("kajdkad", sendotp);
   if (sendotp) {
     console.log("OTP send successful");
   } else {
     throw new Error("không thể gửi OTP. Vui lòng thử lại sau.");
   }
-  // cần xác minh được otp đã rồi mới đẩy token lên web
+  // XÓA mọi token cũ (nếu có) để đảm bảo chỉ 1 nơi đăng nhập
+  await User.findByIdAndUpdate(user._id, { currentToken: null });
   return { success: true, email: params.email };
 }
 
@@ -65,35 +64,34 @@ async function Register(params) {
   return { success: true, message: "Đăng kí thành công", newUser };
 }
 async function Refresh_Token(token) {
-  console.log("1111111", token);
   try {
     const decoded = jwt.verify(token.refresh_token, process.env.REFRESH_TOKEN);
-    console.log("adlajkd", decoded);
     if (decoded.type !== "refresh") {
       return {
         success: false,
         error: "Refresh token không hợp lệ, có thể bạn đang gửi access token",
       };
     }
-
     const newAccessToken = jwt.sign(
       {
-        decoded,
+        user: decoded.user,
         type: "access",
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: "30m" }
     );
-
     const newRefreshToken = jwt.sign(
       {
-        decoded,
+        user: decoded.user,
         type: "refresh",
       },
       process.env.REFRESH_TOKEN,
       { expiresIn: "30d" }
     );
-
+    // Cập nhật currentToken cho user (chỉ cho phép 1 nơi đăng nhập)
+    await User.findByIdAndUpdate(decoded.user._id, {
+      currentToken: newAccessToken,
+    });
     return {
       success: true,
       token: newAccessToken,

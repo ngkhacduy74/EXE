@@ -39,6 +39,18 @@ import PostView from "./Pages/PostView";
 const App = () => {
   const [message, setMessage] = useState("");
 
+  // Đồng bộ logout giữa các tab khi token bị xóa/thay đổi
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key === "token" && !event.newValue) {
+        // Token đã bị xóa (logout ở tab khác hoặc token hết hạn)
+        window.location.href = "/login";
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   // Make Bootstrap available globally
   useEffect(() => {
     if (typeof window !== 'undefined') {

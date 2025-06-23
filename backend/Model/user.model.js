@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       require: true,
     },
+    currentToken: {
+      type: String,
+      required: false,
+    },
     is_active: {
       type: String,
       required: false,

@@ -32,46 +32,41 @@ const User = require("../Model/user.model");
 
 async function verifyOTP(req, res) {
   const { email, otp } = req.query;
-
   try {
     const existingOTP = await Otps.findOneAndDelete({ email, otp });
-
     if (!existingOTP) {
       return res
         .status(400)
         .json({ success: false, error: "OTP không hợp lệ" });
     }
-
     const user = await User.findOne({ email });
     if (!user) {
       return res
         .status(404)
         .json({ success: false, error: "Không tìm thấy người dùng" });
     }
-
-    // Update last login and activity time
     await User.findByIdAndUpdate(user._id, {
       lastLoginAt: new Date(),
-      lastActivityAt: new Date()
+      lastActivityAt: new Date(),
     });
-
     const token = jwt.sign(
       {
-        user,
+        user: { _id: user._id, role: user.role, email: user.email },
         type: "access",
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: "30m" }
     );
+    // Ghi đè currentToken, đảm bảo chỉ 1 nơi đăng nhập
+    await User.findByIdAndUpdate(user._id, { currentToken: token });
     const refresh_token = jwt.sign(
       {
-        user,
+        user: { _id: user._id, role: user.role, email: user.email },
         type: "refresh",
       },
       process.env.REFRESH_TOKEN,
       { expiresIn: "30d" }
     );
-
     return res.status(200).json({
       success: true,
       message: "Xác minh OTP thành công",
