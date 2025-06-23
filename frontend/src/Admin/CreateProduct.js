@@ -14,14 +14,13 @@ import axios from "axios";
 import { ArrowLeft, Upload, X, Save, Eye, Plus, Link } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
+import "react-quill/dist/quill.snow.css";
 
 const CreateProduct = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  // Thay đổi state để lưu URLs thay vì files
   const [imageUrls, setImageUrls] = useState([""]);
   const [videoUrl, setVideoUrl] = useState("");
 
@@ -40,10 +39,86 @@ const CreateProduct = () => {
     quantity: 1,
     features: [{ title: "", description: "" }],
     image: [],
-    video: [],
+    video: []
   });
 
   const [errors, setErrors] = useState({});
+  
+  const [descriptionHtml, setDescriptionHtml] = useState("");
+  const descriptionDivRef = React.useRef();
+
+  // Xử lý paste vào vùng mô tả (ảnh + text)
+  const handleDescriptionPaste = async (e) => {
+    const clipboardItems = e.clipboardData && e.clipboardData.items;
+    let handled = false;
+    if (clipboardItems) {
+      for (let i = 0; i < clipboardItems.length; i++) {
+        const item = clipboardItems[i];
+        if (item.type.indexOf("image") !== -1) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            const formDataImg = new FormData();
+            formDataImg.append("img", file);
+            try {
+              const res = await axios.post(
+                `${process.env.REACT_APP_BACKEND_URL}/file/upload-image`,
+                formDataImg,
+                { headers: { "Content-Type": "multipart/form-data" } }
+              );
+              const imageUrl = res.data.url || res.data.path || res.data.secure_url;
+              if (imageUrl && descriptionDivRef.current) {
+                // Chèn ảnh vào vị trí con trỏ
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount > 0) {
+                  const range = sel.getRangeAt(0);
+                  const img = document.createElement("img");
+                  img.src = imageUrl;
+                  img.style.maxWidth = "100%";
+                  img.style.display = "block";
+                  range.insertNode(img);
+                  // Di chuyển con trỏ sau ảnh
+                  range.setStartAfter(img);
+                  range.collapse(true);
+                  sel.removeAllRanges();
+                  sel.addRange(range);
+                } else {
+                  descriptionDivRef.current.innerHTML += `<img src='${imageUrl}' style='max-width:100%;display:block;' />`;
+                }
+                setDescriptionHtml(descriptionDivRef.current.innerHTML);
+                setFormData((prev) => ({ ...prev, description: descriptionDivRef.current.innerText.trim() }));
+              }
+            } catch (err) {
+              alert("Upload ảnh thất bại!");
+            }
+            handled = true;
+          }
+        }
+      }
+    }
+    // Nếu không phải ảnh, chỉ nhận plain text, chuyển Unicode lạ về Latin thường
+    if (!handled) {
+      e.preventDefault();
+      let text = e.clipboardData.getData("text/plain");
+      // Chuyển toàn bộ Unicode phông lạ về Latin thường, giữ dấu tiếng Việt
+      text = toPlainText(text);
+      document.execCommand("insertText", false, text);
+      setTimeout(() => {
+        if (descriptionDivRef.current) {
+          setDescriptionHtml(descriptionDivRef.current.innerHTML);
+          setFormData((prev) => ({ ...prev, description: descriptionDivRef.current.innerText.trim() }));
+        }
+      }, 0);
+    }
+  };
+
+  // Xử lý khi nhập text (onInput)
+  const handleDescriptionInput = () => {
+    if (descriptionDivRef.current) {
+      setDescriptionHtml(descriptionDivRef.current.innerHTML);
+      setFormData((prev) => ({ ...prev, description: descriptionDivRef.current.innerText.trim() }));
+    }
+  };
 
   // Hàm kiểm tra và làm sạch văn bản (loại bỏ ký tự đặc biệt, emoji)
   const sanitizeText = (text) => {
@@ -300,6 +375,36 @@ const CreateProduct = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+
+  // Hàm kiểm tra và làm sạch dữ liệu trước khi gửi lên server
+  const cleanDataBeforeSubmit = (data) => {
+    // Làm sạch từng trường
+    const cleanedData = {
+      ...data,
+      name: data.name.trim(),
+      brand: data.brand.trim(),
+      price: parseFloat(data.price),
+      capacity: parseFloat(data.capacity),
+      status: data.status,
+      description: data.description.trim(),
+      category: data.category.trim(),
+      size: data.size.trim(),
+      weight: parseFloat(data.weight),
+      voltage: data.voltage.trim(),
+      warranty_period: parseInt(data.warranty_period),
+      quantity: parseInt(data.quantity),
+      features: data.features.map((f) => ({
+        id: f.id,
+        title: f.title.trim(),
+        description: f.description.trim(),
+      })),
+      image: imageUrls.filter((url) => url.trim() !== ""),
+      video: videoUrl.trim() !== "" ? [videoUrl] : [],
+    };
+
+    return cleanedData;
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -322,32 +427,8 @@ const CreateProduct = () => {
     setSuccess("");
 
     try {
-      // Prepare data to send với dữ liệu đã được làm sạch
-      const plainTextDescription = formData.description
-        .replace(/\s+/g, " ")
-        .replace(/\u00A0/g, " ")
-        .replace(/\r?\n|\r/g, " ")
-        .trim();
-      const dataToSend = {
-        name: formData.name.trim(),
-        brand: formData.brand.trim(),
-        price: parseFloat(formData.price),
-        description: plainTextDescription, // chỉ lưu text thuần, không giữ định dạng
-        size: formData.size.trim(),
-        weight: parseFloat(formData.weight),
-        status: formData.status,
-        warranty_period: parseInt(formData.warranty_period),
-        capacity: parseFloat(formData.capacity),
-        voltage: formData.voltage.trim(),
-        quantity: parseInt(formData.quantity),
-        features: formData.features.map((f, index) => ({
-          id: `f${index + 1}`,
-          title: f.title.trim(),
-          description: f.description.trim(),
-        })),
-        image: imageUrls.filter((url) => url.trim() !== ""),
-        video: videoUrl.trim() !== "" ? [videoUrl] : [],
-      };
+      // Clean and prepare data to send
+      const dataToSend = cleanDataBeforeSubmit(formData);
 
       console.log("Sending data:", dataToSend);
 
@@ -444,6 +525,115 @@ const CreateProduct = () => {
       alert("Upload ảnh thất bại!");
     }
   };
+
+  // Hàm chuyển đổi toàn bộ ký tự Unicode phông lạ về Latin thường
+  function toPlainText(str) {
+    // Map các block Unicode phổ biến về Latin thường
+    const unicodeMap = {
+      // Mathematical Bold, Italic, Script, Fraktur, Double-struck, Sans-serif, Monospace
+      // Chữ hoa
+      0x1d400: 0x41,
+      0x1d434: 0x41,
+      0x1d468: 0x41,
+      0x1d49c: 0x41,
+      0x1d4d0: 0x41,
+      0x1d504: 0x41,
+      0x1d538: 0x41,
+      0x1d56c: 0x41,
+      0x1d5a0: 0x41,
+      0x1d5d4: 0x41,
+      0x1d608: 0x41,
+      0x1d63c: 0x41,
+      0x1d670: 0x41,
+      // Chữ thường
+      0x1d41a: 0x61,
+      0x1d44e: 0x61,
+      0x1d482: 0x61,
+      0x1d4b6: 0x61,
+      0x1d4ea: 0x61,
+      0x1d51e: 0x61,
+      0x1d552: 0x61,
+      0x1d586: 0x61,
+      0x1d5ba: 0x61,
+      0x1d5ee: 0x61,
+      0x1d622: 0x61,
+      0x1d656: 0x61,
+      0x1d68a: 0x61,
+    };
+    return str.normalize("NFC").replace(/./gu, (c) => {
+      const code = c.codePointAt(0);
+      // Latin, số, dấu tiếng Việt, dấu câu cơ bản thì giữ nguyên
+      if (
+        (code >= 32 && code <= 126) ||
+        (code >= 0x00c0 && code <= 0x1ef9) || // Latin-1 Supplement + Latin Extended
+        (code >= 0x20 && code <= 0x2f) || // dấu câu
+        (code >= 0x30 && code <= 0x39) || // số
+        (code >= 0x41 && code <= 0x5a) || // A-Z
+        (code >= 0x61 && code <= 0x7a)
+      )
+        return c;
+      // Mathematical Unicode Latin: map về ký tự thường
+      // Chữ hoa
+      if (code >= 0x1d400 && code <= 0x1d419)
+        return String.fromCharCode(code - 0x1d400 + 0x41);
+      if (code >= 0x1d434 && code <= 0x1d44d)
+        return String.fromCharCode(code - 0x1d434 + 0x41);
+      if (code >= 0x1d468 && code <= 0x1d481)
+        return String.fromCharCode(code - 0x1d468 + 0x41);
+      if (code >= 0x1d49c && code <= 0x1d4b5)
+        return String.fromCharCode(code - 0x1d49c + 0x41);
+      if (code >= 0x1d4d0 && code <= 0x1d4e9)
+        return String.fromCharCode(code - 0x1d4d0 + 0x41);
+      if (code >= 0x1d504 && code <= 0x1d51d)
+        return String.fromCharCode(code - 0x1d504 + 0x41);
+      if (code >= 0x1d538 && code <= 0x1d551)
+        return String.fromCharCode(code - 0x1d538 + 0x41);
+      if (code >= 0x1d56c && code <= 0x1d585)
+        return String.fromCharCode(code - 0x1d56c + 0x41);
+      if (code >= 0x1d5a0 && code <= 0x1d5b9)
+        return String.fromCharCode(code - 0x1d5a0 + 0x41);
+      if (code >= 0x1d5d4 && code <= 0x1d5ed)
+        return String.fromCharCode(code - 0x1d5d4 + 0x41);
+      if (code >= 0x1d608 && code <= 0x1d621)
+        return String.fromCharCode(code - 0x1d608 + 0x41);
+      if (code >= 0x1d63c && code <= 0x1d655)
+        return String.fromCharCode(code - 0x1d63c + 0x41);
+      if (code >= 0x1d670 && code <= 0x1d689)
+        return String.fromCharCode(code - 0x1d670 + 0x41);
+      // Chữ thường
+      if (code >= 0x1d41a && code <= 0x1d433)
+        return String.fromCharCode(code - 0x1d41a + 0x61);
+      if (code >= 0x1d44e && code <= 0x1d467)
+        return String.fromCharCode(code - 0x1d44e + 0x61);
+      if (code >= 0x1d482 && code <= 0x1d49b)
+        return String.fromCharCode(code - 0x1d482 + 0x61);
+      if (code >= 0x1d4b6 && code <= 0x1d4cf)
+        return String.fromCharCode(code - 0x1d4b6 + 0x61);
+      if (code >= 0x1d4ea && code <= 0x1d503)
+        return String.fromCharCode(code - 0x1d4ea + 0x61);
+      if (code >= 0x1d51e && code <= 0x1d537)
+        return String.fromCharCode(code - 0x1d51e + 0x61);
+      if (code >= 0x1d552 && code <= 0x1d56b)
+        return String.fromCharCode(code - 0x1d552 + 0x61);
+      if (code >= 0x1d586 && code <= 0x1d59f)
+        return String.fromCharCode(code - 0x1d586 + 0x61);
+      if (code >= 0x1d5ba && code <= 0x1d5d3)
+        return String.fromCharCode(code - 0x1d5ba + 0x61);
+      if (code >= 0x1d5ee && code <= 0x1d607)
+        return String.fromCharCode(code - 0x1d5ee + 0x61);
+      if (code >= 0x1d622 && code <= 0x1d63b)
+        return String.fromCharCode(code - 0x1d622 + 0x61);
+      if (code >= 0x1d656 && code <= 0x1d66f)
+        return String.fromCharCode(code - 0x1d656 + 0x61);
+      if (code >= 0x1d68a && code <= 0x1d6a3)
+        return String.fromCharCode(code - 0x1d68a + 0x61);
+      // Số in đậm/in nghiêng
+      if (code >= 0x1d7ce && code <= 0x1d7d7)
+        return String.fromCharCode(code - 0x1d7ce + 0x30);
+      // Nếu không map được thì bỏ qua (trả về rỗng)
+      return "";
+    });
+  }
 
   return (
     <Container
@@ -594,46 +784,33 @@ const CreateProduct = () => {
                     </Row>
                     <Form.Group className="mb-3">
                       <Form.Label>Mô tả *</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={4}
-                        name="description"
-                        value={formData.description}
-                        onChange={(e) => {
-                          const plainText = e.target.value.replace(
-                            /<\/?[^>]+(>|$)/g,
-                            ""
-                          );
-                          setFormData((prev) => ({
-                            ...prev,
-                            description: plainText,
-                          }));
-                        }}
+                      <div
+                        ref={descriptionDivRef}
+                        contentEditable
+                        suppressContentEditableWarning
+                        className="description-editable"
                         style={{
-                          fontFamily: "'Times New Roman', Times, serif",
-                          whiteSpace: "pre-line",
+                          minHeight: 180,
+                          border: "1px solid #ccc",
+                          borderRadius: 4,
+                          padding: 10,
+                          fontFamily: 'Times New Roman',
+                          background: '#fff',
+                          outline: 'none',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
                         }}
-                        isInvalid={!!errors.description}
-                        placeholder="Nhập mô tả chi tiết sản phẩm"
-                        maxLength={2000}
-                        className="description-textarea time-new-roman-font"
-                        onPaste={(e) => {
-                          e.preventDefault();
-                          const rawText = e.clipboardData.getData("text/plain");
-
-                          const plainText = rawText
-                            .normalize("NFKD")
-                            .replace(/[^\p{L}\p{N}\p{P}\p{Zs}]/gu, "");
-
-                          setFormData((prev) => ({
-                            ...prev,
-                            description: prev.description + plainText,
-                          }));
-                        }}
+                        placeholder="Nhập mô tả sản phẩm (có thể dán ảnh, chỉ nhận text thường, font Times New Roman)"
+                        onPaste={handleDescriptionPaste}
+                        onInput={handleDescriptionInput}
+                        spellCheck={true}
                       />
-                      <Form.Text muted>
+                      <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>
                         {formData.description.length}/2000 ký tự
-                      </Form.Text>
+                      </div>
+                      {errors.description && (
+                        <div className="error-message">{errors.description}</div>
+                      )}
                     </Form.Group>
                   </Card.Body>
                 </Card>
