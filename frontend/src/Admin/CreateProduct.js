@@ -39,11 +39,11 @@ const CreateProduct = () => {
     quantity: 1,
     features: [{ title: "", description: "" }],
     image: [],
-    video: []
+    video: [],
   });
 
   const [errors, setErrors] = useState({});
-  
+
   const [descriptionHtml, setDescriptionHtml] = useState("");
   const descriptionDivRef = React.useRef();
 
@@ -66,7 +66,8 @@ const CreateProduct = () => {
                 formDataImg,
                 { headers: { "Content-Type": "multipart/form-data" } }
               );
-              const imageUrl = res.data.url || res.data.path || res.data.secure_url;
+              const imageUrl =
+                res.data.url || res.data.path || res.data.secure_url;
               if (imageUrl && descriptionDivRef.current) {
                 // Chèn ảnh vào vị trí con trỏ
                 const sel = window.getSelection();
@@ -86,7 +87,10 @@ const CreateProduct = () => {
                   descriptionDivRef.current.innerHTML += `<img src='${imageUrl}' style='max-width:100%;display:block;' />`;
                 }
                 setDescriptionHtml(descriptionDivRef.current.innerHTML);
-                setFormData((prev) => ({ ...prev, description: descriptionDivRef.current.innerText.trim() }));
+                setFormData((prev) => ({
+                  ...prev,
+                  description: descriptionDivRef.current.innerText.trim(),
+                }));
               }
             } catch (err) {
               alert("Upload ảnh thất bại!");
@@ -106,7 +110,10 @@ const CreateProduct = () => {
       setTimeout(() => {
         if (descriptionDivRef.current) {
           setDescriptionHtml(descriptionDivRef.current.innerHTML);
-          setFormData((prev) => ({ ...prev, description: descriptionDivRef.current.innerText.trim() }));
+          setFormData((prev) => ({
+            ...prev,
+            description: descriptionDivRef.current.innerText.trim(),
+          }));
         }
       }, 0);
     }
@@ -116,7 +123,10 @@ const CreateProduct = () => {
   const handleDescriptionInput = () => {
     if (descriptionDivRef.current) {
       setDescriptionHtml(descriptionDivRef.current.innerHTML);
-      setFormData((prev) => ({ ...prev, description: descriptionDivRef.current.innerText.trim() }));
+      setFormData((prev) => ({
+        ...prev,
+        description: descriptionDivRef.current.innerText.trim(),
+      }));
     }
   };
 
@@ -374,7 +384,6 @@ const CreateProduct = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
 
   // Hàm kiểm tra và làm sạch dữ liệu trước khi gửi lên server
   const cleanDataBeforeSubmit = (data) => {
@@ -794,22 +803,26 @@ const CreateProduct = () => {
                           border: "1px solid #ccc",
                           borderRadius: 4,
                           padding: 10,
-                          fontFamily: 'Times New Roman',
-                          background: '#fff',
-                          outline: 'none',
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word',
+                          fontFamily: "Times New Roman",
+                          background: "#fff",
+                          outline: "none",
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-word",
                         }}
                         placeholder="Nhập mô tả sản phẩm (có thể dán ảnh, chỉ nhận text thường, font Times New Roman)"
                         onPaste={handleDescriptionPaste}
                         onInput={handleDescriptionInput}
                         spellCheck={true}
                       />
-                      <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>
+                      <div
+                        style={{ fontSize: 13, color: "#888", marginTop: 4 }}
+                      >
                         {formData.description.length}/2000 ký tự
                       </div>
                       {errors.description && (
-                        <div className="error-message">{errors.description}</div>
+                        <div className="error-message">
+                          {errors.description}
+                        </div>
                       )}
                     </Form.Group>
                   </Card.Body>
