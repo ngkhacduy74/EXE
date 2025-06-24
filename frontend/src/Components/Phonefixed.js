@@ -33,7 +33,7 @@ const PhoneFixed = () => {
       }}
       onClick={() => window.open('tel:0909123456')}
     >
-      📞 Hotline: 0909 123 456
+      📞 Hotline: 0903 242 748
     </div>
   );
 };

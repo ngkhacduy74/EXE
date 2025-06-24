@@ -10,6 +10,9 @@ const {
   getPostByUserId,
   loadAllPost,
   getPostById,
+  addComment,
+  toggleLike,
+  toggleFavorite,
 } = require("../Controller/post.controller");
 const { getUserById } = require("../Controller/user.controller");
 const {
@@ -127,6 +130,25 @@ router.get("/", async (req, res) => {
   if (result.success === false) {
     return res.status(500).json(result);
   }
+  res.status(200).json(result);
+});
+router.post("/:id/comment", verifyToken, async (req, res) => {
+  const user = req.user.id;
+  const content = req.body.content;
+  const result = await addComment(req.params.id, user, content);
+  if (!result.success) return res.status(400).json(result);
+  res.status(200).json(result);
+});
+router.post("/:id/like", verifyToken, async (req, res) => {
+  const user = req.user.id;
+  const result = await toggleLike(req.params.id, user);
+  if (!result.success) return res.status(400).json(result);
+  res.status(200).json(result);
+});
+router.post("/:id/favorite", verifyToken, async (req, res) => {
+  const user = req.user.id;
+  const result = await toggleFavorite(req.params.id, user);
+  if (!result.success) return res.status(400).json(result);
   res.status(200).json(result);
 });
 module.exports = router;
