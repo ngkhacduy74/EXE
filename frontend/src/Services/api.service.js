@@ -82,10 +82,6 @@ const getPosts = (params) => {
   return apiClient.get("/post", { params });
 };
 
-const getPostById = (id) => {
-  return apiClient.get(`/post/${id}`);
-};
-
 const createPost = (postData) => {
   return apiClient.post("/post", postData);
 };
@@ -109,7 +105,6 @@ export {
   getProducts,
   getProductById,
   getPosts,
-  getPostById,
   createPost,
   uploadFile,
   apiClient,

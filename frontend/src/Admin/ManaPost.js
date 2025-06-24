@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Table, Button, Form } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { Plus, Eye, FileText, Edit, PlusCircle, Trash2 } from "lucide-react";
+import { Plus, Eye, FileText, Edit, PlusCircle } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
@@ -372,23 +372,6 @@ const ManagePost = () => {
     }
   };
 
-  // Thêm hàm xử lý xóa bài viết
-  const handleDeletePost = async (postId) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
-    try {
-      await makeAuthenticatedRequest({
-        method: "DELETE",
-        url: `/post/deletePost/${postId}`,
-        headers: { "Content-Type": "application/json" },
-      });
-      setPosts((prev) => prev.filter((p) => p._id !== postId && p.id !== postId));
-      setFilteredPosts((prev) => prev.filter((p) => p._id !== postId && p.id !== postId));
-      alert("Đã xóa bài viết!");
-    } catch (err) {
-      alert("Xóa bài viết thất bại!");
-    }
-  };
-
   if (error && error.includes("Session expired")) {
     return <ErrorPage message={error} />;
   }
@@ -626,7 +609,7 @@ const ManagePost = () => {
                           <Button
                             variant="info"
                             size="sm"
-                            onClick={() => handleViewDetails(post.id)}
+                            onClick={() => handleViewDetails(post._id)}
                             title="Xem chi tiết"
                             style={{ borderRadius: "6px" }}
                           >
@@ -640,15 +623,6 @@ const ManagePost = () => {
                             style={{ borderRadius: "6px" }}
                           >
                             <Edit size={16} />
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDeletePost(post._id || post.id)}
-                            title="Xóa bài viết"
-                            style={{ borderRadius: "6px" }}
-                          >
-                            <Trash2 size={16} />
                           </Button>
                         </div>
                       </td>

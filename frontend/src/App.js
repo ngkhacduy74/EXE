@@ -22,7 +22,7 @@ import UserDetails from "./Admin/UserDetails";
 import ManaProduct from "./Admin/ManaProduct";
 import ProductDetails from "./Admin/ProductDetail";
 import ManaPost from "./Admin/ManaPost";
-import PostDetails from "./Admin/PostDetail";
+import PostDetails from "./Admin/PostDetatil";
 // import ProductDetail from "./Pages/ProductDetail";
 import ErrorPage from "./Components/ErrorPage";
 import NewPostForm from "./Components/NewPost";
@@ -34,7 +34,7 @@ import Profile from "./Pages/Profile";
 import ProductView from "./Pages/ProductView";
 import CreatePost from "./Admin/CreatePost";
 import PhoneFixed from "./Components/Phonefixed";
-import PostView from "./Pages/PostView";
+
 
 const App = () => {
   const [message, setMessage] = useState("");

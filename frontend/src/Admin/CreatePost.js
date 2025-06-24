@@ -184,11 +184,10 @@ const CreatePost = () => {
         .replace(/\u00A0/g, " ")
         .replace(/\r?\n|\r/g, " ")
         .trim();
-      const validImageUrls = imageUrls.filter((url) => url.trim() !== "");
       const dataToSend = {
         id: undefined,
         category: formData.category,
-        image: validImageUrls,
+        image: imageUrls.filter((url) => url.trim() !== ""),
         video: videoUrl ? [videoUrl] : [],
         status: formData.status,
         title: formData.title,
