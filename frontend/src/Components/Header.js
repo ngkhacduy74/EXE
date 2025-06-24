@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  GitCompare, 
-  Heart, 
-  ShoppingCart, 
-  Eye, 
+import {
+  Search,
+  Filter,
+  Download,
+  GitCompare,
+  Heart,
+  ShoppingCart,
+  Eye,
   Star,
   TrendingUp,
   Users,
@@ -17,8 +17,8 @@ import {
   Plus,
   Copy,
   Menu,
-  ChevronDown
-} from 'lucide-react';
+  ChevronDown,
+} from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { authApiClient } from "../Services/auth.service";
 
@@ -314,11 +314,11 @@ function Header() {
     const header = headerRef.current;
     if (header) {
       // Force sticky positioning
-      header.style.position = 'sticky';
-      header.style.top = '0';
-      header.style.zIndex = '1030';
-      header.style.backgroundColor = 'white';
-      header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+      header.style.position = "sticky";
+      header.style.top = "0";
+      header.style.zIndex = "1030";
+      header.style.backgroundColor = "white";
+      header.style.boxShadow = "0 2px 10px rgba(0,0,0,0.1)";
     }
   }, []);
 
@@ -327,14 +327,18 @@ function Header() {
   }
 
   return (
-    <header className="sticky-top bg-white shadow-sm" style={{ 
-      position: 'sticky', 
-      top: 0, 
-      zIndex: 1030,
-      backgroundColor: 'white',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-      transition: 'all 0.3s ease'
-    }} ref={headerRef}>
+    <header
+      className="sticky-top bg-white shadow-sm"
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 1030,
+        backgroundColor: "white",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+        transition: "all 0.3s ease",
+      }}
+      ref={headerRef}
+    >
       {/* Top Header */}
       <div className="container-fluid border-bottom">
         <div className="row py-3 align-items-center">
@@ -623,7 +627,7 @@ function Header() {
                   data-bs-display="static"
                   data-bs-reference="parent"
                   aria-expanded="false"
-                  style={{ border: 'none', outline: 'none' }}
+                  style={{ border: "none", outline: "none" }}
                 >
                   <svg
                     width="20"
@@ -634,18 +638,18 @@ function Header() {
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                   </svg>
                 </button>
-                <ul 
-                  className="dropdown-menu dropdown-menu-end shadow-lg" 
+                <ul
+                  className="dropdown-menu dropdown-menu-end shadow-lg"
                   aria-labelledby="userDropdown"
                   data-bs-auto-close="true"
                   data-bs-offset="0,8"
                   data-bs-popper="static"
                   data-bs-boundary="viewport"
-                  style={{ 
-                    minWidth: '200px',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '8px 0'
+                  style={{
+                    minWidth: "200px",
+                    border: "none",
+                    borderRadius: "12px",
+                    padding: "8px 0",
                   }}
                 >
                   {user ? (
@@ -653,59 +657,74 @@ function Header() {
                       <li>
                         <h6 className="dropdown-header text-primary fw-bold px-3 py-2">
                           Xin chào, {user.name || user.email}
-                          
                         </h6>
                       </li>
-                      <li><hr className="dropdown-divider" /></li>
                       <li>
-                        <Link 
-                          className="dropdown-item px-3 py-2" 
+                        <hr className="dropdown-divider" />
+                      </li>
+                      <li>
+                        <Link
+                          className="dropdown-item px-3 py-2"
                           to="/profile"
-                          style={{ 
-                            transition: 'all 0.2s ease',
-                            cursor: 'pointer',
-                            textDecoration: 'none',
-                            color: 'inherit'
+                          style={{
+                            transition: "all 0.2s ease",
+                            cursor: "pointer",
+                            textDecoration: "none",
+                            color: "inherit",
                           }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                          onMouseEnter={(e) =>
+                            (e.target.style.backgroundColor = "#f8f9fa")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.target.style.backgroundColor = "transparent")
+                          }
                         >
                           <i className="bi bi-person me-2"></i>
                           Hồ sơ
                         </Link>
                       </li>
                       <li>
-                        <Link 
-                          className="dropdown-item px-3 py-2" 
+                        <Link
+                          className="dropdown-item px-3 py-2"
                           to="/orders"
-                          style={{ 
-                            transition: 'all 0.2s ease',
-                            cursor: 'pointer',
-                            textDecoration: 'none',
-                            color: 'inherit'
+                          style={{
+                            transition: "all 0.2s ease",
+                            cursor: "pointer",
+                            textDecoration: "none",
+                            color: "inherit",
                           }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                          onMouseEnter={(e) =>
+                            (e.target.style.backgroundColor = "#f8f9fa")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.target.style.backgroundColor = "transparent")
+                          }
                         >
                           <i className="bi bi-box me-2"></i>
                           Đơn hàng
                         </Link>
                       </li>
-                      <li><hr className="dropdown-divider" /></li>
+                      <li>
+                        <hr className="dropdown-divider" />
+                      </li>
                       <li>
                         <button
                           className="dropdown-item px-3 py-2 text-danger"
                           onClick={handleLogoutClick}
-                          style={{ 
-                            border: 'none',
-                            background: 'transparent',
-                            width: '100%',
-                            textAlign: 'left',
-                            transition: 'all 0.2s ease',
-                            cursor: 'pointer'
+                          style={{
+                            border: "none",
+                            background: "transparent",
+                            width: "100%",
+                            textAlign: "left",
+                            transition: "all 0.2s ease",
+                            cursor: "pointer",
                           }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                          onMouseEnter={(e) =>
+                            (e.target.style.backgroundColor = "#f8f9fa")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.target.style.backgroundColor = "transparent")
+                          }
                         >
                           <i className="bi bi-box-arrow-right me-2"></i>
                           Đăng xuất
@@ -715,34 +734,42 @@ function Header() {
                   ) : (
                     <>
                       <li>
-                        <Link 
-                          className="dropdown-item px-3 py-2" 
+                        <Link
+                          className="dropdown-item px-3 py-2"
                           to="/login"
-                          style={{ 
-                            transition: 'all 0.2s ease',
-                            cursor: 'pointer',
-                            textDecoration: 'none',
-                            color: 'inherit'
+                          style={{
+                            transition: "all 0.2s ease",
+                            cursor: "pointer",
+                            textDecoration: "none",
+                            color: "inherit",
                           }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                          onMouseEnter={(e) =>
+                            (e.target.style.backgroundColor = "#f8f9fa")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.target.style.backgroundColor = "transparent")
+                          }
                         >
                           <i className="bi bi-box-arrow-in-right me-2"></i>
                           Đăng nhập
                         </Link>
                       </li>
                       <li>
-                        <Link 
-                          className="dropdown-item px-3 py-2" 
+                        <Link
+                          className="dropdown-item px-3 py-2"
                           to="/register"
-                          style={{ 
-                            transition: 'all 0.2s ease',
-                            cursor: 'pointer',
-                            textDecoration: 'none',
-                            color: 'inherit'
+                          style={{
+                            transition: "all 0.2s ease",
+                            cursor: "pointer",
+                            textDecoration: "none",
+                            color: "inherit",
                           }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                          onMouseEnter={(e) =>
+                            (e.target.style.backgroundColor = "#f8f9fa")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.target.style.backgroundColor = "transparent")
+                          }
                         >
                           <i className="bi bi-person-plus me-2"></i>
                           Đăng ký
@@ -756,13 +783,42 @@ function Header() {
               {/* Compare Products & New Post - Only for logged in users */}
               {user && (
                 <>
-                  <Link
-                    to="/newPost"
-                    className="btn btn-light rounded-circle p-2"
-                    title="Tạo bài viết mới"
-                  >
-                    <Plus size={20} />
-                  </Link>
+                  {/* Plus button with dropdown for create actions */}
+                  <div className="dropdown d-inline-block me-2">
+                    <button
+                      className="btn btn-light rounded-circle p-2 dropdown-toggle"
+                      type="button"
+                      id="createDropdown"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                      title="Tạo mới"
+                    >
+                      <Plus size={20} />
+                    </button>
+                    <ul
+                      className="dropdown-menu"
+                      aria-labelledby="createDropdown"
+                    >
+                      <li>
+                        <button
+                          className="dropdown-item"
+                          type="button"
+                          onClick={() => navigate("/newPost")}
+                        >
+                          Tạo bài viết mới
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          className="dropdown-item"
+                          type="button"
+                          onClick={() => navigate("/create-product")}
+                        >
+                          Tạo sản phẩm mới
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
                   <Link
                     to="/compare-product"
                     className="btn btn-light rounded-circle p-2"

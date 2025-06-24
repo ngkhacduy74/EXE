@@ -14,6 +14,7 @@ import axios from "axios";
 import { ArrowLeft, Upload, X, Save, Eye, Plus, Link } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
+import { parseJwt } from "../utils/jwt";
 
 const CreateProduct = () => {
   const navigate = useNavigate();
@@ -45,6 +46,20 @@ const CreateProduct = () => {
 
   const [descriptionHtml, setDescriptionHtml] = useState("");
   const descriptionDivRef = React.useRef();
+
+  // Đã bỏ mọi logic chặn user truy cập trang này, chỉ lấy userRole để điều chỉnh UI
+  let userRole = "user";
+  try {
+    const token = localStorage.getItem("token");
+    console.log("token:", token);
+    const payload = parseJwt(token);
+    console.log("payload:", payload);
+    if (payload && payload.user && payload.user.role)
+      userRole = payload.user.role.toLowerCase();
+    console.log("userRole:", userRole);
+  } catch (e) {
+    console.error("parseJwt error", e);
+  }
 
   // Xử lý paste vào vùng mô tả (ảnh + text)
   const handleDescriptionPaste = async (e) => {
@@ -781,14 +796,29 @@ const CreateProduct = () => {
                       <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>Tình trạng</Form.Label>
-                          <Form.Select
-                            name="status"
-                            value={formData.status}
-                            onChange={handleInputChange}
-                          >
-                            <option value="New">Mới</option>
-                            <option value="SecondHand">Đã qua sử dụng</option>
-                          </Form.Select>
+                          {userRole === "user" ? (
+                            <Form.Control
+                              type="text"
+                              name="status"
+                              value="Đã qua sử dụng"
+                              readOnly
+                              disabled
+                            />
+                          ) : (
+                            <Form.Select
+                              name="status"
+                              value={formData.status}
+                              onChange={handleInputChange}
+                            >
+                              <option value="New">Mới</option>
+                              <option value="SecondHand">Đã qua sử dụng</option>
+                            </Form.Select>
+                          )}
+                          {userRole === "user" && (
+                            <Form.Text className="text-muted">
+                              Người dùng chỉ được đăng sản phẩm đã qua sử dụng
+                            </Form.Text>
+                          )}
                         </Form.Group>
                       </Col>
                     </Row>

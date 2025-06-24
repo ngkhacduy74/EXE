@@ -69,7 +69,7 @@ function HeaderAdmin() {
     return null;
   }
 
-  const isAdmin = user?.role === "Admin";
+  const isAdmin = user?.role === "Admin" || user?.role === "User";
   if (!isAdmin) {
     notification.error({
       message: "Quyền truy cập hạn chế",

@@ -1,10 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Camera, Upload, Link as LinkIcon } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { authApiClient } from "../Services/auth.service";
 
 export default function NewPostForm() {
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading) {
+      // If user is not admin, redirect
+      if (!user || !user.role || user.role.toLowerCase() !== "admin") {
+        navigate("/", { replace: true });
+      }
+    }
+  }, [user, authLoading, navigate]);
+
   const [formData, setFormData] = useState({
     title: "",
     category: "A",
@@ -22,6 +34,10 @@ export default function NewPostForm() {
   const [submitted, setSubmitted] = useState(false);
   const [uploadMethod, setUploadMethod] = useState("file"); // 'file' or 'url'
   const [loading, setLoading] = useState(false);
+
+  if (authLoading) {
+    return null; // Or a spinner if you want
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
