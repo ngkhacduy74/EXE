@@ -15,14 +15,11 @@ const storage = new CloudinaryStorage({
 const upload = multer({
   storage: storage,
 });
-router.post(
-  "/upload-image",
-  upload.fields([{ name: "img", maxCount: 10 }]),
-  async (req, res) => {
-    const link_imgs = req.files["img"];
-    res.send(link_imgs);
-  }
-);
+router.post("/upload-image", upload.array("img", 10), (req, res) => {
+  const urls = req.files.map((f) => f.path);
+  return res.json({ urls });
+});
+
 router.post("/upload-video", uploadVideoMiddleware, (req, res) => {
   res.json({ files: req.files });
 });

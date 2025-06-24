@@ -84,7 +84,7 @@ const ProductSchema = Joi.object({
   features: Joi.array()
     .items(
       Joi.object({
-        id: Joi.string().required(),
+        id: Joi.string().optional(),
         title: Joi.string().required(),
         description: Joi.string().required(),
       })

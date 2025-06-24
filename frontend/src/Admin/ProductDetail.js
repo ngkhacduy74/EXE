@@ -204,7 +204,7 @@ const ProductDetail = () => {
   // Handle edit product - show edit modal
   const handleEditProduct = () => {
     if (!product) return;
-    
+
     setEditForm({
       name: product.name || "",
       brand: product.brand || "",
@@ -225,16 +225,16 @@ const ProductDetail = () => {
 
   // Handle edit form change
   const handleEditFormChange = (field, value) => {
-    setEditForm(prev => ({
+    setEditForm((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error for this field
     if (editErrors[field]) {
-      setEditErrors(prev => ({
+      setEditErrors((prev) => ({
         ...prev,
-        [field]: ""
+        [field]: "",
       }));
     }
   };
@@ -282,7 +282,9 @@ const ProductDetail = () => {
 
       const token = localStorage.getItem("token");
       if (!token) {
-        setEditErrors({ general: "Authentication token not found. Please log in again." });
+        setEditErrors({
+          general: "Authentication token not found. Please log in again.",
+        });
         return;
       }
 
@@ -300,51 +302,71 @@ const ProductDetail = () => {
         warranty_period: parseInt(editForm.warranty_period),
       };
 
-      const response = await api.put(`/product/update/${productId}`, dataToSend, {
-        headers: {
-          token,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await api.put(
+        `/product/update/${productId}`,
+        dataToSend,
+        {
+          headers: {
+            token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       // Update local product state
-      setProduct(prev => ({
+      setProduct((prev) => ({
         ...prev,
-        ...dataToSend
+        ...dataToSend,
       }));
 
       setEditSuccess("Cập nhật sản phẩm thành công!");
-      
+
       // Close modal after 2 seconds
       setTimeout(() => {
         setShowEditModal(false);
         setEditSuccess("");
       }, 2000);
-
     } catch (err) {
       console.error("Error updating product:", err);
-      
+
       if (err.response) {
         switch (err.response.status) {
           case 401:
             setEditErrors({ general: "Session expired. Please log in again." });
             break;
           case 403:
-            setEditErrors({ general: "Access denied. You don't have permission to edit this product." });
+            setEditErrors({
+              general:
+                "Access denied. You don't have permission to edit this product.",
+            });
             break;
           case 404:
-            setEditErrors({ general: "Product not found. It may have been deleted." });
+            setEditErrors({
+              general: "Product not found. It may have been deleted.",
+            });
             break;
           case 422:
-            setEditErrors({ general: err.response.data?.message || "Validation error. Please check your input." });
+            setEditErrors({
+              general:
+                err.response.data?.message ||
+                "Validation error. Please check your input.",
+            });
             break;
           default:
-            setEditErrors({ general: err.response.data?.message || "Failed to update product. Please try again." });
+            setEditErrors({
+              general:
+                err.response.data?.message ||
+                "Failed to update product. Please try again.",
+            });
         }
       } else if (err.request) {
-        setEditErrors({ general: "Network error. Please check your connection and try again." });
+        setEditErrors({
+          general: "Network error. Please check your connection and try again.",
+        });
       } else {
-        setEditErrors({ general: "An unexpected error occurred. Please try again." });
+        setEditErrors({
+          general: "An unexpected error occurred. Please try again.",
+        });
       }
     } finally {
       setEditLoading(false);
@@ -373,7 +395,11 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
+      <Container
+        fluid
+        className="bg-light admin-page"
+        style={{ minHeight: "100vh" }}
+      >
         <HeaderAdmin />
         <div
           className="d-flex justify-content-center align-items-center"
@@ -414,7 +440,11 @@ const ProductDetail = () => {
   const quantityStatus = getQuantityStatus(product.quantity);
 
   return (
-    <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
+    <Container
+      fluid
+      className="bg-light admin-page"
+      style={{ minHeight: "100vh" }}
+    >
       <HeaderAdmin />
       <Row>
         <Col
@@ -470,10 +500,7 @@ const ProductDetail = () => {
               </div>
             </div>
             <div className="d-flex gap-2">
-              <Button
-                variant="outline-primary"
-                onClick={handleEditProduct}
-              >
+              <Button variant="outline-primary" onClick={handleEditProduct}>
                 <i className="fas fa-edit me-1"></i> Edit Product
               </Button>
               <Button variant="outline-secondary" onClick={() => navigate(-1)}>
@@ -680,9 +707,11 @@ const ProductDetail = () => {
                       </div>
                       <div className="mb-3">
                         <label className="form-label text-muted small fw-bold">
-                          CATEGORY
+                          SỐ ĐIỆN THOẠI DOANH NGHIỆP
                         </label>
-                        <p className="mb-0">{product.category || "N/A"}</p>
+                        <p className="mb-0">
+                          {product.business_phone || "N/A"}
+                        </p>
                       </div>
                       <div className="mb-3">
                         <label className="form-label text-muted small fw-bold">
@@ -738,8 +767,6 @@ const ProductDetail = () => {
                   )}
                 </Card.Body>
               </Card>
-
-             
 
               {product.quantity !== undefined && product.quantity < 10 && (
                 <Alert variant="warning" className="mb-4">
@@ -828,7 +855,7 @@ const ProductDetail = () => {
               {editSuccess}
             </Alert>
           )}
-          
+
           {editErrors.general && (
             <Alert variant="danger" className="mb-3">
               <i className="fas fa-exclamation-triangle me-2"></i>
@@ -844,7 +871,9 @@ const ProductDetail = () => {
                   <Form.Control
                     type="text"
                     value={editForm.name}
-                    onChange={(e) => handleEditFormChange("name", e.target.value)}
+                    onChange={(e) =>
+                      handleEditFormChange("name", e.target.value)
+                    }
                     placeholder="Nhập tên sản phẩm"
                     isInvalid={!!editErrors.name}
                   />
@@ -859,7 +888,9 @@ const ProductDetail = () => {
                   <Form.Control
                     type="text"
                     value={editForm.brand}
-                    onChange={(e) => handleEditFormChange("brand", e.target.value)}
+                    onChange={(e) =>
+                      handleEditFormChange("brand", e.target.value)
+                    }
                     placeholder="Nhập thương hiệu"
                     isInvalid={!!editErrors.brand}
                   />
@@ -877,7 +908,9 @@ const ProductDetail = () => {
                   <Form.Control
                     type="number"
                     value={editForm.price}
-                    onChange={(e) => handleEditFormChange("price", e.target.value)}
+                    onChange={(e) =>
+                      handleEditFormChange("price", e.target.value)
+                    }
                     placeholder="1000"
                     isInvalid={!!editErrors.price}
                   />
@@ -892,7 +925,9 @@ const ProductDetail = () => {
                   <Form.Control
                     type="number"
                     value={editForm.capacity}
-                    onChange={(e) => handleEditFormChange("capacity", e.target.value)}
+                    onChange={(e) =>
+                      handleEditFormChange("capacity", e.target.value)
+                    }
                     placeholder="0"
                     isInvalid={!!editErrors.capacity}
                   />
@@ -907,7 +942,9 @@ const ProductDetail = () => {
                   <Form.Control
                     type="number"
                     value={editForm.quantity}
-                    onChange={(e) => handleEditFormChange("quantity", e.target.value)}
+                    onChange={(e) =>
+                      handleEditFormChange("quantity", e.target.value)
+                    }
                     placeholder="1"
                     isInvalid={!!editErrors.quantity}
                   />
@@ -925,7 +962,9 @@ const ProductDetail = () => {
                   <Form.Control
                     type="text"
                     value={editForm.size}
-                    onChange={(e) => handleEditFormChange("size", e.target.value)}
+                    onChange={(e) =>
+                      handleEditFormChange("size", e.target.value)
+                    }
                     placeholder="VD: 60x55x85"
                   />
                 </Form.Group>
@@ -936,7 +975,9 @@ const ProductDetail = () => {
                   <Form.Control
                     type="number"
                     value={editForm.weight}
-                    onChange={(e) => handleEditFormChange("weight", e.target.value)}
+                    onChange={(e) =>
+                      handleEditFormChange("weight", e.target.value)
+                    }
                     placeholder="VD: 65"
                   />
                 </Form.Group>
@@ -947,7 +988,9 @@ const ProductDetail = () => {
                   <Form.Control
                     type="text"
                     value={editForm.voltage}
-                    onChange={(e) => handleEditFormChange("voltage", e.target.value)}
+                    onChange={(e) =>
+                      handleEditFormChange("voltage", e.target.value)
+                    }
                     placeholder="VD: 220V"
                   />
                 </Form.Group>
@@ -960,7 +1003,9 @@ const ProductDetail = () => {
                   <Form.Label>Trạng thái</Form.Label>
                   <Form.Select
                     value={editForm.status}
-                    onChange={(e) => handleEditFormChange("status", e.target.value)}
+                    onChange={(e) =>
+                      handleEditFormChange("status", e.target.value)
+                    }
                   >
                     <option value="New">Mới</option>
                     <option value="SecondHand">Đã qua sử dụng</option>
@@ -973,7 +1018,9 @@ const ProductDetail = () => {
                   <Form.Control
                     type="number"
                     value={editForm.warranty_period}
-                    onChange={(e) => handleEditFormChange("warranty_period", e.target.value)}
+                    onChange={(e) =>
+                      handleEditFormChange("warranty_period", e.target.value)
+                    }
                     placeholder="12"
                   />
                 </Form.Group>
@@ -986,7 +1033,9 @@ const ProductDetail = () => {
                 as="textarea"
                 rows={4}
                 value={editForm.description}
-                onChange={(e) => handleEditFormChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleEditFormChange("description", e.target.value)
+                }
                 placeholder="Nhập mô tả chi tiết sản phẩm"
                 isInvalid={!!editErrors.description}
               />

@@ -30,7 +30,7 @@ const CreateProduct = () => {
     business_phone: "",
     status: "New",
     description: "",
-    category: "",
+    // category: "",
     size: "",
     weight: "",
     voltage: "",
@@ -306,11 +306,11 @@ const CreateProduct = () => {
       newErrors.price = "Giá không được vượt quá 1 tỷ VND";
     }
 
-    // Kiểm tra dung tích
-    if (!formData.capacity || parseFloat(formData.capacity) <= 0) {
-      newErrors.capacity = "Dung tích phải lớn hơn 0";
-    } else if (parseFloat(formData.capacity) > 10000) {
-      newErrors.capacity = "Dung tích không được vượt quá 10.000";
+    // Kiểm tra số điện thoại doanh nghiệp
+    if (!formData.business_phone.trim()) {
+      newErrors.business_phone = "Số điện thoại doanh nghiệp là bắt buộc";
+    } else if (!/^\+?\d{8,15}$/.test(formData.business_phone.trim())) {
+      newErrors.business_phone = "Số điện thoại không hợp lệ";
     }
 
     // Kiểm tra mô tả
@@ -396,7 +396,7 @@ const CreateProduct = () => {
       business_phone: data.business_phone.trim(),
       status: data.status,
       description: data.description.trim(),
-      category: data.category.trim(),
+      // category: data.category.trim(),
       size: data.size.trim(),
       weight: parseFloat(data.weight),
       voltage: data.voltage.trim(),
@@ -519,12 +519,13 @@ const CreateProduct = () => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      // Lấy URL trả về (ưu tiên url, path, secure_url)
-      const imageUrl = res.data.url || res.data.path || res.data.secure_url;
-      if (imageUrl) {
+      const urls = res.data.urls || [];
+
+      if (urls.length > 0) {
         setImageUrls((prev) => {
-          if (prev.length < 3) return [...prev, imageUrl];
-          return prev;
+          const combined = [...prev, ...urls];
+
+          return combined.slice(0, 3);
         });
       } else {
         alert("Không lấy được URL ảnh từ server!");
