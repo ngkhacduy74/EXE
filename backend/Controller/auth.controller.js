@@ -42,16 +42,20 @@ async function Register(params) {
   }
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(params.password, salt);
+  
+  // Set default avatar if no image provided
+  const defaultAvatar = "https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg";
+  
   const newUser = new User({
     id: v1(),
     fullname: params.fullname,
     phone: params.phone,
-    address: params.address,
+    address: params.address || "",
     password: hashedPassword,
     email: params.email,
     gender: params.gender,
     role: "User",
-    ava_img_url: params.ava_img_url,
+    ava_img_url: params.ava_img_url || defaultAvatar,
     is_active: true,
     license: true,
   });
@@ -63,6 +67,7 @@ async function Register(params) {
 
   return { success: true, message: "Đăng kí thành công", newUser };
 }
+
 async function Refresh_Token(token) {
   try {
     const decoded = jwt.verify(token.refresh_token, process.env.REFRESH_TOKEN);
@@ -104,6 +109,7 @@ async function Refresh_Token(token) {
     };
   }
 }
+
 module.exports = {
   Login,
   Register,

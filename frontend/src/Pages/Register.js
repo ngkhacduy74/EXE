@@ -902,7 +902,7 @@ Email: privacy@vinsaky.com
 
                 {/* Avatar */}
                 <div className="form-section">
-                  <h3 className="section-title">Ảnh đại diện</h3>
+                  <h3 className="section-title">Ảnh đại diện (Tùy chọn)</h3>
                   <div className="avatar-section">
                     <div>
                       {imagePreview ? (
@@ -928,7 +928,7 @@ Email: privacy@vinsaky.com
                         className="form-input"
                       />
                       <p className="avatar-help">
-                        Chọn ảnh JPG, PNG. Kích thước tối đa 5MB.
+                        Chọn ảnh JPG, PNG. Kích thước tối đa 5MB. (Không bắt buộc)
                       </p>
                     </div>
                   </div>

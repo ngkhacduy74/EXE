@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     },
     address: {
       type: String,
-      require: true,
+      require: false,
     },
     password: {
       type: String,
@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
     },
     ava_img_url: {
       type: String,
-      require: true,
+      require: false,
     },
     currentToken: {
       type: String,
