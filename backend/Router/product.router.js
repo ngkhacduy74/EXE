@@ -12,7 +12,7 @@ const {
 const { verifyAdmin, verifyToken } = require("../Middleware/auth.middleware");
 router.post(
   "/createProduct",
-  verifyAdmin,
+  verifyToken,
   productMiddleware.productMiddleware,
   async (req, res) => {
     const result = await createProduct(req.body, req.user);

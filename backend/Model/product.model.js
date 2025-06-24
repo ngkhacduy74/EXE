@@ -19,7 +19,8 @@ const ProductSchema = new mongoose.Schema(
     weight: { type: Number, require: true },
     status: { type: String, require: true, enum: ["New", "SecondHand"] },
     warranty_period: { type: Number, require: true },
-    capacity: { type: Number, require: true },
+    //capacity: { type: Number, require: true },
+    phone_business: { type: String, require: true },
     voltage: { type: String, require: true },
     features: [{ type: Other_features, require: false }],
     quantity: { type: Number, require: true, min: 0 },
@@ -29,7 +30,6 @@ const ProductSchema = new mongoose.Schema(
       phone: { type: String, require: true },
       email: { type: String, require: true },
     },
-
   },
   {
     timestamps: true,

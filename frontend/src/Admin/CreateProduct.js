@@ -27,7 +27,7 @@ const CreateProduct = () => {
     name: "",
     brand: "",
     price: "",
-    capacity: "",
+    business_phone: "",
     status: "New",
     description: "",
     category: "",
@@ -160,7 +160,6 @@ const CreateProduct = () => {
     // Áp dụng sanitization dựa trên loại trường
     switch (name) {
       case "price":
-      case "capacity":
       case "weight":
         sanitizedValue = sanitizeNumber(value);
         break;
@@ -172,8 +171,10 @@ const CreateProduct = () => {
         sanitizedValue = sanitizeSize(value);
         break;
       case "voltage":
-        // Voltage có thể có ký tự V hoặc số
         sanitizedValue = value.replace(/[^0-9V\s]/g, "").trim();
+        break;
+      case "business_phone":
+        sanitizedValue = value.replace(/[^0-9+]/g, "");
         break;
       default:
         sanitizedValue = value;
@@ -392,7 +393,7 @@ const CreateProduct = () => {
       name: data.name.trim(),
       brand: data.brand.trim(),
       price: parseFloat(data.price),
-      capacity: parseFloat(data.capacity),
+      business_phone: data.business_phone.trim(),
       status: data.status,
       description: data.description.trim(),
       category: data.category.trim(),
@@ -746,17 +747,17 @@ const CreateProduct = () => {
                       </Col>
                       <Col md={3}>
                         <Form.Group className="mb-3">
-                          <Form.Label>Dung tích/Ngày *</Form.Label>
+                          <Form.Label>Liên Hệ *</Form.Label>
                           <Form.Control
                             type="text"
-                            name="capacity"
-                            value={formData.capacity}
+                            name="business_phone"
+                            value={formData.business_phone}
                             onChange={handleInputChange}
-                            isInvalid={!!errors.capacity}
-                            placeholder="0"
+                            isInvalid={!!errors.business_phone}
+                            placeholder="Nhập số điện thoại doanh nghiệp"
                           />
                           <Form.Control.Feedback type="invalid">
-                            {errors.capacity}
+                            {errors.business_phone}
                           </Form.Control.Feedback>
                         </Form.Group>
                       </Col>
