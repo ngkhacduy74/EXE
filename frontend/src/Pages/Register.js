@@ -210,7 +210,7 @@ Email: privacy@vinsaky.com
     setLoading(true);
     
     try {
-      let ava_img_url = null;
+      let ava_img_url = "";
       
       // Upload image if provided
       if (imageFile) {
@@ -230,9 +230,13 @@ Email: privacy@vinsaky.com
         phone: phone.trim(),
         address: address.trim(),
         password: password,
-        gender: gender,
-        ava_img_url: ava_img_url
+        gender: gender
       };
+
+      // Only add ava_img_url if an image was uploaded
+      if (ava_img_url) {
+        registerData.ava_img_url = ava_img_url;
+      }
 
       console.log("Registering with data:", registerData);
 
@@ -928,8 +932,29 @@ Email: privacy@vinsaky.com
                         className="form-input"
                       />
                       <p className="avatar-help">
-                        Chọn ảnh JPG, PNG. Kích thước tối đa 5MB. (Không bắt buộc)
+                        Chọn ảnh JPG, PNG. Kích thước tối đa 5MB. (Không bắt buộc - có thể bỏ qua)
                       </p>
+                      {imageFile && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImageFile(null);
+                            setImagePreview(null);
+                          }}
+                          style={{
+                            marginTop: '0.5rem',
+                            padding: '0.5rem 1rem',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '0.25rem',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem'
+                          }}
+                        >
+                          Xóa ảnh
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
