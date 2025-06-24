@@ -461,6 +461,17 @@ const CreatePost = () => {
                         )}
                       </div>
                     ))}
+                    {/* Nút thêm ảnh */}
+                    {imageUrls.length < 3 && (
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        className="mb-3"
+                        onClick={addImageUrl}
+                      >
+                        Thêm ảnh
+                      </Button>
+                    )}
                     <Form.Text className="text-muted">
                       Tối đa 3 URL hình ảnh. Hỗ trợ: JPG, PNG, GIF, WebP
                     </Form.Text>

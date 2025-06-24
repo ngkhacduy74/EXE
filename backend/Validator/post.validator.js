@@ -11,7 +11,7 @@ const sellerSchema = Joi.object({
 const postSchema = Joi.object({
   id: Joi.string().optional(),
   category: Joi.string().required(),
-  image: Joi.array().items(Joi.string()).optional(),
+  image: Joi.array().items(Joi.string()).max(3).optional(),
   video: Joi.array().items(Joi.string()).optional(),
   status: Joi.string().valid("New", "SecondHand").required(),
   title: Joi.string().required(),

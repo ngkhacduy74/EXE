@@ -35,9 +35,6 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showVideoModal, setShowVideoModal] = useState(false);
-  const [selectedVideo, setSelectedVideo] = useState("");
-  const [selectedVideoType, setSelectedVideoType] = useState(""); // 'youtube' or 'direct'
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
@@ -175,19 +172,6 @@ const ProductDetail = () => {
   const handleImageError = (e) => {
     e.target.src =
       "https://fushimavina.com/data/data/files/test/may-lam-da-100kg.jpg";
-  };
-
-  const handleVideoPlay = (videoUrl) => {
-    if (videoUrl && typeof videoUrl === "string") {
-      setSelectedVideo(videoUrl);
-      // Kiểm tra xem có phải YouTube video không
-      if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be")) {
-        setSelectedVideoType("youtube");
-      } else {
-        setSelectedVideoType("direct");
-      }
-      setShowVideoModal(true);
-    }
   };
 
   const handleQuantityChange = (change) => {
@@ -563,82 +547,43 @@ const ProductDetail = () => {
                 </Card.Body>
               </Card>
 
-              {product.video &&
-                Array.isArray(product.video) &&
-                product.video.length > 0 && (
-                  <Card className="shadow-sm mb-4">
-                    <Card.Header className="bg-white border-bottom">
-                      <h6 className="mb-0">
-                        <i className="fas fa-video text-primary me-2"></i>{" "}
-                        Product Videos
-                      </h6>
-                    </Card.Header>
-                    <Card.Body>
-                      <Row>
-                        {product.video.map((vid, index) => (
-                          <Col key={index} xs={6} className="mb-3">
-                            {vid.includes("youtube.com") ||
-                            vid.includes("youtu.be") ? (
-                              <div
-                                className="ratio ratio-16x9 position-relative"
-                                style={{ cursor: "pointer" }}
-                                onClick={() => handleVideoPlay(vid)}
-                              >
-                                <iframe
-                                  src={convertToEmbedUrl(vid)}
-                                  title={`YouTube video ${index + 1}`}
-                                  allowFullScreen
-                                  className="rounded"
-                                  style={{ pointerEvents: "none" }}
-                                ></iframe>
-                                <div
-                                  className="position-absolute top-50 start-50 translate-middle"
-                                  style={{
-                                    background: "rgba(0,0,0,0.7)",
-                                    borderRadius: "50%",
-                                    padding: "15px",
-                                    color: "white",
-                                    fontSize: "24px",
-                                  }}
-                                >
-                                  <i className="fas fa-expand-alt"></i>
-                                </div>
-                              </div>
-                            ) : (
-                              <div
-                                className="position-relative"
-                                style={{ cursor: "pointer" }}
-                              >
-                                <video
-                                  src={vid}
-                                  className="w-100 rounded"
-                                  style={{
-                                    height: "200px",
-                                    objectFit: "cover",
-                                  }}
-                                  onClick={() => handleVideoPlay(vid)}
-                                ></video>
-                                <div
-                                  className="position-absolute top-50 start-50 translate-middle"
-                                  style={{
-                                    background: "rgba(0,0,0,0.7)",
-                                    borderRadius: "50%",
-                                    padding: "15px",
-                                    color: "white",
-                                    fontSize: "24px",
-                                    pointerEvents: "none",
-                                  }}
-                                >
-                                  <i className="fas fa-play"></i>
-                                </div>
-                              </div>
-                            )}
-                          </Col>
-                        ))}
-                      </Row>
-                    </Card.Body>
-                  </Card>
-                )}
+              {product.video && Array.isArray(product.video) && product.video.length > 0 && (
+                <Card className="shadow-sm mb-4">
+                  <Card.Header className="bg-white border-bottom">
+                    <h6 className="mb-0">
+                      <i className="fas fa-video text-primary me-2"></i> Product Videos
+                    </h6>
+                  </Card.Header>
+                  <Card.Body>
+                    <Row>
+                      {product.video.map((vid, index) => (
+                        <Col key={index} xs={12} className="mb-4">
+                          {vid.includes("youtube.com") || vid.includes("youtu.be") ? (
+                            <div className="ratio ratio-16x9">
+                              <iframe
+                                src={convertToEmbedUrl(vid)}
+                                title={`YouTube video ${index + 1}`}
+                                allowFullScreen
+                                className="rounded"
+                                style={{ width: '100%', minHeight: 300, border: 'none' }}
+                              ></iframe>
+                            </div>
+                          ) : (
+                            <video
+                              src={vid}
+                              className="w-100 rounded"
+                              style={{ maxHeight: 400, background: '#000' }}
+                              controls
+                            >
+                              Your browser does not support the video tag.
+                            </video>
+                          )}
+                        </Col>
+                      ))}
+                    </Row>
+                  </Card.Body>
+                </Card>
+              )}
             </Col>
 
             <Col lg={7}>
@@ -784,55 +729,6 @@ const ProductDetail = () => {
           </Row>
         </Col>
       </Row>
-
-      {/* Video Modal */}
-      <Modal
-        show={showVideoModal}
-        onHide={() => setShowVideoModal(false)}
-        size="xl"
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <i className="fas fa-video me-2"></i>
-            {product.name} - Product Video
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="p-0">
-          {selectedVideo && selectedVideoType === "youtube" ? (
-            <div className="ratio ratio-16x9">
-              <iframe
-                src={convertToEmbedUrl(selectedVideo)}
-                title="Product video"
-                allowFullScreen
-                className="w-100"
-                style={{ minHeight: "400px" }}
-              ></iframe>
-            </div>
-          ) : selectedVideo && selectedVideoType === "direct" ? (
-            <video
-              controls
-              autoPlay
-              className="w-100"
-              style={{ maxHeight: "600px" }}
-              src={selectedVideo}
-              aria-label="Product video playback"
-            >
-              Your browser does not support the video tag.
-            </video>
-          ) : (
-            <div className="text-center p-4">
-              <p>Video không thể tải được.</p>
-            </div>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowVideoModal(false)}>
-            <i className="fas fa-times me-2"></i>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
 
       {/* Edit Product Modal */}
       <Modal

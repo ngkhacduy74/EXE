@@ -15,13 +15,30 @@ const createPost = async (data, token) => {
     email,
   } = data;
   const seller = token;
-  // Lấy avatar từ DB
-  let sellerAvatar = "";
+  // Lấy user từ DB để lấy đủ thông tin seller
+  let sellerDb = null;
   try {
-    const userDb = await User.findOne({ id: seller.user.id });
-    if (userDb && userDb.ava_img_url) sellerAvatar = userDb.ava_img_url;
+    sellerDb = await User.findOne({ id: seller.user.id });
   } catch (e) {}
-  console.log("21812", seller);
+  const sellerInfo = sellerDb
+    ? {
+        id: sellerDb.id,
+        fullname: sellerDb.fullname,
+        email: sellerDb.email,
+        phone: sellerDb.phone,
+        address: sellerDb.address,
+        gender: sellerDb.gender,
+        ava_img_url: sellerDb.ava_img_url,
+      }
+    : {
+        id: seller.user.id,
+        fullname: seller.user.fullname,
+        email: seller.user.email,
+        phone: seller.user.phone,
+        address: seller.user.address,
+        gender: seller.user.gender,
+        ava_img_url: seller.user.ava_img_url || "",
+      };
   try {
     const newPost = new Post({
       id: v1(),
@@ -33,18 +50,9 @@ const createPost = async (data, token) => {
       user_position,
       address,
       description,
-      seller: {
-        id: seller.user.id,
-        fullname: seller.user.fullname,
-        email: seller.user.email,
-        phone: seller.user.phone,
-        address: seller.user.address,
-        gender: seller.user.gender,
-        ava_img_url: sellerAvatar,
-      },
+      seller: sellerInfo,
       phone,
       email,
-
       condition: "Pending",
     });
 

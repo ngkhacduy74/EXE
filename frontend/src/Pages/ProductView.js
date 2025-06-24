@@ -34,9 +34,6 @@ const ProductView = () => {
   const [product, setProduct] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showVideoModal, setShowVideoModal] = useState(false);
-  const [selectedVideo, setSelectedVideo] = useState("");
-  const [selectedVideoType, setSelectedVideoType] = useState(""); // 'youtube' or 'direct'
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
@@ -238,74 +235,6 @@ const ProductView = () => {
       "https://fushimavina.com/data/data/files/test/may-lam-da-100kg.jpg";
   };
 
-  const handleVideoPlay = (videoUrl) => {
-    if (videoUrl && typeof videoUrl === "string") {
-      console.log("🎬 Playing video:", videoUrl);
-      
-      // Validate URL format
-      if (isYouTubeUrl(videoUrl)) {
-        const embedUrl = getYouTubeEmbedUrl(videoUrl);
-        console.log("📺 YouTube embed URL:", embedUrl);
-        console.log("🎯 Setting video type: youtube");
-        setSelectedVideo(embedUrl); // Set the embed URL instead of original URL
-        setSelectedVideoType('youtube');
-      } else {
-        // For direct video files, check if it's a valid URL
-        try {
-          new URL(videoUrl);
-          console.log("🎥 Direct video URL:", videoUrl);
-          console.log("🎯 Setting video type: direct");
-          setSelectedVideo(videoUrl);
-          setSelectedVideoType('direct');
-        } catch (error) {
-          console.error("❌ Invalid video URL:", videoUrl);
-          alert("URL video không hợp lệ. Vui lòng kiểm tra lại.");
-          return;
-        }
-      }
-      
-      console.log("🚀 Opening video modal");
-      setShowVideoModal(true);
-    } else {
-      console.error("❌ Invalid video URL provided:", videoUrl);
-      alert("Không thể phát video. Vui lòng thử lại.");
-    }
-  };
-
-  // Helper function to convert YouTube URL to embed URL
-  const getYouTubeEmbedUrl = (url) => {
-    if (!url) return "";
-    
-    // Handle different YouTube URL formats
-    let videoId = "";
-    
-    if (url.includes("youtube.com/watch?v=")) {
-      videoId = url.split("v=")[1];
-      // Remove any additional parameters
-      const ampersandPosition = videoId.indexOf("&");
-      if (ampersandPosition !== -1) {
-        videoId = videoId.substring(0, ampersandPosition);
-      }
-    } else if (url.includes("youtu.be/")) {
-      videoId = url.split("youtu.be/")[1];
-      // Remove any additional parameters
-      const ampersandPosition = videoId.indexOf("&");
-      if (ampersandPosition !== -1) {
-        videoId = videoId.substring(0, ampersandPosition);
-      }
-    } else if (url.includes("youtube.com/embed/")) {
-      // Already an embed URL
-      return url;
-    }
-    
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
-  };
-
-  // Helper function to check if URL is YouTube
-  const isYouTubeUrl = (url) => {
-    return url && (url.includes("youtube.com") || url.includes("youtu.be"));
-  };
-
   const handleQuantityChange = (change) => {
     setQuantity((prev) => Math.max(1, prev + change));
   };
@@ -329,6 +258,31 @@ const ProductView = () => {
     // Scroll to top before navigating
     window.scrollTo(0, 0);
     navigate(`/productView/${productId}`);
+  };
+
+  const getYouTubeEmbedUrl = (url) => {
+    if (!url) return "";
+    let videoId = "";
+    if (url.includes("youtube.com/watch?v=")) {
+      videoId = url.split("v=")[1];
+      const ampersandPosition = videoId.indexOf("&");
+      if (ampersandPosition !== -1) {
+        videoId = videoId.substring(0, ampersandPosition);
+      }
+    } else if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1];
+      const ampersandPosition = videoId.indexOf("&");
+      if (ampersandPosition !== -1) {
+        videoId = videoId.substring(0, ampersandPosition);
+      }
+    } else if (url.includes("youtube.com/embed/")) {
+      return url;
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  };
+
+  const isYouTubeUrl = (url) => {
+    return url && (url.includes("youtube.com") || url.includes("youtu.be"));
   };
 
   if (loading || !authChecked) {
@@ -679,45 +633,6 @@ const ProductView = () => {
                 )}
               </Card.Body>
             </Card>
-
-            {/* Product Videos */}
-            {product.video &&
-              Array.isArray(product.video) &&
-              product.video.length > 0 && (
-                <Card className="shadow-sm mb-4">
-                  <Card.Header className="bg-white border-bottom">
-                    <h6 className="mb-0">
-                      <i className="fas fa-video text-primary me-2"></i> Video
-                      sản phẩm
-                    </h6>
-                  </Card.Header>
-                  <Card.Body>
-                    <Row>
-                      {product.video.map((vid, index) => (
-                        <Col key={index} xs={6} className="mb-3">
-                          <div
-                            className="position-relative bg-dark rounded overflow-hidden"
-                            style={{ height: "120px", cursor: "pointer" }}
-                            onClick={() => handleVideoPlay(vid)}
-                            role="button"
-                            aria-label={`Play video ${index + 1}`}
-                          >
-                            <div className="position-absolute top-50 start-50 translate-middle text-white">
-                              <i
-                                className="fas fa-play-circle"
-                                style={{ fontSize: "3rem" }}
-                              ></i>
-                            </div>
-                            <div className="position-absolute bottom-0 start-0 end-0 bg-gradient-dark text-white p-2">
-                              <small>Video {index + 1}</small>
-                            </div>
-                          </div>
-                        </Col>
-                      ))}
-                    </Row>
-                  </Card.Body>
-                </Card>
-              )}
           </Col>
 
           {/* Product Details & Purchase */}
@@ -861,22 +776,6 @@ const ProductView = () => {
                   </Col>
                 </Row>
 
-                {product.description && (
-                  <>
-                    <hr className="my-4" />
-                    <div className="mb-3">
-                      <label className="form-label text-muted small fw-bold">
-                        MÔ TẢ
-                      </label>
-                      <div className="bg-light p-3 rounded">
-                        <p className="mb-0" style={{ lineHeight: "1.6" }}>
-                          {product.description}
-                        </p>
-                      </div>
-                    </div>
-                  </>
-                )}
-
                 {product.features && product.features.length > 0 && (
                   <>
                     <hr className="my-4" />
@@ -924,108 +823,97 @@ const ProductView = () => {
               )}
           </Col>
         </Row>
-      </Container>
 
-      {/* Video Modal */}
-      <Modal
-        show={showVideoModal}
-        onHide={() => {
-          setShowVideoModal(false);
-          setSelectedVideo("");
-          setSelectedVideoType("");
-        }}
-        size="lg"
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <i className="fas fa-video text-primary me-2"></i>
-            Video sản phẩm
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="p-0">
-          {selectedVideo && (
-            <div className="position-relative">
-              {/* Check video type */}
-              {selectedVideoType === 'youtube' ? (
-                <div className="ratio ratio-16x9">
-                  <iframe
-                    src={selectedVideo}
-                    title="Product video"
-                    allowFullScreen
-                    style={{ border: "none" }}
-                    onError={(e) => {
-                      console.error("YouTube video loading error:", e);
-                      e.target.style.display = "none";
-                      const fallback = e.target.parentElement.querySelector('.video-fallback');
-                      if (fallback) fallback.style.display = "flex";
-                    }}
-                  ></iframe>
-                </div>
-              ) : (
-                <video
-                  controls
-                  className="w-100"
-                  style={{ maxHeight: "400px" }}
-                  src={selectedVideo}
-                  aria-label="Product video playback"
-                  onError={(e) => {
-                    console.error("Video playback error:", e);
-                    e.target.style.display = "none";
-                    const fallback = e.target.parentElement.querySelector('.video-fallback');
-                    if (fallback) fallback.style.display = "flex";
-                  }}
-                >
-                  Your browser does not support the video tag.
-                </video>
-              )}
-
-              {/* Fallback message if video fails to load */}
-              <div
-                className="video-fallback d-none text-center p-4 bg-light"
-                style={{
-                  minHeight: "200px",
-                  display: "none",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <div>
-                  <i
-                    className="fas fa-exclamation-triangle text-warning mb-3"
-                    style={{ fontSize: "3rem" }}
-                  ></i>
-                  <p className="mb-0">Không thể phát video này.</p>
-                  <small className="text-muted">
-                    Vui lòng thử lại sau hoặc liên hệ hỗ trợ.
-                  </small>
-                  <div className="mt-3">
-                    <small className="text-muted">
-                      Loại: {selectedVideoType === 'youtube' ? 'YouTube' : 'Direct Video'}
-                    </small>
-                    <br />
-                    <small className="text-muted">
-                      URL: {selectedVideo}
-                    </small>
-                  </div>
-                </div>
+        {/* Product Videos - HIỂN THỊ TO Ở DƯỚI CÙNG */}
+        {product.video && Array.isArray(product.video) && product.video.length > 0 && (
+          <section className="py-5" style={{ background: '#fff' }}>
+            <Container>
+              <div className="mb-4 text-center">
+                <h2 className="fw-bold mb-3">
+                  <i className="fas fa-info-circle text-primary me-2"></i>Mô tả sản phẩm
+                </h2>
+                {product.description && (
+                  <p className="lead mb-0" style={{ margin: '0 auto', lineHeight: 1.7 }}>
+                    {product.description}
+                  </p>
+                )}
               </div>
-            </div>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button 
-            variant="secondary" 
-            onClick={() => {
-              setShowVideoModal(false);
-              setSelectedVideo("");
-              setSelectedVideoType("");
-            }}
-          >
-            Đóng
-          </Button>
-        </Modal.Footer>
-      </Modal>
+              <Row className="justify-content-center">
+                {product.video.map((vid, index) => {
+                  const isYouTube = isYouTubeUrl(vid);
+                  const embedUrl = isYouTube ? getYouTubeEmbedUrl(vid) : vid;
+                  return (
+                    <Col key={index} xs={12} md={10} className="mb-5 d-flex justify-content-center">
+                      <div style={{ width: '100%', maxWidth: 900 }}>
+                        {isYouTube ? (
+                          <div className="ratio ratio-16x9" style={{ minHeight: 400 }}>
+                            <iframe
+                              src={embedUrl}
+                              title={`Product video ${index + 1}`}
+                              allowFullScreen
+                              style={{ border: "none", width: '100%', height: '100%' }}
+                              onError={e => {
+                                e.target.style.display = "none";
+                                const fallback = e.target.parentElement.querySelector('.video-fallback');
+                                if (fallback) fallback.style.display = "flex";
+                              }}
+                            ></iframe>
+                          </div>
+                        ) : (
+                          <video
+                            controls
+                            className="w-100"
+                            style={{ maxHeight: 500, minHeight: 400, background: '#000' }}
+                            src={embedUrl}
+                            aria-label={`Product video playback ${index + 1}`}
+                            onError={e => {
+                              e.target.style.display = "none";
+                              const fallback = e.target.parentElement.querySelector('.video-fallback');
+                              if (fallback) fallback.style.display = "flex";
+                            }}
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                        )}
+                        {/* Fallback message if video fails to load */}
+                        <div
+                          className="video-fallback d-none text-center p-4 bg-light"
+                          style={{
+                            minHeight: "200px",
+                            display: "none",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <div>
+                            <i
+                              className="fas fa-exclamation-triangle text-warning mb-3"
+                              style={{ fontSize: "3rem" }}
+                            ></i>
+                            <p className="mb-0">Không thể phát video này.</p>
+                            <small className="text-muted">
+                              Vui lòng thử lại sau hoặc liên hệ hỗ trợ.
+                            </small>
+                            <div className="mt-3">
+                              <small className="text-muted">
+                                Loại: {isYouTube ? 'YouTube' : 'Direct Video'}
+                              </small>
+                              <br />
+                              <small className="text-muted">
+                                URL: {embedUrl}
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Col>
+                  );
+                })}
+              </Row>
+            </Container>
+          </section>
+        )}
+      </Container>
 
       {/* Recently Viewed Products */}
       {recentlyViewed.length > 0 && (
