@@ -36,6 +36,7 @@ const ProductView = () => {
   const [loading, setLoading] = useState(true);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState("");
+  const [selectedVideoType, setSelectedVideoType] = useState(""); // 'youtube' or 'direct'
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
@@ -239,9 +240,70 @@ const ProductView = () => {
 
   const handleVideoPlay = (videoUrl) => {
     if (videoUrl && typeof videoUrl === "string") {
-      setSelectedVideo(videoUrl);
+      console.log("🎬 Playing video:", videoUrl);
+      
+      // Validate URL format
+      if (isYouTubeUrl(videoUrl)) {
+        const embedUrl = getYouTubeEmbedUrl(videoUrl);
+        console.log("📺 YouTube embed URL:", embedUrl);
+        console.log("🎯 Setting video type: youtube");
+        setSelectedVideo(embedUrl); // Set the embed URL instead of original URL
+        setSelectedVideoType('youtube');
+      } else {
+        // For direct video files, check if it's a valid URL
+        try {
+          new URL(videoUrl);
+          console.log("🎥 Direct video URL:", videoUrl);
+          console.log("🎯 Setting video type: direct");
+          setSelectedVideo(videoUrl);
+          setSelectedVideoType('direct');
+        } catch (error) {
+          console.error("❌ Invalid video URL:", videoUrl);
+          alert("URL video không hợp lệ. Vui lòng kiểm tra lại.");
+          return;
+        }
+      }
+      
+      console.log("🚀 Opening video modal");
       setShowVideoModal(true);
+    } else {
+      console.error("❌ Invalid video URL provided:", videoUrl);
+      alert("Không thể phát video. Vui lòng thử lại.");
     }
+  };
+
+  // Helper function to convert YouTube URL to embed URL
+  const getYouTubeEmbedUrl = (url) => {
+    if (!url) return "";
+    
+    // Handle different YouTube URL formats
+    let videoId = "";
+    
+    if (url.includes("youtube.com/watch?v=")) {
+      videoId = url.split("v=")[1];
+      // Remove any additional parameters
+      const ampersandPosition = videoId.indexOf("&");
+      if (ampersandPosition !== -1) {
+        videoId = videoId.substring(0, ampersandPosition);
+      }
+    } else if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1];
+      // Remove any additional parameters
+      const ampersandPosition = videoId.indexOf("&");
+      if (ampersandPosition !== -1) {
+        videoId = videoId.substring(0, ampersandPosition);
+      }
+    } else if (url.includes("youtube.com/embed/")) {
+      // Already an embed URL
+      return url;
+    }
+    
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  };
+
+  // Helper function to check if URL is YouTube
+  const isYouTubeUrl = (url) => {
+    return url && (url.includes("youtube.com") || url.includes("youtu.be"));
   };
 
   const handleQuantityChange = (change) => {
@@ -867,7 +929,11 @@ const ProductView = () => {
       {/* Video Modal */}
       <Modal
         show={showVideoModal}
-        onHide={() => setShowVideoModal(false)}
+        onHide={() => {
+          setShowVideoModal(false);
+          setSelectedVideo("");
+          setSelectedVideoType("");
+        }}
         size="lg"
         centered
       >
@@ -880,17 +946,20 @@ const ProductView = () => {
         <Modal.Body className="p-0">
           {selectedVideo && (
             <div className="position-relative">
-              {/* Check if it's a YouTube URL */}
-              {selectedVideo.includes("youtube.com") ||
-                selectedVideo.includes("youtu.be") ? (
+              {/* Check video type */}
+              {selectedVideoType === 'youtube' ? (
                 <div className="ratio ratio-16x9">
                   <iframe
-                    src={selectedVideo
-                      .replace("watch?v=", "embed/")
-                      .replace("youtu.be/", "youtube.com/embed/")}
+                    src={selectedVideo}
                     title="Product video"
                     allowFullScreen
                     style={{ border: "none" }}
+                    onError={(e) => {
+                      console.error("YouTube video loading error:", e);
+                      e.target.style.display = "none";
+                      const fallback = e.target.parentElement.querySelector('.video-fallback');
+                      if (fallback) fallback.style.display = "flex";
+                    }}
                   ></iframe>
                 </div>
               ) : (
@@ -903,7 +972,8 @@ const ProductView = () => {
                   onError={(e) => {
                     console.error("Video playback error:", e);
                     e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "block";
+                    const fallback = e.target.parentElement.querySelector('.video-fallback');
+                    if (fallback) fallback.style.display = "flex";
                   }}
                 >
                   Your browser does not support the video tag.
@@ -912,10 +982,10 @@ const ProductView = () => {
 
               {/* Fallback message if video fails to load */}
               <div
-                className="d-none text-center p-4 bg-light"
+                className="video-fallback d-none text-center p-4 bg-light"
                 style={{
                   minHeight: "200px",
-                  display: "flex",
+                  display: "none",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
@@ -929,13 +999,29 @@ const ProductView = () => {
                   <small className="text-muted">
                     Vui lòng thử lại sau hoặc liên hệ hỗ trợ.
                   </small>
+                  <div className="mt-3">
+                    <small className="text-muted">
+                      Loại: {selectedVideoType === 'youtube' ? 'YouTube' : 'Direct Video'}
+                    </small>
+                    <br />
+                    <small className="text-muted">
+                      URL: {selectedVideo}
+                    </small>
+                  </div>
                 </div>
               </div>
             </div>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowVideoModal(false)}>
+          <Button 
+            variant="secondary" 
+            onClick={() => {
+              setShowVideoModal(false);
+              setSelectedVideo("");
+              setSelectedVideoType("");
+            }}
+          >
             Đóng
           </Button>
         </Modal.Footer>
