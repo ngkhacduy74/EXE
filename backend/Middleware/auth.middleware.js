@@ -38,7 +38,6 @@ const verifyToken = async (req, res, next) => {
     }
     // Kiểm tra token hiện tại trong DB (tìm theo email)
     const user = await User.findOne({ email: decoded.user.email });
-    console.log("tokendsksksk:", user);
     if (!user || user.currentToken !== token) {
       return res.status(401).json({
         message: "Tài khoản đã đăng nhập ở nơi khác hoặc token không hợp lệ",
@@ -79,7 +78,6 @@ const verifyAdmin = async (req, res, next) => {
     }
     // Kiểm tra token hiện tại trong DB (tìm theo email)
     const user = await User.findOne({ email: decoded.user.email });
-    console.log("verifyAdmin:", user);
     if (!user || user.currentToken !== token) {
       return res.status(401).json({
         message: "Tài khoản đã đăng nhập ở nơi khác hoặc token không hợp lệ",
@@ -120,7 +118,6 @@ const verifyUser = async (req, res, next) => {
     }
 
     const user = await User.findOne({ email: decoded.user.email });
-    console.log("vferrifyUser:", user);
     if (!user || user.currentToken !== token) {
       return res.status(401).json({
         message: "Tài khoản đã đăng nhập ở nơi khác hoặc token không hợp lệ",

@@ -35,25 +35,15 @@ const BestSellingCarousel = () => {
           `${process.env.REACT_APP_BACKEND_URL}/product/`
         );
 
-        console.log("=== API RESPONSE ===");
-        console.log("Full response:", response);
-        console.log("Response data:", response.data);
-        console.log("Response data.data:", response.data.data);
-
         // Handle different response structures
         const productData = Array.isArray(response.data.data)
           ? response.data.data
           : [];
 
-        console.log("Product data after processing:", productData);
-
         // Filter products to only include those with status "New"
         const newProducts = productData.filter(
           (product) => product.status === "New"
         );
-
-        console.log("New products after filtering:", newProducts);
-        console.log("Sample product structure:", newProducts[0]);
 
         if (newProducts.length === 0) {
           throw new Error("No new products found.");
@@ -107,16 +97,9 @@ const BestSellingCarousel = () => {
 
   // Get product image (handle array format)
   const getProductImage = (product) => {
-    console.log("=== DEBUG getProductImage ===");
-    console.log("Product name:", product.name);
-    console.log("Product image data:", product.image);
-    console.log("Product image type:", typeof product.image);
-    console.log("Is array:", Array.isArray(product.image));
-
     if (product.image) {
       if (Array.isArray(product.image) && product.image.length > 0) {
         const firstImage = product.image[0];
-        console.log("First image from array:", firstImage);
 
         // Check if URL is valid
         if (firstImage && firstImage.trim() !== "") {
@@ -126,7 +109,6 @@ const BestSellingCarousel = () => {
             const fullUrl = firstImage.startsWith("/")
               ? `${baseUrl}${firstImage}`
               : `${baseUrl}/${firstImage.replace("./", "")}`;
-            console.log("Converted relative URL to:", fullUrl);
             return fullUrl;
           }
 
@@ -135,7 +117,6 @@ const BestSellingCarousel = () => {
             firstImage.startsWith("http://") ||
             firstImage.startsWith("https://")
           ) {
-            console.log("Returning absolute URL:", firstImage);
             return firstImage;
           }
 
@@ -146,16 +127,12 @@ const BestSellingCarousel = () => {
             firstImage.includes("imgur.com") ||
             firstImage.includes("unsplash.com")
           ) {
-            console.log("Returning image service URL:", firstImage);
             return firstImage;
           }
 
-          console.log("Returning image URL:", firstImage);
           return firstImage;
         }
       } else if (typeof product.image === "string") {
-        console.log("Using image as string:", product.image);
-
         if (product.image.trim() !== "") {
           // If it's a relative URL, make it absolute
           if (product.image.startsWith("/") || product.image.startsWith("./")) {
@@ -163,7 +140,6 @@ const BestSellingCarousel = () => {
             const fullUrl = product.image.startsWith("/")
               ? `${baseUrl}${product.image}`
               : `${baseUrl}/${product.image.replace("./", "")}`;
-            console.log("Converted relative URL to:", fullUrl);
             return fullUrl;
           }
 
@@ -172,7 +148,6 @@ const BestSellingCarousel = () => {
             product.image.startsWith("http://") ||
             product.image.startsWith("https://")
           ) {
-            console.log("Returning absolute URL:", product.image);
             return product.image;
           }
 
@@ -183,30 +158,21 @@ const BestSellingCarousel = () => {
             product.image.includes("imgur.com") ||
             product.image.includes("unsplash.com")
           ) {
-            console.log("Returning image service URL:", product.image);
             return product.image;
           }
 
-          console.log("Returning image URL:", product.image);
           return product.image;
         }
       }
     }
     // Fallback image
-    console.log("Using fallback image:", backUpImg);
     return backUpImg;
   };
 
   // Handle image load error
   const handleImageError = (e) => {
-    console.log("=== IMAGE ERROR ===");
-    console.log("Failed to load image:", e.target.src);
-    console.log("Product name:", e.target.alt);
-    console.log("Setting fallback to:", backUpImg);
-
     // Prevent infinite loop
     if (e.target.src === backUpImg) {
-      console.log("Already using fallback image, not changing");
       return;
     }
 
@@ -309,14 +275,6 @@ const BestSellingCarousel = () => {
             className="img-fluid rounded-top"
             alt={product.name || "Product"}
             onError={handleImageError}
-            onLoad={() =>
-              console.log(
-                "Image loaded successfully:",
-                product.name,
-                "URL:",
-                getProductImage(product)
-              )
-            }
             loading="lazy"
             style={{
               height: "240px",

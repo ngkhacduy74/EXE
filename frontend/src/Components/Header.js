@@ -322,12 +322,6 @@ function Header() {
     }
   }, []);
 
-  // Debug logs
-  console.log('Header render - user:', user);
-  console.log('Header render - loading:', loading);
-  console.log('Header render - localStorage user:', localStorage.getItem('user'));
-  console.log('Header render - localStorage token:', localStorage.getItem('token'));
-
   if (loading) {
     return <div>Loading...</div>;
   }

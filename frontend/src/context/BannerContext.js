@@ -26,7 +26,6 @@ export const BannerProvider = ({ children }) => {
 
       if (response.data.success) {
         setBannerProducts(response.data.data || []);
-        console.log('BannerContext: Loaded banner products:', response.data.data);
       }
     } catch (error) {
       console.error('Error loading banner products:', error);

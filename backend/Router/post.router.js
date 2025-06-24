@@ -44,7 +44,6 @@ router.put(
       }
 
       const decoded = jwt.verify(authHeader, process.env.JWT_SECRET_KEY);
-      console.log("Token decoded:", decoded);
 
       const result = await changePostCondition(condition, id, decoded);
       if (result.success === false) {
