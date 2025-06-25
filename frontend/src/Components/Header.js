@@ -1,13 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  Search,
-  Star,
-  X,
-  Plus,
-  Menu,
-  ChevronDown,
-} from "lucide-react";
+import { Search, Star, X, Plus, Menu, ChevronDown } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { authApiClient } from "../Services/auth.service";
 
@@ -114,7 +107,7 @@ function Header() {
           setShowSuggestions(false);
         }
       }
-      
+
       // Check mobile search
       if (
         mobileSearchRef.current &&
@@ -282,13 +275,15 @@ function Header() {
     const queryString = params.toString();
     navigate(`/product-browser${queryString ? `?${queryString}` : ""}`);
     setShowSuggestions(false);
-    
+
     // Close mobile search offcanvas if open
     if (isMobileSearchOpen) {
-      const offcanvasElement = document.getElementById('offcanvasSearch');
+      const offcanvasElement = document.getElementById("offcanvasSearch");
       if (offcanvasElement) {
         // Use data attributes to close offcanvas
-        const closeButton = offcanvasElement.querySelector('[data-bs-dismiss="offcanvas"]');
+        const closeButton = offcanvasElement.querySelector(
+          '[data-bs-dismiss="offcanvas"]'
+        );
         if (closeButton) {
           closeButton.click();
         }
@@ -307,13 +302,15 @@ function Header() {
       handleSearch(null, suggestion.name);
     }
     setShowSuggestions(false);
-    
+
     // Close mobile search offcanvas if open
     if (isMobileSearchOpen) {
-      const offcanvasElement = document.getElementById('offcanvasSearch');
+      const offcanvasElement = document.getElementById("offcanvasSearch");
       if (offcanvasElement) {
         // Use data attributes to close offcanvas
-        const closeButton = offcanvasElement.querySelector('[data-bs-dismiss="offcanvas"]');
+        const closeButton = offcanvasElement.querySelector(
+          '[data-bs-dismiss="offcanvas"]'
+        );
         if (closeButton) {
           closeButton.click();
         }
@@ -329,7 +326,7 @@ function Header() {
     } else if (recentSearches.length > 0) {
       setShowSuggestions(true);
     }
-    
+
     // For mobile, always show suggestions when focused if there are recent searches
     if (isMobileSearchOpen && recentSearches.length > 0) {
       setShowSuggestions(true);
@@ -365,20 +362,20 @@ function Header() {
 
   // Monitor mobile search offcanvas state
   useEffect(() => {
-    const offcanvasElement = document.getElementById('offcanvasSearch');
+    const offcanvasElement = document.getElementById("offcanvasSearch");
     if (offcanvasElement) {
       const handleShow = () => setIsMobileSearchOpen(true);
       const handleHide = () => {
         setIsMobileSearchOpen(false);
         setShowSuggestions(false); // Close suggestions when offcanvas closes
       };
-      
-      offcanvasElement.addEventListener('shown.bs.offcanvas', handleShow);
-      offcanvasElement.addEventListener('hidden.bs.offcanvas', handleHide);
-      
+
+      offcanvasElement.addEventListener("shown.bs.offcanvas", handleShow);
+      offcanvasElement.addEventListener("hidden.bs.offcanvas", handleHide);
+
       return () => {
-        offcanvasElement.removeEventListener('shown.bs.offcanvas', handleShow);
-        offcanvasElement.removeEventListener('hidden.bs.offcanvas', handleHide);
+        offcanvasElement.removeEventListener("shown.bs.offcanvas", handleShow);
+        offcanvasElement.removeEventListener("hidden.bs.offcanvas", handleHide);
       };
     }
   }, []);
@@ -394,16 +391,21 @@ function Header() {
       else if (searchTerm.trim().length >= 2 && suggestions.length > 0) {
         setShowSuggestions(true);
       }
-      
+
       // Focus on mobile search input when opened
       setTimeout(() => {
-        const mobileInput = document.getElementById('mobileSearchInput');
+        const mobileInput = document.getElementById("mobileSearchInput");
         if (mobileInput) {
           mobileInput.focus();
         }
       }, 100);
     }
-  }, [isMobileSearchOpen, recentSearches.length, searchTerm, suggestions.length]);
+  }, [
+    isMobileSearchOpen,
+    recentSearches.length,
+    searchTerm,
+    suggestions.length,
+  ]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -667,32 +669,44 @@ function Header() {
                               <div className="flex-grow-1 min-w-0">
                                 <div
                                   className="fw-semibold text-truncate mb-2"
-                                  style={{ 
+                                  style={{
                                     maxWidth: "100%",
                                     fontSize: "14px",
-                                    lineHeight: "1.4"
+                                    lineHeight: "1.4",
                                   }}
                                 >
                                   {suggestion.name}
                                 </div>
 
                                 <div className="small text-muted mb-2">
-                                  <span className="badge bg-light text-dark me-2" style={{fontSize: "10px", padding: "4px 8px"}}>
+                                  <span
+                                    className="badge bg-light text-dark me-2"
+                                    style={{
+                                      fontSize: "10px",
+                                      padding: "4px 8px",
+                                    }}
+                                  >
                                     {suggestion.brand}
                                   </span>
-                                  <span className="text-muted" style={{fontSize: "12px"}}>
+                                  <span
+                                    className="text-muted"
+                                    style={{ fontSize: "12px" }}
+                                  >
                                     {suggestion.category}
                                   </span>
                                 </div>
 
                                 {/* Price and Rating */}
                                 <div className="d-flex justify-content-between align-items-center mb-1">
-                                  <div className="text-primary fw-bold" style={{fontSize: "13px"}}>
+                                  <div
+                                    className="text-primary fw-bold"
+                                    style={{ fontSize: "13px" }}
+                                  >
                                     {formatPrice(suggestion.price)}
                                   </div>
 
                                   {suggestion.rating && (
-                                    <div style={{fontSize: "11px"}}>
+                                    <div style={{ fontSize: "11px" }}>
                                       {renderStars(suggestion.rating)}
                                     </div>
                                   )}
@@ -707,7 +721,10 @@ function Header() {
                                           ? "bg-success"
                                           : "bg-danger"
                                       }`}
-                                      style={{fontSize: "10px", padding: "4px 8px"}}
+                                      style={{
+                                        fontSize: "10px",
+                                        padding: "4px 8px",
+                                      }}
                                     >
                                       {suggestion.quantity > 0
                                         ? `Còn ${suggestion.quantity}`
@@ -969,7 +986,16 @@ function Header() {
                         <button
                           className="dropdown-item"
                           type="button"
-                          onClick={() => navigate("/create-product")}
+                          onClick={() => {
+                            if (
+                              user.role &&
+                              user.role.toLowerCase() === "admin"
+                            ) {
+                              navigate("/create-product");
+                            } else {
+                              navigate("/user-create-product");
+                            }
+                          }}
                         >
                           Tạo sản phẩm mới
                         </button>
@@ -1248,7 +1274,11 @@ function Header() {
                             style={{ cursor: "pointer" }}
                           >
                             <Search size={16} className="text-muted me-3" />
-                            <span style={{fontSize: "14px", fontWeight: "500"}}>{term}</span>
+                            <span
+                              style={{ fontSize: "14px", fontWeight: "500" }}
+                            >
+                              {term}
+                            </span>
                           </div>
                         ))}
                       </div>

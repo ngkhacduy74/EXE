@@ -51,19 +51,36 @@ const CreateProduct = () => {
   const [descriptionHtml, setDescriptionHtml] = useState("");
   const descriptionDivRef = React.useRef();
 
-  // Đã bỏ mọi logic chặn user truy cập trang này, chỉ lấy userRole để điều chỉnh UI
-  let userRole = "user";
-  try {
-    const token = localStorage.getItem("token");
-    console.log("token:", token);
-    const payload = parseJwt(token);
-    console.log("payload:", payload);
-    if (payload && payload.user && payload.user.role)
-      userRole = payload.user.role.toLowerCase();
-    console.log("userRole:", userRole);
-  } catch (e) {
-    console.error("parseJwt error", e);
-  }
+  // Chỉ dùng state isAdmin để kiểm tra quyền
+  const [isAdmin, setIsAdmin] = useState(null);
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsAdmin(false);
+        alert("Bạn không có quyền truy cập trang này!");
+        navigate("/", { replace: true });
+        return;
+      }
+      const payload = parseJwt(token);
+      // Kiểm tra quyền admin đúng chuẩn
+      if (
+        payload &&
+        ((payload.role && payload.role.toLowerCase() === "admin") ||
+         (payload.user && payload.user.role && payload.user.role.toLowerCase() === "admin"))
+      ) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+        alert("Bạn không có quyền truy cập trang này!");
+        navigate("/", { replace: true });
+      }
+    } catch {
+      setIsAdmin(false);
+      alert("Bạn không có quyền truy cập trang này!");
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   // Xử lý paste vào vùng mô tả (ảnh + text)
   const handleDescriptionPaste = async (e) => {
@@ -664,6 +681,19 @@ const CreateProduct = () => {
     });
   }
 
+  if (isAdmin === false) {
+    return (
+      <Container style={{ maxWidth: 600, margin: "80px auto" }}>
+        <Alert variant="danger" className="mt-5 text-center">
+          Bạn không có quyền truy cập trang này.
+        </Alert>
+      </Container>
+    );
+  }
+  if (isAdmin === null) {
+    return null; // or a spinner
+  }
+
   return (
     <Container
       fluid
@@ -800,29 +830,14 @@ const CreateProduct = () => {
                       <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>Tình trạng</Form.Label>
-                          {userRole === "user" ? (
-                            <Form.Control
-                              type="text"
-                              name="status"
-                              value="Đã qua sử dụng"
-                              readOnly
-                              disabled
-                            />
-                          ) : (
-                            <Form.Select
-                              name="status"
-                              value={formData.status}
-                              onChange={handleInputChange}
-                            >
-                              <option value="New">Mới</option>
-                              <option value="SecondHand">Đã qua sử dụng</option>
-                            </Form.Select>
-                          )}
-                          {userRole === "user" && (
-                            <Form.Text className="text-muted">
-                              Người dùng chỉ được đăng sản phẩm đã qua sử dụng
-                            </Form.Text>
-                          )}
+                          <Form.Select
+                            name="status"
+                            value={formData.status}
+                            onChange={handleInputChange}
+                          >
+                            <option value="New">Mới</option>
+                            <option value="SecondHand">Đã qua sử dụng</option>
+                          </Form.Select>
                         </Form.Group>
                       </Col>
                     </Row>

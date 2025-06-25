@@ -35,6 +35,7 @@ import ProductView from "./Pages/ProductView";
 import CreatePost from "./Admin/CreatePost";
 import PhoneFixed from "./Components/Phonefixed";
 import PostView from "./Pages/PostView";
+import UserCreateProduct from "./Admin/UserCreateProduct";
 
 const App = () => {
   const [message, setMessage] = useState("");
@@ -64,8 +65,6 @@ const App = () => {
       .then((data) => setMessage(data.message))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
-
-
 
   return (
     <BannerProvider>
@@ -97,6 +96,10 @@ const App = () => {
             <Route path="/product/:productId" element={<ProductDetails />} />
 
             <Route path="/create-product" element={<CreateProduct />} />
+            <Route
+              path="/user-create-product"
+              element={<UserCreateProduct />}
+            />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/product-browser" element={<ProductBrowser />} />
             <Route path="/compare-product" element={<CompareProduct />} />
