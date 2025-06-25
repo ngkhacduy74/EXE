@@ -8,8 +8,14 @@ const {
   loadProductStatus,
   loadAllProduct,
   getProductById,
+  loadProductByUser,
 } = require("../Controller/product.controller");
-const { verifyAdmin, verifyToken } = require("../Middleware/auth.middleware");
+const {
+  verifyAdmin,
+  verifyToken,
+  verifyUser,
+} = require("../Middleware/auth.middleware");
+const { JsonWebTokenError } = require("jsonwebtoken");
 router.post(
   "/createProduct",
   verifyToken,
@@ -43,15 +49,22 @@ router.get("/status/:status", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
-router.get("/:id", verifyToken, async (req, res) => {
-  const result = await getProductById(req.params.id);
+router.get("/", async (req, res) => {
+  const result = await loadAllProduct();
   if (result.success === false) {
     return res.status(500).json(result);
   }
   res.status(200).json(result);
 });
-router.get("/", async (req, res) => {
-  const result = await loadAllProduct();
+router.get("/user/products", verifyUser, async (req, res) => {
+  const result = await loadProductByUser(req.user.user.email);
+  if (result.success === false) {
+    return res.status(500).json(result);
+  }
+  res.status(200).json(result);
+});
+router.get("/:id", verifyToken, async (req, res) => {
+  const result = await getProductById(req.params.id);
   if (result.success === false) {
     return res.status(500).json(result);
   }

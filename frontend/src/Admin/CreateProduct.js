@@ -67,7 +67,9 @@ const CreateProduct = () => {
       if (
         payload &&
         ((payload.role && payload.role.toLowerCase() === "admin") ||
-         (payload.user && payload.user.role && payload.user.role.toLowerCase() === "admin"))
+          (payload.user &&
+            payload.user.role &&
+            payload.user.role.toLowerCase() === "admin"))
       ) {
         setIsAdmin(true);
       } else {

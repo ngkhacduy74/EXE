@@ -27,7 +27,15 @@ const verifyToken = async (req, res, next) => {
         .status(401)
         .json({ message: "Unauthorized: Token không được cung cấp" });
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    } catch (err) {
+      return res.status(403).json({
+        message: "Token không hợp lệ hoặc đã hết hạn",
+        error: err.message,
+      });
+    }
     if (
       !decoded ||
       (decoded.user.role !== "Admin" && decoded.user.role !== "User")
@@ -46,6 +54,7 @@ const verifyToken = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
+    console.error("[verifyToken] Lỗi xác thực:", error);
     return res.status(403).json({
       message: "Token không hợp lệ hoặc đã hết hạn",
       error: error.message,
@@ -70,7 +79,15 @@ const verifyAdmin = async (req, res, next) => {
         .status(401)
         .json({ message: "Unauthorized: Token không được cung cấp" });
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    } catch (err) {
+      return res.status(403).json({
+        message: "Token không hợp lệ hoặc đã hết hạn",
+        error: err.message,
+      });
+    }
     if (!decoded || decoded.user.role !== "Admin") {
       return res
         .status(403)
@@ -86,6 +103,7 @@ const verifyAdmin = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
+    console.error("[verifyAdmin] Lỗi xác thực:", error);
     return res.status(403).json({
       message: "Token không hợp lệ hoặc đã hết hạn",
       error: error.message,
@@ -94,6 +112,7 @@ const verifyAdmin = async (req, res, next) => {
 };
 
 const verifyUser = async (req, res, next) => {
+  console.log("jaasd", req.headers.token);
   if (req.method === "OPTIONS") {
     return next();
   }
@@ -110,13 +129,21 @@ const verifyUser = async (req, res, next) => {
         .status(401)
         .json({ message: "Unauthorized: Token không được cung cấp" });
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    } catch (err) {
+      return res.status(403).json({
+        message: "Token không hợp lệ hoặc đã hết hạn",
+        error: err.message,
+      });
+    }
+    console.log("oi2uqew", decoded);
     if (!decoded || decoded.user.role !== "User") {
       return res
         .status(403)
         .json({ message: "Forbidden: Bạn không có quyền truy cập" });
     }
-
     const user = await User.findOne({ email: decoded.user.email });
     if (!user || user.currentToken !== token) {
       return res.status(401).json({
@@ -126,12 +153,14 @@ const verifyUser = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
+    console.error("[verifyUser] Lỗi xác thực:", error);
     return res.status(403).json({
       message: "Token không hợp lệ hoặc đã hết hạn",
       error: error.message,
     });
   }
 };
+
 module.exports = {
   validateUser,
   verifyAdmin,

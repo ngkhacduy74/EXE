@@ -36,6 +36,7 @@ import CreatePost from "./Admin/CreatePost";
 import PhoneFixed from "./Components/Phonefixed";
 import PostView from "./Pages/PostView";
 import UserCreateProduct from "./Admin/UserCreateProduct";
+import UserProductManager from "./Pages/UserProductManager";
 
 const App = () => {
   const [message, setMessage] = useState("");
@@ -103,6 +104,7 @@ const App = () => {
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/product-browser" element={<ProductBrowser />} />
             <Route path="/compare-product" element={<CompareProduct />} />
+            <Route path="/user-products" element={<UserProductManager />} />
             {/* 404 Error Page */}
           </Routes>
           <PhoneFixed />

@@ -1,3 +1,4 @@
+const { number } = require("joi");
 const Product = require("../Model/product.model");
 const mongoose = require("mongoose");
 const { v1 } = require("uuid");
@@ -59,6 +60,25 @@ const createProduct = async (data, user) => {
       description: "func createProduct",
     };
   }
+};
+const loadProductByUser = async (userEmail) => {
+  console.log("userEmail", userEmail);
+  const pipeline = [];
+  pipeline.push({ $match: { "creator.email": userEmail } });
+  pipeline.push({ $sort: { createdAt: -1 } });
+  const listProduct = await Product.aggregate(pipeline);
+  if (!listProduct) {
+    return {
+      success: false,
+      message: "Not found Product",
+      description: "func loadProductByUser",
+    };
+  }
+  return {
+    success: true,
+    data: listProduct,
+    number: listProduct.length,
+  };
 };
 const getProductById = async (id) => {
   const product = await Product.findOne({ id: id });
@@ -149,4 +169,5 @@ module.exports = {
   loadProductStatus,
   getProductById,
   loadAllProduct,
+  loadProductByUser,
 };

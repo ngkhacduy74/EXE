@@ -28,6 +28,15 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 200,
   preflightContinue: false,
+  allowedHeaders: [
+    "Content-Type",
+    "token",
+    "authorization",
+    "x-access-token",
+    "Origin",
+    "Accept",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 };
 
 app.use(cors(corsOptions));
