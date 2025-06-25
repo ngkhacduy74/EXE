@@ -799,15 +799,18 @@ function Header() {
                       className="dropdown-menu"
                       aria-labelledby="createDropdown"
                     >
-                      <li>
-                        <button
-                          className="dropdown-item"
-                          type="button"
-                          onClick={() => navigate("/newPost")}
-                        >
-                          Tạo bài viết mới
-                        </button>
-                      </li>
+                      {/* Chỉ hiển thị tạo bài viết mới nếu là admin */}
+                      {user.role && user.role.toLowerCase() === "admin" && (
+                        <li>
+                          <button
+                            className="dropdown-item"
+                            type="button"
+                            onClick={() => navigate("/newPost")}
+                          >
+                            Tạo bài viết mới
+                          </button>
+                        </li>
+                      )}
                       <li>
                         <button
                           className="dropdown-item"
@@ -819,13 +822,6 @@ function Header() {
                       </li>
                     </ul>
                   </div>
-                  <Link
-                    to="/compare-product"
-                    className="btn btn-light rounded-circle p-2"
-                    title="So sánh sản phẩm"
-                  >
-                    <GitCompare size={20} />
-                  </Link>
                 </>
               )}
 

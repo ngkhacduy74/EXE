@@ -10,7 +10,7 @@ export default function NewPostForm() {
 
   useEffect(() => {
     if (!authLoading) {
-      // If user is not admin, redirect
+      // Chỉ cho phép admin truy cập trang này
       if (!user || !user.role || user.role.toLowerCase() !== "admin") {
         navigate("/", { replace: true });
       }
@@ -87,7 +87,7 @@ export default function NewPostForm() {
 
     let submissionData;
     let headers = {};
-    
+
     if (formData.image) {
       submissionData = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
