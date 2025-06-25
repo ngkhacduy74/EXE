@@ -20,6 +20,7 @@ const createProduct = async (data, user) => {
     features,
     quantity,
   } = data;
+  console.log("ưehreh", user);
   const newProduct = new Product({
     id: v1(),
     image: image,
@@ -37,10 +38,10 @@ const createProduct = async (data, user) => {
     voltage: voltage,
     features: features,
     creator: {
-      id: user.id,
-      fullname: user.fullname,
-      phone: user.phone,
-      email: user.email,
+      id: user.user.id,
+      fullname: user.user.fullname,
+      phone: user.user.phone,
+      email: user.user.email,
     },
     quantity: quantity,
   });
