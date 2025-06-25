@@ -39,6 +39,7 @@ const ProductView = () => {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [authChecked, setAuthChecked] = useState(false);
+  const [showPhone, setShowPhone] = useState(false);
 
   // Check if user is authenticated
   useEffect(() => {
@@ -240,18 +241,10 @@ const ProductView = () => {
   };
 
   const handleContactUs = () => {
-    // Add to recently viewed when user shows interest
     if (product) {
       addToRecentlyViewed(product);
     }
-
-    // Redirect to contact page or show contact modal
-    navigate("/contact", {
-      state: {
-        product: product,
-        message: `Tôi quan tâm đến sản phẩm: ${product.name}`,
-      },
-    });
+    setShowPhone((prev) => !prev);
   };
 
   const handleNavigateToProduct = (productId) => {
@@ -705,6 +698,14 @@ const ProductView = () => {
                     <i className="fas fa-phone me-2"></i>
                     Liên hệ
                   </Button>
+                  {showPhone && (
+                    <div className="text-center mt-3">
+                      <h5>Số điện thoại liên hệ:</h5>
+                      <p style={{ fontSize: 22, fontWeight: 600 }}>
+                        {product.business_phone || product.product_phone || "Không có số điện thoại liên hệ"}
+                      </p>
+                    </div>
+                  )}
                   <Button
                     variant="outline-secondary"
                     size="lg"
@@ -771,6 +772,30 @@ const ProductView = () => {
                           BẢO HÀNH
                         </label>
                         <p className="mb-0">{product.warranty_period} tháng</p>
+                      </div>
+                    )}
+                    {product.size && (
+                      <div className="mb-3">
+                        <label className="form-label text-muted small fw-bold">
+                          KÍCH THƯỚC
+                        </label>
+                        <p className="mb-0">{product.size}</p>
+                      </div>
+                    )}
+                    {product.weight && (
+                      <div className="mb-3">
+                        <label className="form-label text-muted small fw-bold">
+                          TRỌNG LƯỢNG
+                        </label>
+                        <p className="mb-0">{product.weight} kg</p>
+                      </div>
+                    )}
+                    {product.voltage && (
+                      <div className="mb-3">
+                        <label className="form-label text-muted small fw-bold">
+                          ĐIỆN ÁP
+                        </label>
+                        <p className="mb-0">{product.voltage}</p>
                       </div>
                     )}
                   </Col>

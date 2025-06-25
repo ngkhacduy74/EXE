@@ -62,7 +62,7 @@ const ProductDetail = () => {
     name: "",
     brand: "",
     price: "",
-    capacity: "",
+    product_phone: "",
     quantity: "",
     status: "New",
     description: "",
@@ -210,7 +210,7 @@ const ProductDetail = () => {
       name: product.name || "",
       brand: product.brand || "",
       price: product.price || "",
-      capacity: product.capacity || "",
+      product_phone: product.product_phone || "",
       quantity: product.quantity || "",
       status: product.status || "New",
       description: product.description || "",
@@ -256,8 +256,8 @@ const ProductDetail = () => {
       newErrors.price = "Giá phải lớn hơn hoặc bằng 1.000 VND";
     }
 
-    if (!editForm.capacity || parseFloat(editForm.capacity) <= 0) {
-      newErrors.capacity = "Dung tích phải lớn hơn 0";
+    if (!editForm.product_phone || editForm.product_phone.trim() === "") {
+      newErrors.product_phone = "Số điện thoại sản phẩm là bắt buộc";
     }
 
     if (!editForm.quantity || parseInt(editForm.quantity) <= 0) {
@@ -293,7 +293,7 @@ const ProductDetail = () => {
         name: editForm.name.trim(),
         brand: editForm.brand.trim(),
         price: parseFloat(editForm.price),
-        capacity: parseFloat(editForm.capacity),
+        product_phone: editForm.product_phone.trim(),
         quantity: parseInt(editForm.quantity),
         status: editForm.status,
         description: editForm.description.trim(),
@@ -381,7 +381,7 @@ const ProductDetail = () => {
       name: "",
       brand: "",
       price: "",
-      capacity: "",
+      product_phone: "",
       quantity: "",
       status: "New",
       description: "",
@@ -672,7 +672,7 @@ const ProductDetail = () => {
                           SỐ ĐIỆN THOẠI DOANH NGHIỆP
                         </label>
                         <p className="mb-0">
-                          {product.business_phone || "N/A"}
+                          {product.product_phone || "N/A"}
                         </p>
                       </div>
                       <div className="mb-3">
@@ -683,6 +683,30 @@ const ProductDetail = () => {
                           {product.warranty_period
                             ? `${product.warranty_period} months`
                             : "N/A"}
+                        </p>
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label text-muted small fw-bold">
+                          SIZE
+                        </label>
+                        <p className="mb-0">
+                          {product.size || "N/A"}
+                        </p>
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label text-muted small fw-bold">
+                          WEIGHT
+                        </label>
+                        <p className="mb-0">
+                          {product.weight ? `${product.weight} kg` : "N/A"}
+                        </p>
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label text-muted small fw-bold">
+                          VOLTAGE
+                        </label>
+                        <p className="mb-0">
+                          {product.voltage || "N/A"}
                         </p>
                       </div>
                     </Col>
@@ -834,18 +858,16 @@ const ProductDetail = () => {
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Dung tích (kg) *</Form.Label>
+                  <Form.Label>Số điện thoại sản phẩm *</Form.Label>
                   <Form.Control
-                    type="number"
-                    value={editForm.capacity}
-                    onChange={(e) =>
-                      handleEditFormChange("capacity", e.target.value)
-                    }
-                    placeholder="0"
-                    isInvalid={!!editErrors.capacity}
+                    type="text"
+                    value={editForm.product_phone}
+                    onChange={(e) => handleEditFormChange("product_phone", e.target.value)}
+                    placeholder="Nhập số điện thoại sản phẩm"
+                    isInvalid={!!editErrors.product_phone}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {editErrors.capacity}
+                    {editErrors.product_phone}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>

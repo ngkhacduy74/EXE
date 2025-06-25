@@ -85,7 +85,7 @@ const ManageProduct = () => {
     name: "",
     brand: "",
     price: "",
-    capacity: "",
+    business_phone: "",
     quantity: "",
     status: "",
     description: ""
@@ -445,7 +445,7 @@ const ManageProduct = () => {
       name: product.name || "",
       brand: product.brand || "",
       price: product.price || "",
-      capacity: product.capacity || "",
+      business_phone: product.business_phone || "",
       quantity: product.quantity || "",
       status: product.status || "New",
       description: product.description || ""
@@ -490,7 +490,7 @@ const ManageProduct = () => {
         name: "",
         brand: "",
         price: "",
-        capacity: "",
+        business_phone: "",
         quantity: "",
         status: "",
         description: ""
@@ -518,7 +518,7 @@ const ManageProduct = () => {
       name: "",
       brand: "",
       price: "",
-      capacity: "",
+      business_phone: "",
       quantity: "",
       status: "",
       description: ""
@@ -722,7 +722,7 @@ const ManageProduct = () => {
                     <th>Thương hiệu</th>
                     <th>Giá tiền</th>
                     <th>Số lượng</th>
-                    <th>Dung tích/ Ngày</th>
+                    <th>Số điện thoại liên hệ</th>
                     <th>Trạng thái</th>
                     <th>Chỉnh sửa</th>
                   </tr>
@@ -744,7 +744,7 @@ const ManageProduct = () => {
                         {product.quantity ? `${product.quantity} kg` : "N/A"}
                       </td>
                       <td>
-                        {product.capacity ? `${product.capacity} kg` : "N/A"}
+                        {product.business_phone ? product.business_phone : "N/A"}
                       </td>
                       <td>
                         <span
@@ -946,12 +946,12 @@ const ManageProduct = () => {
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Dung tích (kg)</Form.Label>
+                    <Form.Label>Số điện thoại sản phẩm</Form.Label>
                     <Form.Control
-                      type="number"
-                      value={editForm.capacity}
-                      onChange={(e) => handleEditFormChange("capacity", e.target.value)}
-                      placeholder="Nhập dung tích"
+                      type="text"
+                      value={editForm.business_phone}
+                      onChange={(e) => handleEditFormChange("business_phone", e.target.value)}
+                      placeholder="Nhập số điện thoại sản phẩm"
                     />
                   </Form.Group>
                 </Col>
