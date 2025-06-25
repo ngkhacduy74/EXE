@@ -46,14 +46,10 @@ const ProductDetail = () => {
     name: "",
     brand: "",
     price: "",
-    product_phone: "",
+    business_phone: "",
     quantity: "",
     status: "New",
-    description: "",
-    size: "",
-    weight: "",
-    voltage: "",
-    warranty_period: 12,
+    description: ""
   });
   const [editErrors, setEditErrors] = useState({});
   const [editSuccess, setEditSuccess] = useState("");
@@ -183,14 +179,10 @@ const ProductDetail = () => {
       name: product.name || "",
       brand: product.brand || "",
       price: product.price || "",
-      product_phone: product.product_phone || "",
+      business_phone: product.business_phone || "",
       quantity: product.quantity || "",
       status: product.status || "New",
-      description: product.description || "",
-      size: product.size || "",
-      weight: product.weight || "",
-      voltage: product.voltage || "",
-      warranty_period: product.warranty_period || 12,
+      description: product.description || ""
     });
     setEditErrors({});
     setEditSuccess("");
@@ -229,8 +221,8 @@ const ProductDetail = () => {
       newErrors.price = "Giá phải lớn hơn hoặc bằng 1.000 VND";
     }
 
-    if (!editForm.product_phone || editForm.product_phone.trim() === "") {
-      newErrors.product_phone = "Số điện thoại sản phẩm là bắt buộc";
+    if (!editForm.business_phone || editForm.business_phone.trim() === "") {
+      newErrors.business_phone = "Số điện thoại sản phẩm là bắt buộc";
     }
 
     if (!editForm.quantity || parseInt(editForm.quantity) <= 0) {
@@ -266,14 +258,10 @@ const ProductDetail = () => {
         name: editForm.name.trim(),
         brand: editForm.brand.trim(),
         price: parseFloat(editForm.price),
-        product_phone: editForm.product_phone.trim(),
+        business_phone: editForm.business_phone.trim(),
         quantity: parseInt(editForm.quantity),
         status: editForm.status,
         description: editForm.description.trim(),
-        size: editForm.size.trim(),
-        weight: parseFloat(editForm.weight),
-        voltage: editForm.voltage.trim(),
-        warranty_period: parseInt(editForm.warranty_period),
       };
 
       const response = await api.put(
@@ -352,14 +340,10 @@ const ProductDetail = () => {
       name: "",
       brand: "",
       price: "",
-      product_phone: "",
+      business_phone: "",
       quantity: "",
       status: "New",
-      description: "",
-      size: "",
-      weight: "",
-      voltage: "",
-      warranty_period: 12,
+      description: ""
     });
     setEditErrors({});
     setEditSuccess("");
@@ -643,7 +627,7 @@ const ProductDetail = () => {
                           SỐ ĐIỆN THOẠI DOANH NGHIỆP
                         </label>
                         <p className="mb-0">
-                          {product.product_phone || "N/A"}
+                          {product.business_phone || "N/A"}
                         </p>
                       </div>
                       <div className="mb-3">
@@ -746,202 +730,110 @@ const ProductDetail = () => {
       <Modal
         show={showEditModal}
         onHide={cancelEdit}
-        size="xl"
+        size="md"
         centered
         backdrop="static"
       >
         <Modal.Header closeButton>
           <Modal.Title className="text-primary">
             <i className="fas fa-edit me-2"></i>
-            Edit Product - {product?.name}
+            Sửa sản phẩm - {product?.name}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {editSuccess && (
             <Alert variant="success" className="mb-3">
-              <i className="fas fa-check-circle me-2"></i>
               {editSuccess}
             </Alert>
           )}
-
           {editErrors.general && (
             <Alert variant="danger" className="mb-3">
-              <i className="fas fa-exclamation-triangle me-2"></i>
               {editErrors.general}
             </Alert>
           )}
-
           <Form>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Tên sản phẩm *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={editForm.name}
-                    onChange={(e) =>
-                      handleEditFormChange("name", e.target.value)
-                    }
-                    placeholder="Nhập tên sản phẩm"
-                    isInvalid={!!editErrors.name}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {editErrors.name}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Thương hiệu *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={editForm.brand}
-                    onChange={(e) =>
-                      handleEditFormChange("brand", e.target.value)
-                    }
-                    placeholder="Nhập thương hiệu"
-                    isInvalid={!!editErrors.brand}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {editErrors.brand}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Giá (VND) *</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={editForm.price}
-                    onChange={(e) =>
-                      handleEditFormChange("price", e.target.value)
-                    }
-                    placeholder="1000"
-                    isInvalid={!!editErrors.price}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {editErrors.price}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Số điện thoại sản phẩm *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={editForm.product_phone}
-                    onChange={(e) => handleEditFormChange("product_phone", e.target.value)}
-                    placeholder="Nhập số điện thoại sản phẩm"
-                    isInvalid={!!editErrors.product_phone}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {editErrors.product_phone}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Số lượng *</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={editForm.quantity}
-                    onChange={(e) =>
-                      handleEditFormChange("quantity", e.target.value)
-                    }
-                    placeholder="1"
-                    isInvalid={!!editErrors.quantity}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {editErrors.quantity}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Kích thước</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={editForm.size}
-                    onChange={(e) =>
-                      handleEditFormChange("size", e.target.value)
-                    }
-                    placeholder="VD: 60x55x85"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Trọng lượng (kg)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={editForm.weight}
-                    onChange={(e) =>
-                      handleEditFormChange("weight", e.target.value)
-                    }
-                    placeholder="VD: 65"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Điện áp</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={editForm.voltage}
-                    onChange={(e) =>
-                      handleEditFormChange("voltage", e.target.value)
-                    }
-                    placeholder="VD: 220V"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Trạng thái</Form.Label>
-                  <Form.Select
-                    value={editForm.status}
-                    onChange={(e) =>
-                      handleEditFormChange("status", e.target.value)
-                    }
-                  >
-                    <option value="New">Mới</option>
-                    <option value="SecondHand">Đã qua sử dụng</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Thời gian bảo hành (tháng)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={editForm.warranty_period}
-                    onChange={(e) =>
-                      handleEditFormChange("warranty_period", e.target.value)
-                    }
-                    placeholder="12"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
+            <Form.Group className="mb-3">
+              <Form.Label>Tên sản phẩm *</Form.Label>
+              <Form.Control
+                type="text"
+                value={editForm.name}
+                onChange={(e) => handleEditFormChange("name", e.target.value)}
+                placeholder="Nhập tên sản phẩm"
+                isInvalid={!!editErrors.name}
+              />
+              <Form.Control.Feedback type="invalid">
+                {editErrors.name}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Thương hiệu *</Form.Label>
+              <Form.Control
+                type="text"
+                value={editForm.brand}
+                onChange={(e) => handleEditFormChange("brand", e.target.value)}
+                placeholder="Nhập thương hiệu"
+                isInvalid={!!editErrors.brand}
+              />
+              <Form.Control.Feedback type="invalid">
+                {editErrors.brand}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Giá (VND) *</Form.Label>
+              <Form.Control
+                type="number"
+                value={editForm.price}
+                onChange={(e) => handleEditFormChange("price", e.target.value)}
+                placeholder="1000"
+                isInvalid={!!editErrors.price}
+              />
+              <Form.Control.Feedback type="invalid">
+                {editErrors.price}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Số điện thoại doanh nghiệp *</Form.Label>
+              <Form.Control
+                type="text"
+                value={editForm.business_phone}
+                onChange={(e) => handleEditFormChange("business_phone", e.target.value)}
+                placeholder="Nhập số điện thoại doanh nghiệp"
+                isInvalid={!!editErrors.business_phone}
+              />
+              <Form.Control.Feedback type="invalid">
+                {editErrors.business_phone}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Số lượng *</Form.Label>
+              <Form.Control
+                type="number"
+                value={editForm.quantity}
+                onChange={(e) => handleEditFormChange("quantity", e.target.value)}
+                placeholder="1"
+                isInvalid={!!editErrors.quantity}
+              />
+              <Form.Control.Feedback type="invalid">
+                {editErrors.quantity}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Trạng thái</Form.Label>
+              <Form.Select
+                value={editForm.status}
+                onChange={(e) => handleEditFormChange("status", e.target.value)}
+              >
+                <option value="New">Mới</option>
+                <option value="SecondHand">Đã qua sử dụng</option>
+              </Form.Select>
+            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Mô tả *</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={4}
                 value={editForm.description}
-                onChange={(e) =>
-                  handleEditFormChange("description", e.target.value)
-                }
+                onChange={(e) => handleEditFormChange("description", e.target.value)}
                 placeholder="Nhập mô tả chi tiết sản phẩm"
                 isInvalid={!!editErrors.description}
               />
@@ -957,32 +849,14 @@ const ProductDetail = () => {
             onClick={cancelEdit}
             disabled={editLoading}
           >
-            <i className="fas fa-times me-1"></i>
-            Cancel
+            Hủy
           </Button>
           <Button
             variant="primary"
             onClick={confirmEditProduct}
             disabled={editLoading}
           >
-            {editLoading ? (
-              <>
-                <Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                  className="me-2"
-                />
-                Updating...
-              </>
-            ) : (
-              <>
-                <i className="fas fa-save me-1"></i>
-                Update Product
-              </>
-            )}
+            {editLoading ? "Đang cập nhật..." : "Cập nhật sản phẩm"}
           </Button>
         </Modal.Footer>
       </Modal>

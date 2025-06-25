@@ -791,12 +791,6 @@ const ManageProduct = () => {
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={cancelDelete} centered>
-        <Modal.Header closeButton>
-          <Modal.Title className="text-danger">
-            <Trash2 size={24} className="me-2" />
-            Confirm Delete
-          </Modal.Title>
-        </Modal.Header>
         <Modal.Body>
           <div className="text-center">
             <div className="mb-3">
@@ -808,8 +802,7 @@ const ManageProduct = () => {
                 <strong>{productToDelete.name}</strong>
                 <br />
                 <small className="text-muted">
-                  Brand: {productToDelete.brand} | Price:{" "}
-                  {productToDelete.price
+                  Brand: {productToDelete.brand} | Price: {productToDelete.price
                     ? `${parseFloat(productToDelete.price).toLocaleString(
                         "vi-VN"
                       )} VND`
@@ -821,51 +814,45 @@ const ManageProduct = () => {
               <strong>Warning:</strong> This action cannot be undone. The
               product will be permanently deleted from the system.
             </div>
+            <div className="d-flex justify-content-center gap-3 mt-4">
+              <Button
+                variant="secondary"
+                onClick={cancelDelete}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={confirmDeleteProduct}
+                disabled={deleteLoading}
+                className="d-flex align-items-center"
+              >
+                {deleteLoading ? (
+                  <>
+                    <div
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                    >
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={16} className="me-2" />
+                    Delete Product
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={cancelDelete}
-            disabled={deleteLoading}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="danger"
-            onClick={confirmDeleteProduct}
-            disabled={deleteLoading}
-            className="d-flex align-items-center"
-          >
-            {deleteLoading ? (
-              <>
-                <div
-                  className="spinner-border spinner-border-sm me-2"
-                  role="status"
-                >
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-                Deleting...
-              </>
-            ) : (
-              <>
-                <Trash2 size={16} className="me-2" />
-                Delete Product
-              </>
-            )}
-          </Button>
-        </Modal.Footer>
       </Modal>
 
       {/* Edit Product Modal */}
       <Modal show={showEditModal} onHide={cancelEdit} centered size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title className="text-primary">
-            <Edit size={24} className="me-2" />
-            Sửa sản phẩm
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+        <Modal.Body> 
           {productToEdit && (
             <Form>
               <Row>
@@ -892,7 +879,6 @@ const ManageProduct = () => {
                   </Form.Group>
                 </Col>
               </Row>
-              
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
@@ -917,7 +903,6 @@ const ManageProduct = () => {
                   </Form.Group>
                 </Col>
               </Row>
-
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
@@ -943,7 +928,6 @@ const ManageProduct = () => {
                   </Form.Group>
                 </Col>
               </Row>
-
               <Form.Group className="mb-3">
                 <Form.Label>Mô tả</Form.Label>
                 <Form.Control
@@ -954,41 +938,41 @@ const ManageProduct = () => {
                   placeholder="Nhập mô tả sản phẩm"
                 />
               </Form.Group>
+              <div className="d-flex justify-content-center gap-3 mt-4">
+                <Button
+                  variant="secondary"
+                  onClick={cancelEdit}
+                  disabled={editLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={confirmEditProduct}
+                  disabled={editLoading}
+                  className="d-flex align-items-center"
+                >
+                  {editLoading ? (
+                    <>
+                      <div
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                      >
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Edit size={16} className="me-2" />
+                      Update Product
+                    </>
+                  )}
+                </Button>
+              </div>
             </Form>
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={cancelEdit}
-            disabled={editLoading}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={confirmEditProduct}
-            disabled={editLoading}
-            className="d-flex align-items-center"
-          >
-            {editLoading ? (
-              <>
-                <div
-                  className="spinner-border spinner-border-sm me-2"
-                  role="status"
-                >
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-                Updating...
-              </>
-            ) : (
-              <>
-                <Edit size={16} className="me-2" />
-                Update Product
-              </>
-            )}
-          </Button>
-        </Modal.Footer>
       </Modal>
     </Container>
   );
