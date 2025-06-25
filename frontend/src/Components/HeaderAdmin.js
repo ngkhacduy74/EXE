@@ -69,8 +69,9 @@ function HeaderAdmin() {
     return null;
   }
 
-  const isAdmin = user?.role === "Admin" || user?.role === "User";
-  if (!isAdmin) {
+  const isCreateProductPage = window.location.pathname === "/create-product";
+  const isAdmin = user?.role && user.role.toLowerCase() === "admin";
+  if (!isAdmin && !isCreateProductPage) {
     notification.error({
       message: "Quyền truy cập hạn chế",
       description: "Người dùng không được phép truy cập trang này",
