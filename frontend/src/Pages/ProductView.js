@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { authApiClient, publicApiClient } from "../Services/auth.service";
+import { authApiClient } from "../Services/auth.service";
 import {
   Container,
   Row,
@@ -9,8 +9,6 @@ import {
   Badge,
   Alert,
   Card,
-  Modal,
-  Spinner,
 } from "react-bootstrap";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Thumbs } from "swiper/modules";

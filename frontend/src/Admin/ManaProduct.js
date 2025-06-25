@@ -3,17 +3,10 @@ import {
   Container,
   Row,
   Col,
-  Card,
   Button,
-  Badge,
-  Alert,
   Table,
   Form,
-  InputGroup,
   Modal,
-  Spinner,
-  Toast,
-  ToastContainer,
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -56,7 +49,6 @@ const ManageProduct = () => {
         refreshToken: refreshToken || null,
       };
     } catch (error) {
-      console.error("Error accessing localStorage:", error);
       return { accessToken: null, refreshToken: null };
     }
   });
@@ -107,7 +99,7 @@ const ManageProduct = () => {
         localStorage.setItem("token", locationToken);
         localStorage.setItem("refreshToken", locationRefreshToken);
       } catch (error) {
-        console.error("Error saving tokens to localStorage:", error);
+        // No need to log here, as the error handling is done in the refreshAccessToken function
       }
     }
   }, [location.state]);
@@ -138,27 +130,18 @@ const ManageProduct = () => {
         localStorage.setItem("token", token);
         localStorage.setItem("refreshToken", refresh_token);
       } catch (error) {
-        console.error("Error saving refreshed tokens:", error);
+        // No need to log here, as the error handling is done in the refreshAccessToken function
       }
 
       setTokens(newTokens);
       return token;
     } catch (err) {
-      console.error("Error refreshing token:", err);
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("refresh_token");
       window.location.href = "/login";
       throw err;
     }
-  };
-
-  // Force logout and redirect to login
-  const forceLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("refresh_token");
-    window.location.href = "/login";
   };
 
   // Function to decode JWT token and get user info
@@ -171,7 +154,6 @@ const ManageProduct = () => {
       }).join(''));
       return JSON.parse(jsonPayload);
     } catch (error) {
-      console.error("Error decoding token:", error);
       return null;
     }
   };
@@ -250,7 +232,6 @@ const ManageProduct = () => {
         ].sort(); // Sort alphabetically
         setBrands(uniqueBrands);
       } catch (err) {
-        console.error("Fetch Error:", err);
         setError(
           err.message || "Failed to fetch products. Please try again later."
         );
@@ -375,8 +356,6 @@ const ManageProduct = () => {
       // Show success message
       alert(`Đã đổi trạng thái sản phẩm thành công: ${currentStatus} → ${newStatus}`);
     } catch (err) {
-      console.error("Error updating product status:", err);
-      
       if (err.response?.status === 403) {
         alert("Lỗi 403: Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập với tài khoản Admin.");
       } else {
@@ -420,8 +399,6 @@ const ManageProduct = () => {
       setShowDeleteModal(false);
       setProductToDelete(null);
     } catch (err) {
-      console.error("Error deleting product:", err);
-      
       if (err.response?.status === 403) {
         alert("Lỗi 403: Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập với tài khoản Admin.");
       } else {
@@ -498,8 +475,6 @@ const ManageProduct = () => {
 
       alert("Cập nhật sản phẩm thành công!");
     } catch (err) {
-      console.error("Error updating product:", err);
-      
       if (err.response?.status === 403) {
         alert("Lỗi 403: Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập với tài khoản Admin.");
       } else {

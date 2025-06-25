@@ -322,8 +322,6 @@ const MultiProductViewer = () => {
         selectedForBanner.has(product.Id || product.id)
       );
 
-      console.log("Selected products for banner:", selectedProducts);
-
       // Transform to banner format
       const bannerProducts = selectedProducts.map((product, index) => ({
         id: product.Id || product.id,
@@ -338,8 +336,6 @@ const MultiProductViewer = () => {
         buttonText: "Mua Ngay",
       }));
 
-      console.log("Banner products to save:", bannerProducts);
-
       // Use BannerContext to save
       const result = await saveBannerProducts(bannerProducts);
       
@@ -349,7 +345,6 @@ const MultiProductViewer = () => {
         showToastMessage(result.message, "danger");
       }
     } catch (error) {
-      console.error("Error saving banner products:", error);
       showToastMessage("Lỗi khi lưu banner products!", "danger");
     }
   };

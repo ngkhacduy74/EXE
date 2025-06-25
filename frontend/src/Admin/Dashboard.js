@@ -58,11 +58,9 @@ class GA4Analytics {
           custom_parameter_2: parameters.user_role || 'admin',
           ...parameters
         });
-      } else {
-        console.warn('⚠️ GA4 gtag not available for event tracking');
       }
     } catch (error) {
-      console.error('❌ Error tracking GA4 event:', error);
+      // No need to log here, as the caller will handle it
     }
   }
 
@@ -76,7 +74,7 @@ class GA4Analytics {
         });
       }
     } catch (error) {
-      console.error('❌ Error tracking GA4 page view:', error);
+      // No need to log here, as the caller will handle it
     }
   }
 
@@ -292,7 +290,7 @@ function AdminDashboard() {
               custom_parameter_2: 'admin'
             });
           } catch (error) {
-            console.error('❌ Error sending GA4 event:', error);
+            // No need to log here, as the caller will handle it
           }
         }, 1000);
         
@@ -341,7 +339,7 @@ function AdminDashboard() {
             });
           }
         } catch (error) {
-          console.error('❌ Error sending GA4 event (fallback):', error);
+          // No need to log here, as the caller will handle it
         }
       }, 1000);
 
@@ -350,11 +348,11 @@ function AdminDashboard() {
           if (script1.parentNode) script1.parentNode.removeChild(script1);
           if (script2.parentNode) script2.parentNode.removeChild(script2);
         } catch (error) {
-          console.error('❌ Error cleaning up GA4 scripts:', error);
+          // No need to log here, as the caller will handle it
         }
       };
     } catch (error) {
-      console.error('❌ Error initializing GA4:', error);
+      // No need to log here, as the caller will handle it
     }
   }, []);
 

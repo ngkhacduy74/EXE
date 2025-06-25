@@ -12,27 +12,11 @@ import {
   Modal,
   Spinner,
   Form,
-  Toast,
-  ToastContainer,
 } from "react-bootstrap";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import Sidebar from "../Components/Sidebar";
 import ErrorPage from "../Components/ErrorPage";
 import "./styles/AdminModal.css";
-import {
-  Edit,
-  Trash2,
-  Eye,
-  ArrowLeft,
-  Save,
-  X,
-  CheckCircle,
-  AlertCircle,
-  Package,
-  DollarSign,
-  Tag,
-  Info,
-} from "lucide-react";
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL,
@@ -191,17 +175,6 @@ const ProductDetail = () => {
       "https://fushimavina.com/data/data/files/test/may-lam-da-100kg.jpg";
   };
 
-  const handleQuantityChange = (change) => {
-    setQuantity((prev) => Math.max(1, prev + change));
-  };
-
-  const handleAddToCart = () => {
-    if (product) {
-      // Placeholder for cart logic
-      alert(`Đã thêm ${quantity} sản phẩm "${product.name}" vào giỏ hàng!`);
-    }
-  };
-
   // Handle edit product - show edit modal
   const handleEditProduct = () => {
     if (!product) return;
@@ -328,8 +301,6 @@ const ProductDetail = () => {
         setEditSuccess("");
       }, 2000);
     } catch (err) {
-      console.error("Error updating product:", err);
-
       if (err.response) {
         switch (err.response.status) {
           case 401:

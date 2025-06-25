@@ -86,24 +86,12 @@ const ManagePost = () => {
   const [categories, setCategories] = useState([]);
   const [toggleLoading, setToggleLoading] = useState({}); // Track loading state for individual posts
 
-  console.log("Access token found:", tokens.accessToken ? "Yes" : "No");
-  console.log("Refresh token found:", tokens.refreshToken ? "Yes" : "No");
-
   // Effect to update tokens when location state changes
   useEffect(() => {
     const locationToken = location.state?.token;
     const locationRefreshToken = location.state?.refresh_token;
 
     if (locationToken && locationRefreshToken) {
-      console.log(
-        "✅ Token from location:",
-        locationToken.substring(0, 15) + "..."
-      );
-      console.log(
-        "🔄 Refresh Token from location:",
-        locationRefreshToken.substring(0, 15) + "..."
-      );
-
       setTokens({
         accessToken: locationToken,
         refreshToken: locationRefreshToken,
@@ -129,8 +117,6 @@ const ManagePost = () => {
     }
 
     try {
-      console.log("Attempting to refresh token...");
-
       const response = await api.post("/auth/refresh-token", {
         refresh_token: tokens.refreshToken,
       });
@@ -154,10 +140,8 @@ const ManagePost = () => {
       }
 
       setTokens(newTokens);
-      console.log("✅ Tokens refreshed successfully");
       return token;
     } catch (err) {
-      console.error("Error refreshing token:", err);
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("refresh_token"); // Clean up old key too
@@ -189,7 +173,6 @@ const ManagePost = () => {
         retryCount === 0 &&
         tokens.refreshToken
       ) {
-        console.warn("Access token expired. Attempting to refresh...");
         try {
           await refreshAccessToken();
           return makeAuthenticatedRequest(config, 1); // Retry once
@@ -216,8 +199,6 @@ const ManagePost = () => {
 
         // Fetch posts without authentication since the endpoint doesn't require it
         const response = await api.get("/post/");
-
-        console.log("API Response:", response.data);
 
         const postData = Array.isArray(response.data.data)
           ? response.data.data
@@ -346,11 +327,6 @@ const ManagePost = () => {
     setToggleLoading((prev) => ({ ...prev, [postId]: true }));
 
     const newCondition = currentCondition === "Active" ? "Inactive" : "Active";
-    console.log("Attempting to change condition:", {
-      postId,
-      currentCondition,
-      newCondition,
-    });
 
     try {
       const response = await makeAuthenticatedRequest({
@@ -360,8 +336,6 @@ const ManagePost = () => {
           "Content-Type": "application/json",
         },
       });
-
-      console.log("Server response:", response.data);
 
       if (response.data.success) {
         setPosts((prevPosts) =>
@@ -374,7 +348,6 @@ const ManagePost = () => {
             post._id === postId ? { ...post, condition: newCondition } : post
           )
         );
-        console.log("Post condition updated successfully");
       } else {
         throw new Error(response.data.message || "Failed to update condition");
       }
