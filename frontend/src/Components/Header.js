@@ -2,20 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Search,
-  Filter,
-  Download,
-  GitCompare,
-  Heart,
-  ShoppingCart,
-  Eye,
   Star,
-  TrendingUp,
-  Users,
-  Package,
-  DollarSign,
   X,
   Plus,
-  Copy,
   Menu,
   ChevronDown,
 } from "lucide-react";

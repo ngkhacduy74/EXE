@@ -2,7 +2,6 @@ import React from 'react';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 import './styles/style.css'; // Adjust path if needed
 import './styles/vendor.css'; // Adjust path if needed
-import CategoryCarousel from '../Components/CategoryCarousel';
 import BrandCarousel from '../Components/BrandCarousel';
 import ProductsCarousel from '../Components/ProductCarousel';
 import BestSellingCarousel from '../Components/BestSellingCarousel';
@@ -12,23 +11,12 @@ import Footer from '../Components/Footer';
 import Canvas from '../Components/Canvas'; // Assuming you have a Canvas component for the cart
 import ChatWidget from '../Components/WidgetChat';
 import Header from '../Components/Header';
-import { House, Edit, LogOut } from 'lucide-react';
 import BannerSection from '../Components/BannerSection';
 import BannerSection2 from '../Components/BannerSection2'; 
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Alert, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const message = location.state?.message;
-  const returnUrl = location.state?.returnUrl;
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    navigate('/login');
-  }
 
   return (
     <HelmetProvider>
@@ -80,7 +68,6 @@ const Home = () => {
 
           <BannerSection2 />
           <BannerSection />
-          {/* <CategoryCarousel /> */}
           <BrandCarousel />
           <ProductsCarousel />
           <BestSellingCarousel />

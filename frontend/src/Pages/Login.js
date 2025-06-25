@@ -138,7 +138,7 @@ Tất cả sản phẩm/dịch vụ đều được bảo hành theo quy định
 
   const styles = {
     container: {
-      minHeight: '125vh',
+      minHeight: '100vh',
       backgroundColor: '#f9fafb',
       display: 'flex',
       alignItems: 'center',
