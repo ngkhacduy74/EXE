@@ -3,10 +3,17 @@ import {
   Container,
   Row,
   Col,
-  Table,
+  Card,
   Button,
+  Badge,
+  Alert,
+  Table,
   Form,
+  InputGroup,
   Modal,
+  Spinner,
+  Toast,
+  ToastContainer,
 } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -14,6 +21,7 @@ import { Plus, Eye, EyeOff, Check, Package, Trash2, Edit } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
+import "./styles/AdminModal.css"; // Import CSS cho admin modal
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL, // Sử dụng trực tiếp biến môi trường mà không cần dấu $ và {}

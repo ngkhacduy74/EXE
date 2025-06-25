@@ -5,6 +5,7 @@ import HeaderAdmin from '../Components/HeaderAdmin';
 import Sidebar from '../Components/Sidebar';
 import apiClient from '../Services/api.service';
 import './PostDetail.css';
+import './styles/AdminModal.css';
 
 const PostDetail = () => {
   const { postId } = useParams();

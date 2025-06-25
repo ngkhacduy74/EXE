@@ -1,5 +1,4 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Row,
@@ -9,10 +8,36 @@ import {
   Tab,
   Button,
   Form,
+  Badge,
+  Alert,
+  Table,
+  Modal,
+  Spinner,
+  Toast,
+  ToastContainer,
 } from "react-bootstrap";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import HeaderAdmin from "../Components/HeaderAdmin";
 import Sidebar from "../Components/Sidebar";
-import Header from "../Components/HeaderAdmin";
+import ErrorPage from "../Components/ErrorPage";
+import UpdateRole from "./UpdateRole";
+import "./styles/AdminModal.css";
+import {
+  Edit,
+  Trash2,
+  Eye,
+  ArrowLeft,
+  Save,
+  X,
+  CheckCircle,
+  AlertCircle,
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  Shield,
+} from "lucide-react";
 import "./styles/UserDetails.css";
 
 export default function UserDetails() {
@@ -116,7 +141,7 @@ export default function UserDetails() {
 
   return (
     <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
-      <Header />
+      <HeaderAdmin />
       <Row className="h-100">
         <Col
           md="auto"

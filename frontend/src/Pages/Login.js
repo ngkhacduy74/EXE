@@ -138,7 +138,7 @@ Tất cả sản phẩm/dịch vụ đều được bảo hành theo quy định
 
   const styles = {
     container: {
-      minHeight: '100vh',
+      minHeight: '125vh',
       backgroundColor: '#f9fafb',
       display: 'flex',
       alignItems: 'center',
@@ -469,7 +469,7 @@ Tất cả sản phẩm/dịch vụ đều được bảo hành theo quy định
   `;
 
   return (
-    <>
+    <div>
       <style>{cssAnimations}</style>
       <div style={styles.container}>
         <div style={styles.mainCard}>
@@ -669,7 +669,7 @@ Tất cả sản phẩm/dịch vụ đều được bảo hành theo quy định
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 

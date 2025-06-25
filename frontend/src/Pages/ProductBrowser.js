@@ -240,27 +240,8 @@ const ProductBrowse = () => {
   };
 
   const FilterSidebar = ({ isMobile = false }) => (
-    <div
-      className={`${
-        isMobile
-          ? "position-fixed top-0 start-0 w-100 h-100 bg-white overflow-auto"
-          : ""
-      } ${isMobile ? "z-index-1050" : ""}`}
-    >
-      {isMobile && (
-        <div className="d-flex justify-content-between align-items-center p-3 border-bottom sticky-top bg-white">
-          <h5 className="mb-0">Filters</h5>
-          <button
-            className="btn btn-link p-0"
-            onClick={() => setShowMobileFilters(false)}
-          >
-            <X size={24} />
-          </button>
-        </div>
-      )}
-
-      <div className={`${isMobile ? "p-3" : ""}`}>
-        {/* Search */}
+    <div className={isMobile ? "" : ""}>
+      {!isMobile && (
         <div className="mb-4">
           <label className="form-label fw-semibold">Search Products</label>
           <input
@@ -271,156 +252,156 @@ const ProductBrowse = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+      )}
 
-        {/* Clear Filters */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h6 className="mb-0">Filters</h6>
-          <button
-            className="btn btn-link btn-sm text-decoration-none p-0"
-            onClick={clearFilters}
-          >
-            Clear All
-          </button>
-        </div>
+      {/* Clear Filters */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h6 className="mb-0">Filters</h6>
+        <button
+          className="btn btn-link btn-sm text-decoration-none p-0"
+          onClick={clearFilters}
+        >
+          Clear All
+        </button>
+      </div>
 
-        {/* Categories Filter */}
-        {categories.length > 0 && (
-          <div className="filter-group mb-4">
-            <div
-              className="filter-header d-flex justify-content-between align-items-center cursor-pointer"
-              onClick={() => toggleFilterExpand("category")}
-            >
-              <h6 className="mb-0">Categories</h6>
-              {expandedFilters.category ? (
-                <ChevronUp size={16} />
-              ) : (
-                <ChevronDown size={16} />
-              )}
-            </div>
-            {expandedFilters.category && (
-              <div className="filter-content mt-2">
-                {categories.map((category) => (
-                  <div key={category} className="form-check mb-2">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id={`category-${category}`}
-                      checked={selectedCategories.includes(category)}
-                      onChange={() => handleCategoryChange(category)}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor={`category-${category}`}
-                    >
-                      {category}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Brands Filter */}
-        {brands.length > 0 && (
-          <div className="filter-group mb-4">
-            <div
-              className="filter-header d-flex justify-content-between align-items-center cursor-pointer"
-              onClick={() => toggleFilterExpand("brand")}
-            >
-              <h6 className="mb-0">Brands</h6>
-              {expandedFilters.brand ? (
-                <ChevronUp size={16} />
-              ) : (
-                <ChevronDown size={16} />
-              )}
-            </div>
-            {expandedFilters.brand && (
-              <div
-                className="filter-content mt-2"
-                style={{ maxHeight: "200px", overflowY: "auto" }}
-              >
-                {brands.map((brand) => (
-                  <div key={brand} className="form-check mb-2">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id={`brand-${brand}`}
-                      checked={selectedBrands.includes(brand)}
-                      onChange={() => handleBrandChange(brand)}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor={`brand-${brand}`}
-                    >
-                      {brand}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Price Range Filter */}
+      {/* Categories Filter */}
+      {categories.length > 0 && (
         <div className="filter-group mb-4">
           <div
             className="filter-header d-flex justify-content-between align-items-center cursor-pointer"
-            onClick={() => toggleFilterExpand("price")}
+            onClick={() => toggleFilterExpand("category")}
           >
-            <h6 className="mb-0">Price Range (VND)</h6>
-            {expandedFilters.price ? (
+            <h6 className="mb-0">Categories</h6>
+            {expandedFilters.category ? (
               <ChevronUp size={16} />
             ) : (
               <ChevronDown size={16} />
             )}
           </div>
-          {expandedFilters.price && (
+          {expandedFilters.category && (
             <div className="filter-content mt-2">
-              <div className="row g-2 mb-3">
-                <div className="col-6">
+              {categories.map((category) => (
+                <div key={category} className="form-check mb-2">
                   <input
-                    type="number"
-                    className="form-control form-control-sm"
-                    placeholder="Min"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="form-check-input"
+                    type="checkbox"
+                    id={`category-${category}`}
+                    checked={selectedCategories.includes(category)}
+                    onChange={() => handleCategoryChange(category)}
                   />
+                  <label
+                    className="form-check-label"
+                    htmlFor={`category-${category}`}
+                  >
+                    {category}
+                  </label>
                 </div>
-                <div className="col-6">
-                  <input
-                    type="number"
-                    className="form-control form-control-sm"
-                    placeholder="Max"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                  />
-                </div>
-              </div>
-              {minPrice && maxPrice && (
-                <div className="small text-muted">
-                  Range: {parseFloat(minPrice).toLocaleString("vi-VN")} -{" "}
-                  {parseFloat(maxPrice).toLocaleString("vi-VN")} VND
-                </div>
-              )}
+              ))}
             </div>
           )}
         </div>
+      )}
 
-        {/* Stock Filter */}
+      {/* Brands Filter */}
+      {brands.length > 0 && (
         <div className="filter-group mb-4">
-          <div className="form-check">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="inStock"
-              checked={inStock}
-              onChange={(e) => setInStock(e.target.checked)}
-            />
-            <label className="form-check-label" htmlFor="inStock">
-              In Stock Only
-            </label>
+          <div
+            className="filter-header d-flex justify-content-between align-items-center cursor-pointer"
+            onClick={() => toggleFilterExpand("brand")}
+          >
+            <h6 className="mb-0">Brands</h6>
+            {expandedFilters.brand ? (
+              <ChevronUp size={16} />
+            ) : (
+              <ChevronDown size={16} />
+            )}
           </div>
+          {expandedFilters.brand && (
+            <div
+              className="filter-content mt-2"
+              style={{ maxHeight: "200px", overflowY: "auto" }}
+            >
+              {brands.map((brand) => (
+                <div key={brand} className="form-check mb-2">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id={`brand-${brand}`}
+                    checked={selectedBrands.includes(brand)}
+                    onChange={() => handleBrandChange(brand)}
+                  />
+                  <label
+                    className="form-check-label"
+                    htmlFor={`brand-${brand}`}
+                  >
+                    {brand}
+                  </label>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Price Range Filter */}
+      <div className="filter-group mb-4">
+        <div
+          className="filter-header d-flex justify-content-between align-items-center cursor-pointer"
+          onClick={() => toggleFilterExpand("price")}
+        >
+          <h6 className="mb-0">Price Range (VND)</h6>
+          {expandedFilters.price ? (
+            <ChevronUp size={16} />
+          ) : (
+            <ChevronDown size={16} />
+          )}
+        </div>
+        {expandedFilters.price && (
+          <div className="filter-content mt-2">
+            <div className="row g-2 mb-3">
+              <div className="col-6">
+                <input
+                  type="number"
+                  className="form-control form-control-sm"
+                  placeholder="Min"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                />
+              </div>
+              <div className="col-6">
+                <input
+                  type="number"
+                  className="form-control form-control-sm"
+                  placeholder="Max"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                />
+              </div>
+            </div>
+            {minPrice && maxPrice && (
+              <div className="small text-muted">
+                Range: {parseFloat(minPrice).toLocaleString("vi-VN")} -{" "}
+                {parseFloat(maxPrice).toLocaleString("vi-VN")} VND
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Stock Filter */}
+      <div className="filter-group mb-4">
+        <div className="form-check">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="inStock"
+            checked={inStock}
+            onChange={(e) => setInStock(e.target.checked)}
+          />
+          <label className="form-check-label" htmlFor="inStock">
+            In Stock Only
+          </label>
         </div>
       </div>
     </div>
@@ -765,40 +746,155 @@ const ProductBrowse = () => {
                 cursor: pointer;
               }
 
-              /* Responsive */
+              /* Responsive fixes */
               @media (max-width: 768px) {
                 .product-card .card-img-top {
                   height: 200px;
                 }
                 
-                .product-card-list .card-img-list {
-                  width: 120px;
-                  height: 100px;
-                }
-              }
-
-              @media (max-width: 480px) {
-                .product-card .card-img-top {
-                  height: 180px;
-                }
-                
-                .product-card-list .card-img-list {
-                  width: 80px;
-                  height: 100px;
+                .product-card .card-title {
+                  font-size: 0.9rem;
                 }
                 
                 .product-card .card-body {
                   padding: 0.75rem;
                 }
                 
-                .product-card .card-title {
-                  font-size: 0.9rem;
+                .top-filters-bar {
+                  flex-direction: column !important;
+                  align-items: stretch !important;
+                  gap: 1rem !important;
+                }
+                
+                .top-filters-bar .d-flex {
+                  justify-content: space-between !important;
+                  flex-wrap: wrap !important;
+                }
+                
+                .sort-select {
+                  min-width: 140px !important;
+                }
+                
+                .view-mode-buttons {
+                  flex-shrink: 0 !important;
+                }
+                
+                .active-filters {
+                  flex-wrap: wrap !important;
+                  gap: 0.5rem !important;
+                }
+                
+                .active-filters .badge {
+                  font-size: 0.75rem !important;
+                  padding: 0.25rem 0.5rem !important;
+                }
+                
+                .pagination {
+                  flex-wrap: wrap !important;
+                  justify-content: center !important;
+                }
+                
+                .pagination .page-link {
+                  padding: 0.375rem 0.75rem !important;
+                  font-size: 0.875rem !important;
+                }
+                
+                .mobile-filter-overlay {
+                  position: fixed !important;
+                  top: 0 !important;
+                  left: 0 !important;
+                  right: 0 !important;
+                  bottom: 0 !important;
+                  z-index: 1050 !important;
+                  background-color: white !important;
+                  overflow-y: auto !important;
+                }
+                
+                .mobile-filter-header {
+                  position: sticky !important;
+                  top: 0 !important;
+                  background-color: white !important;
+                  z-index: 1051 !important;
+                  border-bottom: 1px solid #dee2e6 !important;
+                }
+                
+                .filter-group {
+                  border-bottom: 1px solid #f8f9fa !important;
+                  padding-bottom: 1rem !important;
+                }
+                
+                .filter-content {
+                  max-height: 150px !important;
+                  overflow-y: auto !important;
                 }
               }
-
-              @media (min-width: 1200px) {
+              
+              @media (max-width: 576px) {
                 .product-card .card-img-top {
-                  height: 280px;
+                  height: 180px;
+                }
+                
+                .product-card .card-title {
+                  font-size: 0.85rem;
+                }
+                
+                .product-card .card-body {
+                  padding: 0.5rem;
+                }
+                
+                .top-filters-bar .d-flex {
+                  flex-direction: column !important;
+                  gap: 0.5rem !important;
+                }
+                
+                .sort-select {
+                  width: 100% !important;
+                }
+                
+                .view-mode-buttons {
+                  align-self: center !important;
+                }
+                
+                .active-filters .badge {
+                  font-size: 0.7rem !important;
+                  padding: 0.2rem 0.4rem !important;
+                }
+                
+                .pagination .page-link {
+                  padding: 0.25rem 0.5rem !important;
+                  font-size: 0.8rem !important;
+                }
+                
+                .container-fluid {
+                  padding-left: 0.5rem !important;
+                  padding-right: 0.5rem !important;
+                }
+              }
+              
+              @media (max-width: 480px) {
+                .product-card .card-img-top {
+                  height: 160px;
+                }
+                
+                .product-card .card-title {
+                  font-size: 0.8rem;
+                }
+                
+                .product-card .price-section .h6 {
+                  font-size: 0.9rem !important;
+                }
+                
+                .product-card .btn-sm {
+                  font-size: 0.75rem !important;
+                  padding: 0.25rem 0.5rem !important;
+                }
+                
+                .top-filters-bar {
+                  margin-bottom: 1rem !important;
+                }
+                
+                .active-filters {
+                  margin-bottom: 0.75rem !important;
                 }
               }
 
@@ -820,6 +916,51 @@ const ProductBrowse = () => {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
+              }
+              
+              /* Mobile filter improvements */
+              .mobile-filter-backdrop {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background-color: rgba(0, 0, 0, 0.5) !important;
+                z-index: 1049 !important;
+              }
+              
+              .filter-header {
+                cursor: pointer;
+                user-select: none;
+              }
+              
+              .filter-header:hover {
+                background-color: #f8f9fa;
+                border-radius: 0.375rem;
+                padding: 0.25rem;
+                margin: -0.25rem;
+              }
+              
+              /* Product grid improvements */
+              .product-grid {
+                margin: 0 -0.5rem;
+              }
+              
+              .product-grid .col {
+                padding: 0 0.5rem;
+                margin-bottom: 1rem;
+              }
+              
+              @media (max-width: 768px) {
+                .product-grid .col {
+                  margin-bottom: 0.75rem;
+                }
+              }
+              
+              @media (max-width: 576px) {
+                .product-grid .col {
+                  margin-bottom: 0.5rem;
+                }
               }
             `}
           </style>
@@ -851,8 +992,34 @@ const ProductBrowse = () => {
         {/* Mobile Filter Overlay */}
         {showMobileFilters && (
           <div className="d-md-none">
-            <div className="modal-backdrop show"></div>
-            <FilterSidebar isMobile={true} />
+            <div className="mobile-filter-backdrop" onClick={() => setShowMobileFilters(false)}></div>
+            <div className="mobile-filter-overlay">
+              <div className="mobile-filter-header">
+                <div className="d-flex justify-content-between align-items-center p-3">
+                  <h5 className="mb-0">Filters</h5>
+                  <button
+                    className="btn btn-link p-0"
+                    onClick={() => setShowMobileFilters(false)}
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+              <div className="p-3">
+                {/* Mobile Search */}
+                <div className="mb-4">
+                  <label className="form-label fw-semibold">Search Products</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search by name, brand, category..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <FilterSidebar isMobile={true} />
+              </div>
+            </div>
           </div>
         )}
 
@@ -871,7 +1038,7 @@ const ProductBrowse = () => {
             {/* Products Section */}
             <div className="col-md-9">
               {/* Top Filters Bar */}
-              <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+              <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 top-filters-bar">
                 <div className="d-flex align-items-center gap-2">
                   <button
                     className="btn btn-outline-secondary d-md-none"
@@ -889,7 +1056,7 @@ const ProductBrowse = () => {
 
                 <div className="d-flex align-items-center gap-2">
                   <select
-                    className="form-select form-select-sm"
+                    className="form-select form-select-sm sort-select"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     style={{ width: "auto" }}
@@ -902,7 +1069,7 @@ const ProductBrowse = () => {
                     <option value="newest">Newest First</option>
                   </select>
 
-                  <div className="btn-group" role="group">
+                  <div className="btn-group view-mode-buttons" role="group">
                     <button
                       type="button"
                       className={`btn btn-sm ${
@@ -936,7 +1103,7 @@ const ProductBrowse = () => {
                 inStock ||
                 minPrice ||
                 maxPrice) && (
-                <div className="mb-3">
+                <div className="mb-3 active-filters">
                   <div className="d-flex flex-wrap gap-2 align-items-center">
                     <span className="small text-muted">Active filters:</span>
                     {selectedCategories.map((category) => (
@@ -1019,7 +1186,7 @@ const ProductBrowse = () => {
               ) : (
                 <>
                   <div
-                    className={`row ${
+                    className={`row product-grid ${
                       viewMode === "list"
                         ? "row-cols-1"
                         : "row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
+import "./styles/AdminModal.css"; // Import CSS cho admin modal
 
 function UpdateRole({ show, handleClose, userId, users, roles, onRoleUpdate }) {
   const [user, setUser] = useState({});

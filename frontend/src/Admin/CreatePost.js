@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Row,
@@ -7,13 +7,18 @@ import {
   Button,
   Card,
   Alert,
+  Modal,
   Spinner,
+  Toast,
+  ToastContainer,
 } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, Save, Eye, Link } from "lucide-react";
+import { ArrowLeft, Save, Eye, Link, X, Plus, Upload, Image, FileText, Tag, Info, CheckCircle, AlertCircle } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
+import ErrorPage from "../Components/ErrorPage";
+import "./styles/AdminModal.css";
 
 const CreatePost = () => {
   const navigate = useNavigate();

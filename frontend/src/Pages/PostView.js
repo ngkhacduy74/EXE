@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import Header from '../Components/Header';
 import Footer from '../Components/Footer';
 import apiClient from '../Services/api.service';
-
+import ChatWidget from '../Components/WidgetChat';
 const PostView = () => {
   const { postId } = useParams();
   const [post, setPost] = useState(null);
@@ -270,8 +270,8 @@ const PostView = () => {
       position: 'fixed',
       top: 0,
       left: 0,
-      width: '125vw',
-      height: '125vh',
+      width: '100vw',
+      height: '100vh',
       background: 'rgba(0,0,0,0.7)',
       zIndex: 1000,
       display: 'flex',
@@ -291,8 +291,8 @@ const PostView = () => {
       justifyContent: 'center',
     },
     modalImage: {
-      maxWidth: '98vw',
-      maxHeight: '98vh',
+      maxWidth: '50vw',
+      maxHeight: '50vh',
       borderRadius: '6px',
       objectFit: 'contain',
       margin: 0,
@@ -628,6 +628,7 @@ const PostView = () => {
         </section>
       )}
       <Footer />
+      <ChatWidget />
     </>
   );
 };

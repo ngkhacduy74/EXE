@@ -38,10 +38,13 @@ function Header() {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const searchRef = useRef(null);
   const suggestionsRef = useRef(null);
   const headerRef = useRef(null);
+  const mobileSearchRef = useRef(null);
+  const mobileSuggestionsRef = useRef(null);
   const navigate = useNavigate();
 
   // Load recent searches from localStorage
@@ -110,13 +113,30 @@ function Header() {
   // Close suggestions when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
+      // Check desktop search
       if (
         searchRef.current &&
         !searchRef.current.contains(event.target) &&
         suggestionsRef.current &&
         !suggestionsRef.current.contains(event.target)
       ) {
-        setShowSuggestions(false);
+        // Only close if not in mobile search
+        if (!isMobileSearchOpen) {
+          setShowSuggestions(false);
+        }
+      }
+      
+      // Check mobile search
+      if (
+        mobileSearchRef.current &&
+        !mobileSearchRef.current.contains(event.target) &&
+        mobileSuggestionsRef.current &&
+        !mobileSuggestionsRef.current.contains(event.target)
+      ) {
+        // Only close if in mobile search
+        if (isMobileSearchOpen) {
+          setShowSuggestions(false);
+        }
       }
     }
 
@@ -124,7 +144,7 @@ function Header() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [isMobileSearchOpen]);
 
   // Enhanced product suggestions with detailed info
   const fetchEnhancedSuggestions = async (query) => {
@@ -273,6 +293,19 @@ function Header() {
     const queryString = params.toString();
     navigate(`/product-browser${queryString ? `?${queryString}` : ""}`);
     setShowSuggestions(false);
+    
+    // Close mobile search offcanvas if open
+    if (isMobileSearchOpen) {
+      const offcanvasElement = document.getElementById('offcanvasSearch');
+      if (offcanvasElement) {
+        // Use data attributes to close offcanvas
+        const closeButton = offcanvasElement.querySelector('[data-bs-dismiss="offcanvas"]');
+        if (closeButton) {
+          closeButton.click();
+        }
+      }
+      setIsMobileSearchOpen(false);
+    }
   };
 
   const handleSuggestionClick = (suggestion) => {
@@ -285,12 +318,31 @@ function Header() {
       handleSearch(null, suggestion.name);
     }
     setShowSuggestions(false);
+    
+    // Close mobile search offcanvas if open
+    if (isMobileSearchOpen) {
+      const offcanvasElement = document.getElementById('offcanvasSearch');
+      if (offcanvasElement) {
+        // Use data attributes to close offcanvas
+        const closeButton = offcanvasElement.querySelector('[data-bs-dismiss="offcanvas"]');
+        if (closeButton) {
+          closeButton.click();
+        }
+      }
+      setIsMobileSearchOpen(false);
+    }
   };
 
   const handleSearchFocus = () => {
+    // Show suggestions if there are recent searches or current search term is long enough
     if (searchTerm.trim().length >= 2 && suggestions.length > 0) {
       setShowSuggestions(true);
     } else if (recentSearches.length > 0) {
+      setShowSuggestions(true);
+    }
+    
+    // For mobile, always show suggestions when focused if there are recent searches
+    if (isMobileSearchOpen && recentSearches.length > 0) {
       setShowSuggestions(true);
     }
   };
@@ -322,6 +374,48 @@ function Header() {
     }
   }, []);
 
+  // Monitor mobile search offcanvas state
+  useEffect(() => {
+    const offcanvasElement = document.getElementById('offcanvasSearch');
+    if (offcanvasElement) {
+      const handleShow = () => setIsMobileSearchOpen(true);
+      const handleHide = () => {
+        setIsMobileSearchOpen(false);
+        setShowSuggestions(false); // Close suggestions when offcanvas closes
+      };
+      
+      offcanvasElement.addEventListener('shown.bs.offcanvas', handleShow);
+      offcanvasElement.addEventListener('hidden.bs.offcanvas', handleHide);
+      
+      return () => {
+        offcanvasElement.removeEventListener('shown.bs.offcanvas', handleShow);
+        offcanvasElement.removeEventListener('hidden.bs.offcanvas', handleHide);
+      };
+    }
+  }, []);
+
+  // Show suggestions when mobile search is opened
+  useEffect(() => {
+    if (isMobileSearchOpen) {
+      // Always show suggestions if there are recent searches
+      if (recentSearches.length > 0) {
+        setShowSuggestions(true);
+      }
+      // Or if there's a search term with suggestions
+      else if (searchTerm.trim().length >= 2 && suggestions.length > 0) {
+        setShowSuggestions(true);
+      }
+      
+      // Focus on mobile search input when opened
+      setTimeout(() => {
+        const mobileInput = document.getElementById('mobileSearchInput');
+        if (mobileInput) {
+          mobileInput.focus();
+        }
+      }, 100);
+    }
+  }, [isMobileSearchOpen, recentSearches.length, searchTerm, suggestions.length]);
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -339,6 +433,105 @@ function Header() {
       }}
       ref={headerRef}
     >
+      <style>
+        {`
+          .mobile-search-suggestions {
+            max-height: 50vh !important;
+            overflow-y: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            margin-top: 10px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            z-index: 1060;
+            position: relative;
+          }
+          
+          .mobile-search-suggestions .suggestion-item {
+            transition: background-color 0.15s ease;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 12px 16px;
+          }
+          
+          .mobile-search-suggestions .suggestion-item:last-child {
+            border-bottom: none;
+          }
+          
+          .mobile-search-suggestions .suggestion-item:hover {
+            background-color: #f8f9fa;
+          }
+          
+          .offcanvas-body .search-bar {
+            position: relative;
+          }
+          
+          .offcanvas-body .search-bar .suggestions-container {
+            position: relative;
+            top: auto;
+            left: auto;
+            right: auto;
+            z-index: 1060;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-height: 50vh;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #e0e0e0;
+          }
+          
+          /* Ensure offcanvas has enough height */
+          .offcanvas-top {
+            height: auto !important;
+            max-height: 90vh !important;
+          }
+          
+          .offcanvas-body {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(90vh - 60px);
+          }
+          
+          /* Make suggestions more visible */
+          .mobile-search-suggestions .fw-semibold {
+            font-size: 14px;
+            line-height: 1.4;
+          }
+          
+          .mobile-search-suggestions .small {
+            font-size: 12px;
+          }
+          
+          .mobile-search-suggestions .badge {
+            font-size: 10px;
+            padding: 4px 8px;
+          }
+          
+          /* Improve mobile search form */
+          .offcanvas-body .search-bar form {
+            margin-bottom: 0;
+          }
+          
+          .offcanvas-body .search-bar .row {
+            margin-bottom: 15px;
+          }
+          
+          /* Better spacing for mobile */
+          @media (max-width: 768px) {
+            .offcanvas-body {
+              padding: 15px;
+            }
+            
+            .mobile-search-suggestions {
+              max-height: 45vh !important;
+            }
+            
+            .suggestion-item {
+              padding: 10px 12px !important;
+            }
+          }
+        `}
+      </style>
       {/* Top Header */}
       <div className="container-fluid border-bottom">
         <div className="row py-3 align-items-center">
@@ -475,64 +668,42 @@ function Header() {
                           {suggestions.map((suggestion) => (
                             <div
                               key={suggestion.id}
-                              className="d-flex align-items-center p-3 cursor-pointer rounded hover-bg-light border-bottom"
+                              className="suggestion-item d-flex align-items-start p-3 cursor-pointer rounded"
                               onClick={() => handleSuggestionClick(suggestion)}
                               style={{
                                 cursor: "pointer",
-                                transition: "background-color 0.15s ease",
                               }}
-                              onMouseEnter={(e) =>
-                                e.target
-                                  .closest("div")
-                                  .classList.add("bg-light")
-                              }
-                              onMouseLeave={(e) =>
-                                e.target
-                                  .closest("div")
-                                  .classList.remove("bg-light")
-                              }
                             >
-                              {/* Product Image */}
-                              {/* <div className="me-3 flex-shrink-0">
-                                <img
-                                  src={suggestion.image || './styles/images/product-thumb-1.png'}
-                                  alt={suggestion.name}
-                                  className="rounded"
-                                  style={{ 
-                                    width: '60px', 
-                                    height: '60px', 
-                                    objectFit: 'cover',
-                                    border: '1px solid #e9ecef'
-                                  }}
-                                />
-                              </div> */}
-
                               {/* Product Info */}
                               <div className="flex-grow-1 min-w-0">
                                 <div
-                                  className="fw-semibold text-truncate mb-1"
-                                  style={{ maxWidth: "300px" }}
+                                  className="fw-semibold text-truncate mb-2"
+                                  style={{ 
+                                    maxWidth: "100%",
+                                    fontSize: "14px",
+                                    lineHeight: "1.4"
+                                  }}
                                 >
                                   {suggestion.name}
                                 </div>
 
-                                <div className="small text-muted mb-1">
-                                  <span className="badge bg-light text-dark me-2">
+                                <div className="small text-muted mb-2">
+                                  <span className="badge bg-light text-dark me-2" style={{fontSize: "10px", padding: "4px 8px"}}>
                                     {suggestion.brand}
                                   </span>
-                                  <span className="text-muted">
+                                  <span className="text-muted" style={{fontSize: "12px"}}>
                                     {suggestion.category}
                                   </span>
                                 </div>
 
                                 {/* Price and Rating */}
-                                <div className="d-flex justify-content-between align-items-center">
-                                  <div className="text-primary fw-bold small">
+                                <div className="d-flex justify-content-between align-items-center mb-1">
+                                  <div className="text-primary fw-bold" style={{fontSize: "13px"}}>
                                     {formatPrice(suggestion.price)}
                                   </div>
 
                                   {suggestion.rating && (
-                                    <div className="small">
+                                    <div style={{fontSize: "11px"}}>
                                       {renderStars(suggestion.rating)}
                                     </div>
                                   )}
@@ -546,21 +717,15 @@ function Header() {
                                         suggestion.quantity > 0
                                           ? "bg-success"
                                           : "bg-danger"
-                                      } small`}
+                                      }`}
+                                      style={{fontSize: "10px", padding: "4px 8px"}}
                                     >
                                       {suggestion.quantity > 0
-                                        ? `Còn hàng (${suggestion.quantity})`
+                                        ? `Còn ${suggestion.quantity}`
                                         : "Hết hàng"}
                                     </span>
                                   </div>
                                 )}
-                              </div>
-
-                              {/* Action Icon */}
-                              <div className="ms-2 flex-shrink-0">
-                                <div className="text-primary">
-                                  <Search size={16} />
-                                </div>
                               </div>
                             </div>
                           ))}
@@ -1011,38 +1176,172 @@ function Header() {
           ></button>
         </div>
         <div className="offcanvas-body">
-          <form onSubmit={handleSearch}>
-            <div className="row g-2">
-              <div className="col-12">
-                <select
-                  className="form-select"
-                  value={selectedCategory}
-                  onChange={handleCategoryChange}
-                >
-                  <option value="all">Tất cả danh mục</option>
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
+          <div className="search-bar" ref={mobileSearchRef}>
+            <form onSubmit={handleSearch}>
+              <div className="row g-2 mb-3">
+                <div className="col-12">
+                  <select
+                    className="form-select"
+                    value={selectedCategory}
+                    onChange={handleCategoryChange}
+                    disabled={loadingCategories}
+                  >
+                    <option value="all">Tất cả danh mục</option>
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-9">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Tìm kiếm hơn 20,000 sản phẩm..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={handleSearchFocus}
+                    autoComplete="off"
+                    id="mobileSearchInput"
+                  />
+                </div>
+                <div className="col-3">
+                  <button className="btn btn-primary w-100" type="submit">
+                    <Search size={20} />
+                  </button>
+                </div>
               </div>
-              <div className="col-9">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Tìm kiếm sản phẩm..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            </form>
+
+            {/* Mobile Search Suggestions */}
+            {showSuggestions && (
+              <div
+                ref={mobileSuggestionsRef}
+                className="mobile-search-suggestions suggestions-container"
+              >
+                {loadingSuggestions ? (
+                  <div className="p-4 text-center">
+                    <div
+                      className="spinner-border spinner-border-sm text-primary"
+                      role="status"
+                    >
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                    <div className="mt-2 text-muted small">
+                      Đang tìm kiếm sản phẩm...
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Recent Searches */}
+                    {recentSearches.length > 0 && !searchTerm.trim() && (
+                      <div className="border-bottom">
+                        <div className="d-flex justify-content-between align-items-center p-3 pb-2">
+                          <small className="text-muted fw-bold">
+                            Tìm kiếm gần đây
+                          </small>
+                          <button
+                            className="btn btn-sm btn-link text-muted p-0"
+                            onClick={clearRecentSearches}
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                        {recentSearches.map((term, index) => (
+                          <div
+                            key={index}
+                            className="suggestion-item py-3 px-3 cursor-pointer d-flex align-items-center"
+                            onClick={() => {
+                              setSearchTerm(term);
+                              handleSearch(null, term);
+                            }}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <Search size={16} className="text-muted me-3" />
+                            <span style={{fontSize: "14px", fontWeight: "500"}}>{term}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Product Suggestions */}
+                    {suggestions.length > 0 && (
+                      <div className="p-2">
+                        <div className="d-flex justify-content-between align-items-center mb-2 px-2">
+                          <small className="text-muted fw-bold">
+                            Sản phẩm gợi ý
+                          </small>
+                          <small className="text-muted">
+                            {suggestions.length} kết quả
+                          </small>
+                        </div>
+                        {suggestions.map((suggestion) => (
+                          <div
+                            key={suggestion.id}
+                            className="suggestion-item d-flex align-items-center p-3 cursor-pointer rounded"
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            style={{
+                              cursor: "pointer",
+                            }}
+                          >
+                            {/* Product Info */}
+                            <div className="flex-grow-1 min-w-0">
+                              <div
+                                className="fw-semibold text-truncate mb-1"
+                                style={{ maxWidth: "300px" }}
+                              >
+                                {suggestion.name}
+                              </div>
+
+                              <div className="small text-muted mb-1">
+                                <span className="badge bg-light text-dark me-2">
+                                  {suggestion.brand}
+                                </span>
+                                <span className="text-muted">
+                                  {suggestion.category}
+                                </span>
+                              </div>
+
+                              {/* Price and Rating */}
+                              <div className="d-flex justify-content-between align-items-center">
+                                <div className="text-primary fw-bold small">
+                                  {formatPrice(suggestion.price)}
+                                </div>
+
+                                {suggestion.rating && (
+                                  <div className="small">
+                                    {renderStars(suggestion.rating)}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Stock Status */}
+                              {suggestion.quantity !== undefined && (
+                                <div className="mt-1">
+                                  <span
+                                    className={`badge ${
+                                      suggestion.quantity > 0
+                                        ? "bg-success"
+                                        : "bg-danger"
+                                    } small`}
+                                  >
+                                    {suggestion.quantity > 0
+                                      ? `Còn ${suggestion.quantity}`
+                                      : "Hết hàng"}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-              <div className="col-3">
-                <button className="btn btn-primary w-100" type="submit">
-                  Tìm
-                </button>
-              </div>
-            </div>
-          </form>
+            )}
+          </div>
         </div>
       </div>
 

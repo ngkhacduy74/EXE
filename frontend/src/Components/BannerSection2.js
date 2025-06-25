@@ -44,6 +44,111 @@ const BannerSection2 = () => {
     setCurrentSlide((prev) => (prev + 1) % banners.length);
   };
 
+  // Responsive CSS
+  const responsiveCSS = `
+    @media (max-width: 1024px) {
+      .banner-container {
+        max-width: 95% !important;
+        border-radius: 12px !important;
+        padding: 3px !important;
+      }
+      .banner-wrapper {
+        height: 350px !important;
+        border-radius: 10px !important;
+      }
+      .nav-button {
+        width: 45px !important;
+        height: 45px !important;
+      }
+      .nav-arrow {
+        width: 18px !important;
+        height: 18px !important;
+      }
+    }
+    @media (max-width: 768px) {
+      .banner-container {
+        max-width: 98% !important;
+        border-radius: 10px !important;
+        padding: 2px !important;
+      }
+      .banner-wrapper {
+        height: 300px !important;
+        border-radius: 8px !important;
+      }
+      .nav-button {
+        width: 40px !important;
+        height: 40px !important;
+        left: 10px !important;
+        right: 10px !important;
+      }
+      .nav-arrow {
+        width: 16px !important;
+        height: 16px !important;
+      }
+      .dots-container {
+        bottom: 15px !important;
+        gap: 8px !important;
+      }
+      .dot {
+        width: 10px !important;
+        height: 10px !important;
+        border-radius: 5px !important;
+      }
+      .dot.active {
+        width: 20px !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .banner-container {
+        max-width: 100% !important;
+        border-radius: 8px !important;
+        padding: 1px !important;
+        margin: 0 10px !important;
+      }
+      .banner-wrapper {
+        height: 250px !important;
+        border-radius: 6px !important;
+      }
+      .nav-button {
+        width: 35px !important;
+        height: 35px !important;
+        left: 8px !important;
+        right: 8px !important;
+      }
+      .nav-arrow {
+        width: 14px !important;
+        height: 14px !important;
+      }
+      .dots-container {
+        bottom: 10px !important;
+        gap: 6px !important;
+      }
+      .dot {
+        width: 8px !important;
+        height: 8px !important;
+        border-radius: 4px !important;
+      }
+      .dot.active {
+        width: 16px !important;
+      }
+    }
+    @media (max-width: 320px) {
+      .banner-wrapper {
+        height: 200px !important;
+      }
+      .nav-button {
+        width: 30px !important;
+        height: 30px !important;
+        left: 5px !important;
+        right: 5px !important;
+      }
+      .nav-arrow {
+        width: 12px !important;
+        height: 12px !important;
+      }
+    }
+  `;
+
   // Custom styles
   const bannerContainerStyle = {
     position: 'relative',
@@ -154,86 +259,92 @@ const BannerSection2 = () => {
   };
 
   return (
-    <div style={bannerContainerStyle}>
-      <div style={bannerWrapperStyle}>
-        {/* Slides Container */}
-        <div style={slidesContainerStyle}>
-          {banners.map((banner, index) => (
-            <div key={banner.id} style={slideStyle}>
-              <img
-                src={banner.src}
-                alt={banner.alt}
-                style={imageStyle}
+    <>
+      <style>{responsiveCSS}</style>
+      <div style={bannerContainerStyle} className="banner-container">
+        <div style={bannerWrapperStyle} className="banner-wrapper">
+          {/* Slides Container */}
+          <div style={slidesContainerStyle}>
+            {banners.map((banner, index) => (
+              <div key={banner.id} style={slideStyle}>
+                <img
+                  src={banner.src}
+                  alt={banner.alt}
+                  style={imageStyle}
+                />
+                <div 
+                  style={overlayStyle}
+                  onMouseEnter={(e) => e.target.style.opacity = '1'}
+                  onMouseLeave={(e) => e.target.style.opacity = '0'}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Navigation Arrows */}
+          <button
+            onClick={goToPrevious}
+            style={prevButtonStyle}
+            className="nav-button"
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#ffffff';
+              e.target.style.transform = 'translateY(-50%) scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+              e.target.style.transform = 'translateY(-50%) scale(1)';
+            }}
+            aria-label="Previous banner"
+          >
+            <svg style={arrowStyle} className="nav-arrow" viewBox="0 0 24 24">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
+          </button>
+
+          <button
+            onClick={goToNext}
+            style={nextButtonStyle}
+            className="nav-button"
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#ffffff';
+              e.target.style.transform = 'translateY(-50%) scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+              e.target.style.transform = 'translateY(-50%) scale(1)';
+            }}
+            aria-label="Next banner"
+          >
+            <svg style={arrowStyle} className="nav-arrow" viewBox="0 0 24 24">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+          </button>
+
+          {/* Dot Indicators */}
+          <div style={dotsContainerStyle} className="dots-container">
+            {banners.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                style={dotStyle(index === currentSlide)}
+                className={`dot ${index === currentSlide ? 'active' : ''}`}
+                onMouseEnter={(e) => {
+                  if (index !== currentSlide) {
+                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (index !== currentSlide) {
+                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                  }
+                }}
+                aria-label={`Go to banner ${index + 1}`}
               />
-              <div 
-                style={overlayStyle}
-                onMouseEnter={(e) => e.target.style.opacity = '1'}
-                onMouseLeave={(e) => e.target.style.opacity = '0'}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Navigation Arrows */}
-        <button
-          onClick={goToPrevious}
-          style={prevButtonStyle}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#ffffff';
-            e.target.style.transform = 'translateY(-50%) scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-            e.target.style.transform = 'translateY(-50%) scale(1)';
-          }}
-          aria-label="Previous banner"
-        >
-          <svg style={arrowStyle} viewBox="0 0 24 24">
-            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-          </svg>
-        </button>
-
-        <button
-          onClick={goToNext}
-          style={nextButtonStyle}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#ffffff';
-            e.target.style.transform = 'translateY(-50%) scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-            e.target.style.transform = 'translateY(-50%) scale(1)';
-          }}
-          aria-label="Next banner"
-        >
-          <svg style={arrowStyle} viewBox="0 0 24 24">
-            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-          </svg>
-        </button>
-
-        {/* Dot Indicators */}
-        <div style={dotsContainerStyle}>
-          {banners.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              style={dotStyle(index === currentSlide)}
-              onMouseEnter={(e) => {
-                if (index !== currentSlide) {
-                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (index !== currentSlide) {
-                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-                }
-              }}
-              aria-label={`Go to banner ${index + 1}`}
-            />
-          ))}
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

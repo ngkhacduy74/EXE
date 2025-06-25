@@ -12,10 +12,27 @@ import {
   Modal,
   Spinner,
   Form,
+  Toast,
+  ToastContainer,
 } from "react-bootstrap";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import Sidebar from "../Components/Sidebar";
 import ErrorPage from "../Components/ErrorPage";
+import "./styles/AdminModal.css";
+import {
+  Edit,
+  Trash2,
+  Eye,
+  ArrowLeft,
+  Save,
+  X,
+  CheckCircle,
+  AlertCircle,
+  Package,
+  DollarSign,
+  Tag,
+  Info,
+} from "lucide-react";
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL,

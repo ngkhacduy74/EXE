@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Table, Button, Form } from "react-bootstrap";
+import { Container, Row, Col, Table, Button, Form, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import ErrorPage from "../Components/ErrorPage";
+import "./styles/AdminModal.css";
 
 function ManaAccount() {
   const navigate = useNavigate();

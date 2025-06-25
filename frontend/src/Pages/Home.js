@@ -24,21 +24,11 @@ const Home = () => {
   const message = location.state?.message;
   const returnUrl = location.state?.returnUrl;
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    const query = e.target.elements.search.value; // Assuming input has name="search"
-    console.log('Search query:', query);
-    // Add your search logic here (e.g., navigate to a search results page)
-
-  };
-
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     navigate('/login');
   }
-
-
 
   return (
     <HelmetProvider>
@@ -86,49 +76,6 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Search Offcanvas */}
-          <div
-            className="offcanvas offcanvas-end"
-            data-bs-scroll="true"
-            tabIndex="-1"
-            id="offcanvasSearch"
-            aria-labelledby="offcanvasSearchLabel"
-          >
-            <div className="offcanvas-header justify-content-center">
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="offcanvas"
-                aria-label="Close"
-              ></button>
-            </div>
-            <div className="offcanvas-body">
-              <div className="order-md-last">
-                <h4 className="d-flex justify-content-between align-items-center mb-3">
-                  <span className="text-primary">Search</span>
-                </h4>
-                <form
-                  role="search"
-                  onSubmit={handleSearchSubmit}
-                  className="d-flex mt-3 gap-0"
-                >
-                  <input
-                    className="form-control rounded-start rounded-0 bg-light"
-                    type="text" // Changed from "email" to "text" for search
-                    name="search"
-                    placeholder="What are you looking for?"
-                    aria-label="What are you looking for?"
-                  />
-                  <button
-                    className="btn btn-dark rounded-end rounded-0"
-                    type="submit"
-                  >
-                    Search
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
           <Header />
 
           <BannerSection2 />

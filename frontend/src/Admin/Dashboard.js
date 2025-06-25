@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import { Bar, Line, Doughnut, Pie } from "react-chartjs-2";
+import "./styles/AdminModal.css"; // Import CSS cho admin modal
 import { 
   Chart as ChartJS, 
   CategoryScale, 

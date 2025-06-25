@@ -21,6 +21,7 @@ import {
 import HeaderAdmin from "../Components/HeaderAdmin";
 import Sidebar from "../Components/Sidebar";
 import { useBanner } from "../context/BannerContext";
+import "./styles/AdminModal.css"; // Import CSS cho admin modal
 import { 
   Search, 
   Trash2, 

@@ -153,7 +153,7 @@ const styles = {
     alignItems: "center",
     gap: "8px",
     fontSize: "14px",
-    fontWeight: 500,
+    fontWeight: "500",
   },
   clearButton: {
     backgroundColor: "#dc2626",
@@ -166,6 +166,41 @@ const styles = {
     marginLeft: "8px",
   },
 };
+
+// Responsive CSS for mobile positioning
+const responsiveCSS = `
+  @media (max-width: 768px) {
+    .chat-widget-container {
+      bottom: 80px !important;
+      right: 20px !important;
+    }
+    .chat-widget-icon {
+      width: 56px !important;
+      height: 56px !important;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+  }
+  @media (max-width: 480px) {
+    .chat-widget-container {
+      bottom: 100px !important;
+      right: 16px !important;
+    }
+    .chat-widget-icon {
+      width: 52px !important;
+      height: 52px !important;
+    }
+  }
+  @media (max-width: 320px) {
+    .chat-widget-container {
+      bottom: 90px !important;
+      right: 12px !important;
+    }
+    .chat-widget-icon {
+      width: 48px !important;
+      height: 48px !important;
+    }
+  }
+`;
 
 export default function ChatWidget() {
   const [messages, setMessages] = useState([]);
@@ -377,131 +412,135 @@ export default function ChatWidget() {
   };
 
   return (
-    <div style={styles.container}>
-      <button
-        style={styles.iconButton}
-        onClick={toggleChat}
-        aria-label={isOpen ? "Đóng trò chuyện" : "Mở trò chuyện"}
-      >
-        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
-      </button>
+    <>
+      <style>{responsiveCSS}</style>
+      <div style={styles.container} className="chat-widget-container">
+        <button
+          style={styles.iconButton}
+          className="chat-widget-icon"
+          onClick={toggleChat}
+          aria-label={isOpen ? "Đóng trò chuyện" : "Mở trò chuyện"}
+        >
+          {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+        </button>
 
-      {isOpen && (
-        <div style={styles.chatContainer}>
-          <div style={styles.header}>
-            <h2 style={styles.headerTitle}>Hỗ trợ trò chuyện</h2>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              {isLoggedIn && (
-                <button
-                  onClick={clearSavedMessages}
-                  style={styles.clearButton}
-                  aria-label="Xóa lịch sử chat"
-                  title="Xóa lịch sử chat"
-                >
-                  Xóa
-                </button>
-              )}
-              <button
-                onClick={toggleChat}
-                style={styles.closeButton}
-                aria-label="Đóng trò chuyện"
-              >
-                <X size={18} />
-              </button>
-            </div>
-          </div>
-
-          {isLoggedIn ? (
-            <>
-              <div style={styles.messagesContainer} ref={messagesContainerRef}>
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    style={{
-                      ...styles.messageRow,
-                      ...(message.sender === "user"
-                        ? styles.userRow
-                        : styles.botRow),
-                    }}
+        {isOpen && (
+          <div style={styles.chatContainer}>
+            <div style={styles.header}>
+              <h2 style={styles.headerTitle}>Hỗ trợ trò chuyện</h2>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                {isLoggedIn && (
+                  <button
+                    onClick={clearSavedMessages}
+                    style={styles.clearButton}
+                    aria-label="Xóa lịch sử chat"
+                    title="Xóa lịch sử chat"
                   >
+                    Xóa
+                  </button>
+                )}
+                <button
+                  onClick={toggleChat}
+                  style={styles.closeButton}
+                  aria-label="Đóng trò chuyện"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {isLoggedIn ? (
+              <>
+                <div style={styles.messagesContainer} ref={messagesContainerRef}>
+                  {messages.map((message) => (
                     <div
+                      key={message.id}
                       style={{
-                        ...styles.messageBubble,
+                        ...styles.messageRow,
                         ...(message.sender === "user"
-                          ? styles.userBubble
-                          : styles.botBubble),
+                          ? styles.userRow
+                          : styles.botRow),
                       }}
                     >
-                      <div style={styles.iconContainer}>
-                        {message.sender === "user" ? (
-                          <User size={16} />
-                        ) : (
+                      <div
+                        style={{
+                          ...styles.messageBubble,
+                          ...(message.sender === "user"
+                            ? styles.userBubble
+                            : styles.botBubble),
+                        }}
+                      >
+                        <div style={styles.iconContainer}>
+                          {message.sender === "user" ? (
+                            <User size={16} />
+                          ) : (
+                            <Bot size={16} />
+                          )}
+                        </div>
+                        <div style={{ whiteSpace: "pre-wrap" }}>
+                          {message.text}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {isBotTyping && (
+                    <div style={styles.messageRow}>
+                      <div
+                        style={{ ...styles.messageBubble, ...styles.botBubble }}
+                      >
+                        <div style={styles.iconContainer}>
                           <Bot size={16} />
-                        )}
-                      </div>
-                      <div style={{ whiteSpace: "pre-wrap" }}>
-                        {message.text}
+                        </div>
+                        <p>Đang trả lời...</p>
                       </div>
                     </div>
-                  </div>
-                ))}
-                {isBotTyping && (
-                  <div style={styles.messageRow}>
-                    <div
-                      style={{ ...styles.messageBubble, ...styles.botBubble }}
-                    >
-                      <div style={styles.iconContainer}>
-                        <Bot size={16} />
-                      </div>
-                      <p>Đang trả lời...</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div style={styles.inputArea}>
-                <div style={styles.inputContainer}>
-                  <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Nhập tin nhắn..."
-                    style={styles.input}
-                    aria-label="Nhập tin nhắn trò chuyện"
-                  />
-                  <button
-                    onClick={handleSendMessage}
-                    style={styles.sendButton}
-                    aria-label="Gửi tin nhắn"
-                  >
-                    <Send size={18} />
-                  </button>
+                  )}
                 </div>
+
+                <div style={styles.inputArea}>
+                  <div style={styles.inputContainer}>
+                    <input
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Nhập tin nhắn..."
+                      style={styles.input}
+                      aria-label="Nhập tin nhắn trò chuyện"
+                    />
+                    <button
+                      onClick={handleSendMessage}
+                      style={styles.sendButton}
+                      aria-label="Gửi tin nhắn"
+                    >
+                      <Send size={18} />
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div style={styles.loginMessage}>
+                <Bot size={48} color="#2563eb" />
+                <h3 style={{ marginTop: "16px", color: "#1f2937" }}>
+                  Vui lòng đăng nhập để trò chuyện
+                </h3>
+                <p style={{ color: "#6b7280", margin: "8px 0" }}>
+                  Bạn cần đăng nhập để sử dụng hộp trò chuyện. Hãy đăng nhập để
+                  tiếp tục.
+                </p>
+                <button
+                  style={styles.loginButton}
+                  onClick={redirectToLogin}
+                  aria-label="Đăng nhập để tiếp tục"
+                >
+                  <LogIn size={18} />
+                  Đăng nhập ngay
+                </button>
               </div>
-            </>
-          ) : (
-            <div style={styles.loginMessage}>
-              <Bot size={48} color="#2563eb" />
-              <h3 style={{ marginTop: "16px", color: "#1f2937" }}>
-                Vui lòng đăng nhập để trò chuyện
-              </h3>
-              <p style={{ color: "#6b7280", margin: "8px 0" }}>
-                Bạn cần đăng nhập để sử dụng hộp trò chuyện. Hãy đăng nhập để
-                tiếp tục.
-              </p>
-              <button
-                style={styles.loginButton}
-                onClick={redirectToLogin}
-                aria-label="Đăng nhập để tiếp tục"
-              >
-                <LogIn size={18} />
-                Đăng nhập ngay
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
