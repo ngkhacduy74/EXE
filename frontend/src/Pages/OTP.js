@@ -56,12 +56,10 @@ const App = () => {
     try {
       if (accessToken) {
         localStorage.setItem("token", accessToken);
-        console.log("Access token saved to localStorage:", accessToken.substring(0, 20) + "...");
       }
       
       if (refreshToken) {
         localStorage.setItem("refreshToken", refreshToken);
-        console.log("Refresh token saved to localStorage:", refreshToken.substring(0, 20) + "...");
       }
       
       return true;
@@ -92,7 +90,6 @@ const App = () => {
       const res = await authApiClient.get("/otp/verifyOTP", { 
         params: { email, otp } 
       });
-      console.log("OTP verification response:", res.data);
 
       if (res && res.data.success) {
         const { token, refresh_token } = res.data;
@@ -116,13 +113,10 @@ const App = () => {
 
         try {
           // Fetch user data - use axios directly since this endpoint doesn't need auth
-          console.log("🔍 Fetching user data for email:", email);
           const userRes = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/user/getUserByEmail?email=${encodeURIComponent(email)}`);
-          console.log("✅ User response:", userRes.data);
 
           // Store user data
           if (userRes.data && userRes.data.user) {
-            console.log("💾 Storing user data:", userRes.data.user);
             localStorage.setItem("user", JSON.stringify(userRes.data.user));
             
             // Navigate based on user role and returnUrl
@@ -136,8 +130,6 @@ const App = () => {
               // Otherwise, go to admin or home based on role
               destination = userRole === "Admin" ? "/admin" : "/";
             }
-            
-            console.log("🚀 Navigating to:", destination);
             
             navigate(destination, {
               state: {

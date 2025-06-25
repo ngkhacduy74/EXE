@@ -58,7 +58,6 @@ class GA4Analytics {
           custom_parameter_2: parameters.user_role || 'admin',
           ...parameters
         });
-        console.log(`📊 GA4 Event tracked: ${eventName}`, parameters);
       } else {
         console.warn('⚠️ GA4 gtag not available for event tracking');
       }
@@ -75,7 +74,6 @@ class GA4Analytics {
           page_title: pageTitle,
           page_location: pageLocation
         });
-        console.log(`📊 GA4 Page view tracked: ${pageTitle}`);
       }
     } catch (error) {
       console.error('❌ Error tracking GA4 page view:', error);
@@ -282,7 +280,6 @@ function AdminDashboard() {
     try {
       // Check if GA4 is already loaded
       if (typeof window !== 'undefined' && window.gtag) {
-        console.log("✅ GA4 đã được tải từ index.html");
         
         // Track dashboard load event
         setTimeout(() => {
@@ -294,7 +291,6 @@ function AdminDashboard() {
               custom_parameter_1: 'overview',
               custom_parameter_2: 'admin'
             });
-            console.log("📊 Đã gửi event dashboard_loaded đến GA4");
           } catch (error) {
             console.error('❌ Error sending GA4 event:', error);
           }
@@ -343,7 +339,6 @@ function AdminDashboard() {
               event_label: 'Dashboard Load',
               value: 1
             });
-            console.log("📊 Đã gửi event dashboard_loaded đến GA4");
           }
         } catch (error) {
           console.error('❌ Error sending GA4 event (fallback):', error);
@@ -413,7 +408,6 @@ function AdminDashboard() {
     }
 
     try {
-      console.log("🔍 Đang lấy dữ liệu dashboard từ API...");
       // FIXED: Use proxy URL instead of direct backend URL
       const apiUrl = process.env.NODE_ENV === 'development' 
         ? '/api/dashboard/stats'
@@ -426,8 +420,6 @@ function AdminDashboard() {
           'Content-Type': 'application/json',
         },
       });
-
-      console.log("📡 Trạng thái API Response:", response.status);
 
       if (response.status === 401) {
         console.log("🔄 Token hết hạn, đang thử làm mới...");
@@ -453,7 +445,6 @@ function AdminDashboard() {
         }
         
         const data = await response.json();
-        console.log("✅ Dữ liệu API Response:", data);
         return data.data;
       }
 
@@ -527,7 +518,6 @@ function AdminDashboard() {
 
           if (response.ok) {
             const data = await response.json();
-            console.log('✅ GA4 data from backend:', data);
             
             setAnalyticsData({
               pageViews: data.data.pageViews,
@@ -582,7 +572,6 @@ function AdminDashboard() {
         const realData = await fetchRealDashboardData();
         
         if (realData) {
-          console.log("✅ Đang sử dụng dữ liệu thực từ API");
           setRealData(realData);
           
           // Update dashboard data với các giá trị thực theo yêu cầu mới
@@ -659,12 +648,9 @@ function AdminDashboard() {
     return () => clearInterval(interval);
   }, [tokens.accessToken]);
 
-  // Auto refresh dashboard data every 1 hour
+  // Auto refresh dashboard data every hour
   useEffect(() => {
     const autoRefreshDashboard = async () => {
-      console.log('🔄 Auto refreshing dashboard data...');
-      
-      // Update refresh times
       const now = new Date();
       setLastRefreshTime(now);
       setNextRefreshTime(new Date(now.getTime() + 3600000)); // 1 hour from now
@@ -706,8 +692,6 @@ function AdminDashboard() {
             pageViews: analyticsData
           }));
         }
-
-        console.log('✅ Dashboard auto refresh completed');
       } catch (error) {
         console.error('❌ Error during auto refresh:', error);
       }
