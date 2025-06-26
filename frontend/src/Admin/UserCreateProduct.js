@@ -1,4 +1,6 @@
 import React, { useState, useRef } from "react";
+import Header from "../Components/Header";
+import Footer from "../Components/Footer";
 import {
   Container,
   Card,
@@ -466,8 +468,12 @@ const UserCreateProduct = () => {
   };
 
   return (
-    <Container style={{ maxWidth: 800, margin: "40px auto" }}>
-      <style>{`
+    <div>
+      <Header />
+
+      <Container style={{ maxWidth: 800, margin: "40px auto" }}>
+
+        <style>{`
         .user-create-product-card {
           background: #fff;
           border-radius: 14px;
@@ -529,536 +535,539 @@ const UserCreateProduct = () => {
           word-break: break-word;
         }
       `}</style>
-      <Card className="user-create-product-card">
-        <Card.Body>
-          <div className="user-create-product-header d-flex align-items-center mb-4">
-            <Button
-              variant="light"
-              onClick={() => navigate(-1)}
-              className="me-3"
-              style={{ boxShadow: "0 2px 8px rgba(37,99,235,0.07)" }}
-            >
-              <ArrowLeft size={20} color="#2563eb" />
-            </Button>
-            <h3
-              className="mb-0 text-center flex-grow-1"
-              style={{ letterSpacing: 1 }}
-            >
-              Tạo sản phẩm mới
-            </h3>
-          </div>
-          <div className="user-create-product-tip">
-            <b>Gợi ý:</b> Hãy điền thông tin sản phẩm thật chi tiết, hình ảnh rõ
-            nét và giá hợp lý để tăng khả năng bán hàng!
-          </div>
-          {error && <Alert variant="danger">{error}</Alert>}
-          {success && <Alert variant="success">{success}</Alert>}
-          <Form onSubmit={handleSubmit}>
-            <Row>
-              <Col md={12} className="user-create-product-section">
-                <Form.Group className="mb-3">
-                  <Form.Label className="user-create-product-label">
-                    Tên sản phẩm *
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    isInvalid={!!errors.name}
-                    placeholder="Nhập tên sản phẩm"
-                    maxLength={100}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.name}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label className="user-create-product-label">
-                    Thương hiệu *
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="brand"
-                    value={formData.brand}
-                    onChange={handleInputChange}
-                    isInvalid={!!errors.brand}
-                    placeholder="Nhập thương hiệu"
-                    maxLength={50}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.brand}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="user-create-product-label">
-                        Giá (VND) *
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="price"
-                        value={formData.price}
-                        onChange={handleInputChange}
-                        isInvalid={!!errors.price}
-                        placeholder="1000"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.price}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="user-create-product-label">
-                        Liên Hệ *
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="business_phone"
-                        value={formData.business_phone}
-                        onChange={handleInputChange}
-                        isInvalid={!!errors.business_phone}
-                        placeholder="Nhập số điện thoại"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.business_phone}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="user-create-product-label">
-                        Số lượng *
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="quantity"
-                        value={formData.quantity}
-                        onChange={handleInputChange}
-                        isInvalid={!!errors.quantity}
-                        placeholder="1"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.quantity}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="user-create-product-label">
-                        Tình trạng
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="status"
-                        value="Đã qua sử dụng"
-                        readOnly
-                        disabled
-                        style={{
-                          background: "#f1f5f9",
-                          color: "#2563eb",
-                          fontWeight: 600,
-                        }}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Form.Group className="mb-3">
-                  <Form.Label className="user-create-product-label">
-                    Mô tả *
-                  </Form.Label>
-                  <div
-                    ref={descriptionDivRef}
-                    contentEditable
-                    suppressContentEditableWarning
-                    className="description-editable"
-                    style={{
-                      minHeight: 180,
-                      border: "1px solid #ccc",
-                      borderRadius: 4,
-                      padding: 10,
-                      fontFamily: "Times New Roman",
-                      background: "#fff",
-                      outline: "none",
-                      whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
-                    }}
-                    placeholder="Nhập mô tả sản phẩm (có thể dán ảnh, chỉ nhận text thường, font Times New Roman)"
-                    onPaste={handleDescriptionPaste}
-                    onInput={handleDescriptionInput}
-                    spellCheck={true}
-                  />
-                  <div style={{ fontSize: 13, color: "#888", marginTop: 4 }}>
-                    {formData.description.length}/2000 ký tự
-                  </div>
-                  {errors.description && (
-                    <div className="error-message">{errors.description}</div>
-                  )}
-                </Form.Group>
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="user-create-product-label">
-                        Kích thước (cm) *
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="size"
-                        value={formData.size}
-                        onChange={handleInputChange}
-                        isInvalid={!!errors.size}
-                        placeholder="VD: 60 x 55 x 85"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.size}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="user-create-product-label">
-                        Trọng lượng *
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="weight"
-                        value={formData.weight}
-                        onChange={handleInputChange}
-                        isInvalid={!!errors.weight}
-                        placeholder="VD: 65"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.weight}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="user-create-product-label">
-                        Điện áp *
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="voltage"
-                        value={formData.voltage}
-                        onChange={handleInputChange}
-                        isInvalid={!!errors.voltage}
-                        placeholder="VD: 220 hoặc 220V"
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.voltage}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="user-create-product-label">
-                        Thời gian bảo hành (tháng)
-                      </Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="warranty_period"
-                        value={formData.warranty_period}
-                        onChange={handleInputChange}
-                        placeholder="12"
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </Col>
-              <div className="user-create-product-divider"></div>
-              <Col md={12} className="user-create-product-section">
-                <Form.Group className="mb-3">
-                  <Form.Label className="user-create-product-label">
-                    Tính năng
-                  </Form.Label>
-                  {formData.features.map((feature, index) => (
-                    <Row key={index} className="mb-2">
-                      <Col md={4}>
+        <Card className="user-create-product-card">
+          <Card.Body>
+            <div className="user-create-product-header d-flex align-items-center mb-4">
+              <Button
+                variant="light"
+                onClick={() => navigate(-1)}
+                className="me-3"
+                style={{ boxShadow: "0 2px 8px rgba(37,99,235,0.07)" }}
+              >
+                <ArrowLeft size={20} color="#2563eb" />
+              </Button>
+              <h3
+                className="mb-0 text-center flex-grow-1"
+                style={{ letterSpacing: 1 }}
+              >
+                Tạo sản phẩm mới
+              </h3>
+            </div>
+            <div className="user-create-product-tip">
+              <b>Gợi ý:</b> Hãy điền thông tin sản phẩm thật chi tiết, hình ảnh rõ
+              nét và giá hợp lý để tăng khả năng bán hàng!
+            </div>
+            {error && <Alert variant="danger">{error}</Alert>}
+            {success && <Alert variant="success">{success}</Alert>}
+            <Form onSubmit={handleSubmit}>
+              <Row>
+                <Col md={12} className="user-create-product-section">
+                  <Form.Group className="mb-3">
+                    <Form.Label className="user-create-product-label">
+                      Tên sản phẩm *
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      isInvalid={!!errors.name}
+                      placeholder="Nhập tên sản phẩm"
+                      maxLength={100}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.name}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="user-create-product-label">
+                      Thương hiệu *
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="brand"
+                      value={formData.brand}
+                      onChange={handleInputChange}
+                      isInvalid={!!errors.brand}
+                      placeholder="Nhập thương hiệu"
+                      maxLength={50}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.brand}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="user-create-product-label">
+                          Giá (VND) *
+                        </Form.Label>
                         <Form.Control
                           type="text"
-                          value={feature.title}
-                          onChange={(e) =>
-                            handleFeatureChange(index, "title", e.target.value)
-                          }
-                          placeholder={`Tiêu đề tính năng ${index + 1}`}
-                          isInvalid={!!errors.features}
-                          maxLength={100}
+                          name="price"
+                          value={formData.price}
+                          onChange={handleInputChange}
+                          isInvalid={!!errors.price}
+                          placeholder="1000"
                         />
-                      </Col>
-                      <Col md={6}>
-                        <Form.Control
-                          type="text"
-                          value={feature.description}
-                          onChange={(e) =>
-                            handleFeatureChange(
-                              index,
-                              "description",
-                              e.target.value
-                            )
-                          }
-                          placeholder={`Mô tả tính năng ${index + 1}`}
-                          isInvalid={!!errors.features}
-                          maxLength={500}
-                        />
-                      </Col>
-                      <Col md={2}>
-                        {formData.features.length > 1 && (
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => removeFeature(index)}
-                          >
-                            <X size={16} />
-                          </Button>
-                        )}
-                      </Col>
-                    </Row>
-                  ))}
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={addFeature}
-                    className="mt-2"
-                  >
-                    <Plus size={16} /> Thêm tính năng
-                  </Button>
-                  {errors.features && (
-                    <Form.Text className="text-danger d-block">
-                      {errors.features}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-              </Col>
-              <div className="user-create-product-divider"></div>
-              <Col md={12} className="user-create-product-section">
-                <Card
-                  className="mb-4"
-                  style={{ background: "#fff", borderRadius: 12 }}
-                >
-                  <Card.Header
-                    className="d-flex align-items-center"
-                    style={{
-                      background: "#f6f8fa",
-                      borderRadius: "12px 12px 0 0",
-                      color: "#2563eb",
-                      fontWeight: 600,
-                    }}
-                  >
-                    <Link size={20} className="me-2" />
-                    URL Hình ảnh sản phẩm
-                  </Card.Header>
-                  <Card.Body>
-                    {/* Thêm input file upload ảnh */}
-                    <div className="mb-3">
-                      <Form.Group>
-                        <Form.Label>Hoặc chọn file ảnh để upload</Form.Label>
-                        <Form.Control
-                          type="file"
-                          accept="image/*"
-                          onChange={handleUploadImageFile}
-                          disabled={imageUrls.length >= 3}
-                        />
-                        <Form.Text className="text-muted">
-                          Tối đa 3 ảnh. Ảnh upload sẽ tự động thêm vào danh sách
-                          URL.
-                        </Form.Text>
+                        <Form.Control.Feedback type="invalid">
+                          {errors.price}
+                        </Form.Control.Feedback>
                       </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="user-create-product-label">
+                          Liên Hệ *
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="business_phone"
+                          value={formData.business_phone}
+                          onChange={handleInputChange}
+                          isInvalid={!!errors.business_phone}
+                          placeholder="Nhập số điện thoại"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.business_phone}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="user-create-product-label">
+                          Số lượng *
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="quantity"
+                          value={formData.quantity}
+                          onChange={handleInputChange}
+                          isInvalid={!!errors.quantity}
+                          placeholder="1"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.quantity}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="user-create-product-label">
+                          Tình trạng
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="status"
+                          value="Đã qua sử dụng"
+                          readOnly
+                          disabled
+                          style={{
+                            background: "#f1f5f9",
+                            color: "#2563eb",
+                            fontWeight: 600,
+                          }}
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="user-create-product-label">
+                      Mô tả *
+                    </Form.Label>
+                    <div
+                      ref={descriptionDivRef}
+                      contentEditable
+                      suppressContentEditableWarning
+                      className="description-editable"
+                      style={{
+                        minHeight: 180,
+                        border: "1px solid #ccc",
+                        borderRadius: 4,
+                        padding: 10,
+                        fontFamily: "Times New Roman",
+                        background: "#fff",
+                        outline: "none",
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                      }}
+                      placeholder="Nhập mô tả sản phẩm (có thể dán ảnh, chỉ nhận text thường, font Times New Roman)"
+                      onPaste={handleDescriptionPaste}
+                      onInput={handleDescriptionInput}
+                      spellCheck={true}
+                    />
+                    <div style={{ fontSize: 13, color: "#888", marginTop: 4 }}>
+                      {formData.description.length}/2000 ký tự
                     </div>
-                    {/* ...phần nhập URL ảnh như cũ... */}
-                    {imageUrls.map((url, index) => (
-                      <div key={index} className="mb-3">
-                        <Form.Group>
-                          <Form.Label className="user-create-product-label">
-                            URL Hình ảnh {index + 1} {index === 0 && "*"}
-                          </Form.Label>
-                          <div className="d-flex">
-                            <Form.Control
-                              type="url"
-                              value={url}
-                              onChange={(e) =>
-                                handleImageUrlChange(index, e.target.value)
-                              }
-                              placeholder="https://example.com/image.jpg"
-                              isInvalid={
-                                !!errors.images &&
-                                url.trim() !== "" &&
-                                !isImageUrl(url)
-                              }
-                            />
-                            {imageUrls.length > 1 && (
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                className="ms-2"
-                                onClick={() => removeImageUrl(index)}
-                              >
-                                <X size={16} />
-                              </Button>
-                            )}
-                          </div>
-                          {url.trim() !== "" && !isImageUrl(url) && (
-                            <Form.Text className="text-danger">
-                              URL hình ảnh không hợp lệ
-                            </Form.Text>
+                    {errors.description && (
+                      <div className="error-message">{errors.description}</div>
+                    )}
+                  </Form.Group>
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="user-create-product-label">
+                          Kích thước (cm) *
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="size"
+                          value={formData.size}
+                          onChange={handleInputChange}
+                          isInvalid={!!errors.size}
+                          placeholder="VD: 60 x 55 x 85"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.size}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="user-create-product-label">
+                          Trọng lượng *
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="weight"
+                          value={formData.weight}
+                          onChange={handleInputChange}
+                          isInvalid={!!errors.weight}
+                          placeholder="VD: 65"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.weight}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="user-create-product-label">
+                          Điện áp *
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="voltage"
+                          value={formData.voltage}
+                          onChange={handleInputChange}
+                          isInvalid={!!errors.voltage}
+                          placeholder="VD: 220 hoặc 220V"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.voltage}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="user-create-product-label">
+                          Thời gian bảo hành (tháng)
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="warranty_period"
+                          value={formData.warranty_period}
+                          onChange={handleInputChange}
+                          placeholder="12"
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                </Col>
+                <div className="user-create-product-divider"></div>
+                <Col md={12} className="user-create-product-section">
+                  <Form.Group className="mb-3">
+                    <Form.Label className="user-create-product-label">
+                      Tính năng
+                    </Form.Label>
+                    {formData.features.map((feature, index) => (
+                      <Row key={index} className="mb-2">
+                        <Col md={4}>
+                          <Form.Control
+                            type="text"
+                            value={feature.title}
+                            onChange={(e) =>
+                              handleFeatureChange(index, "title", e.target.value)
+                            }
+                            placeholder={`Tiêu đề tính năng ${index + 1}`}
+                            isInvalid={!!errors.features}
+                            maxLength={100}
+                          />
+                        </Col>
+                        <Col md={6}>
+                          <Form.Control
+                            type="text"
+                            value={feature.description}
+                            onChange={(e) =>
+                              handleFeatureChange(
+                                index,
+                                "description",
+                                e.target.value
+                              )
+                            }
+                            placeholder={`Mô tả tính năng ${index + 1}`}
+                            isInvalid={!!errors.features}
+                            maxLength={500}
+                          />
+                        </Col>
+                        <Col md={2}>
+                          {formData.features.length > 1 && (
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => removeFeature(index)}
+                            >
+                              <X size={16} />
+                            </Button>
                           )}
-                        </Form.Group>
-                        {url.trim() !== "" && isImageUrl(url) && (
-                          <div className="mt-2">
-                            <img
-                              src={url}
-                              alt={`Preview ${index + 1}`}
-                              className="img-fluid"
-                              style={{
-                                maxHeight: "150px",
-                                borderRadius: "8px",
-                                border: "1px solid #dee2e6",
-                              }}
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                              }}
-                            />
-                          </div>
-                        )}
-                      </div>
+                        </Col>
+                      </Row>
                     ))}
                     <Button
                       variant="outline-primary"
                       size="sm"
-                      onClick={addImageUrl}
-                      disabled={imageUrls.length >= 3}
+                      onClick={addFeature}
+                      className="mt-2"
                     >
-                      <Plus size={16} /> Thêm ảnh
+                      <Plus size={16} /> Thêm tính năng
                     </Button>
-                    <Form.Text className="text-muted d-block">
-                      Tối đa 3 URL hình ảnh. Hỗ trợ: JPG, PNG, GIF, WebP
-                    </Form.Text>
-                    {errors.images && (
+                    {errors.features && (
                       <Form.Text className="text-danger d-block">
-                        {errors.images}
+                        {errors.features}
                       </Form.Text>
                     )}
-                  </Card.Body>
-                </Card>
-              </Col>
-              <div className="user-create-product-divider"></div>
-              <Col md={12} className="user-create-product-section">
-                <Card
-                  className="mb-4"
-                  style={{ background: "#fff", borderRadius: 12 }}
-                >
-                  <Card.Header
-                    style={{
-                      background: "#f6f8fa",
-                      borderRadius: "12px 12px 0 0",
-                      color: "#2563eb",
-                      fontWeight: 600,
-                    }}
+                  </Form.Group>
+                </Col>
+                <div className="user-create-product-divider"></div>
+                <Col md={12} className="user-create-product-section">
+                  <Card
+                    className="mb-4"
+                    style={{ background: "#fff", borderRadius: 12 }}
                   >
-                    <Link size={20} className="me-2" />
-                    URL Video sản phẩm
-                  </Card.Header>
-                  <Card.Body>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="user-create-product-label">
-                        URL Video (tùy chọn)
-                      </Form.Label>
-                      <Form.Control
-                        type="url"
-                        value={videoUrl}
-                        onChange={(e) => handleVideoUrlChange(e.target.value)}
-                        placeholder="https://example.com/video.mp4"
-                        isInvalid={!!errors.video}
-                      />
-                      <Form.Text className="text-muted">
-                        Hỗ trợ: MP4, AVI, MOV, YouTube, Vimeo
-                      </Form.Text>
-                      <Form.Control.Feedback type="invalid">
-                        {errors.video}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                    {videoUrl.trim() !== "" && isVideoUrl(videoUrl) && (
-                      <div className="mt-3">
-                        <video
-                          src={videoUrl}
-                          controls
-                          className="img-fluid"
-                          style={{
-                            maxHeight: "200px",
-                            borderRadius: "8px",
-                            border: "1px solid #dee2e6",
-                          }}
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                          }}
-                        />
+                    <Card.Header
+                      className="d-flex align-items-center"
+                      style={{
+                        background: "#f6f8fa",
+                        borderRadius: "12px 12px 0 0",
+                        color: "#2563eb",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <Link size={20} className="me-2" />
+                      URL Hình ảnh sản phẩm
+                    </Card.Header>
+                    <Card.Body>
+                      {/* Thêm input file upload ảnh */}
+                      <div className="mb-3">
+                        <Form.Group>
+                          <Form.Label>Hoặc chọn file ảnh để upload</Form.Label>
+                          <Form.Control
+                            type="file"
+                            accept="image/*"
+                            onChange={handleUploadImageFile}
+                            disabled={imageUrls.length >= 3}
+                          />
+                          <Form.Text className="text-muted">
+                            Tối đa 3 ảnh. Ảnh upload sẽ tự động thêm vào danh sách
+                            URL.
+                          </Form.Text>
+                        </Form.Group>
                       </div>
+                      {/* ...phần nhập URL ảnh như cũ... */}
+                      {imageUrls.map((url, index) => (
+                        <div key={index} className="mb-3">
+                          <Form.Group>
+                            <Form.Label className="user-create-product-label">
+                              URL Hình ảnh {index + 1} {index === 0 && "*"}
+                            </Form.Label>
+                            <div className="d-flex">
+                              <Form.Control
+                                type="url"
+                                value={url}
+                                onChange={(e) =>
+                                  handleImageUrlChange(index, e.target.value)
+                                }
+                                placeholder="https://example.com/image.jpg"
+                                isInvalid={
+                                  !!errors.images &&
+                                  url.trim() !== "" &&
+                                  !isImageUrl(url)
+                                }
+                              />
+                              {imageUrls.length > 1 && (
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  className="ms-2"
+                                  onClick={() => removeImageUrl(index)}
+                                >
+                                  <X size={16} />
+                                </Button>
+                              )}
+                            </div>
+                            {url.trim() !== "" && !isImageUrl(url) && (
+                              <Form.Text className="text-danger">
+                                URL hình ảnh không hợp lệ
+                              </Form.Text>
+                            )}
+                          </Form.Group>
+                          {url.trim() !== "" && isImageUrl(url) && (
+                            <div className="mt-2">
+                              <img
+                                src={url}
+                                alt={`Preview ${index + 1}`}
+                                className="img-fluid"
+                                style={{
+                                  maxHeight: "150px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #dee2e6",
+                                }}
+                                onError={(e) => {
+                                  e.target.style.display = "none";
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={addImageUrl}
+                        disabled={imageUrls.length >= 3}
+                      >
+                        <Plus size={16} /> Thêm ảnh
+                      </Button>
+                      <Form.Text className="text-muted d-block">
+                        Tối đa 3 URL hình ảnh. Hỗ trợ: JPG, PNG, GIF, WebP
+                      </Form.Text>
+                      {errors.images && (
+                        <Form.Text className="text-danger d-block">
+                          {errors.images}
+                        </Form.Text>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <div className="user-create-product-divider"></div>
+                <Col md={12} className="user-create-product-section">
+                  <Card
+                    className="mb-4"
+                    style={{ background: "#fff", borderRadius: 12 }}
+                  >
+                    <Card.Header
+                      style={{
+                        background: "#f6f8fa",
+                        borderRadius: "12px 12px 0 0",
+                        color: "#2563eb",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <Link size={20} className="me-2" />
+                      URL Video sản phẩm
+                    </Card.Header>
+                    <Card.Body>
+                      <Form.Group className="mb-3">
+                        <Form.Label className="user-create-product-label">
+                          URL Video (tùy chọn)
+                        </Form.Label>
+                        <Form.Control
+                          type="url"
+                          value={videoUrl}
+                          onChange={(e) => handleVideoUrlChange(e.target.value)}
+                          placeholder="https://example.com/video.mp4"
+                          isInvalid={!!errors.video}
+                        />
+                        <Form.Text className="text-muted">
+                          Hỗ trợ: MP4, AVI, MOV, YouTube, Vimeo
+                        </Form.Text>
+                        <Form.Control.Feedback type="invalid">
+                          {errors.video}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                      {videoUrl.trim() !== "" && isVideoUrl(videoUrl) && (
+                        <div className="mt-3">
+                          <video
+                            src={videoUrl}
+                            controls
+                            className="img-fluid"
+                            style={{
+                              maxHeight: "200px",
+                              borderRadius: "8px",
+                              border: "1px solid #dee2e6",
+                            }}
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                          />
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col md={12} className="d-grid gap-2 mb-3">
+                  <Button
+                    className="user-create-product-btn"
+                    type="submit"
+                    disabled={loading}
+                    size="lg"
+                  >
+                    {loading ? (
+                      <>
+                        <Spinner size="sm" className="me-2" />
+                        Đang tạo...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={20} className="me-2" />
+                        Tạo sản phẩm
+                      </>
                     )}
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={12} className="d-grid gap-2 mb-3">
-                <Button
-                  className="user-create-product-btn"
-                  type="submit"
-                  disabled={loading}
-                  size="lg"
+                  </Button>
+                </Col>
+              </Row>
+            </Form>
+            <Toast
+              onClose={() => setShowToast(false)}
+              show={showToast}
+              delay={2000}
+              autohide
+              style={{
+                position: "fixed",
+                top: 20,
+                right: 20,
+                minWidth: 300,
+                zIndex: 9999,
+                background: "#22c55e",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 18,
+                boxShadow: "0 2px 12px rgba(34,197,94,0.15)",
+                borderRadius: 12,
+                border: "none",
+              }}
+            >
+              <Toast.Body>
+                <span
+                  role="img"
+                  aria-label="success"
+                  style={{ fontSize: 22, marginRight: 8 }}
                 >
-                  {loading ? (
-                    <>
-                      <Spinner size="sm" className="me-2" />
-                      Đang tạo...
-                    </>
-                  ) : (
-                    <>
-                      <Save size={20} className="me-2" />
-                      Tạo sản phẩm
-                    </>
-                  )}
-                </Button>
-              </Col>
-            </Row>
-          </Form>
-          <Toast
-            onClose={() => setShowToast(false)}
-            show={showToast}
-            delay={2000}
-            autohide
-            style={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              minWidth: 300,
-              zIndex: 9999,
-              background: "#22c55e",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: 18,
-              boxShadow: "0 2px 12px rgba(34,197,94,0.15)",
-              borderRadius: 12,
-              border: "none",
-            }}
-          >
-            <Toast.Body>
-              <span
-                role="img"
-                aria-label="success"
-                style={{ fontSize: 22, marginRight: 8 }}
-              >
-                ✅
-              </span>
-              Tạo sản phẩm thành công!
-            </Toast.Body>
-          </Toast>
-        </Card.Body>
-      </Card>
-    </Container>
+                  ✅
+                </span>
+                Tạo sản phẩm thành công!
+              </Toast.Body>
+            </Toast>
+          </Card.Body>
+        </Card>
+
+      </Container>
+      <Footer />
+    </div>
   );
 };
 

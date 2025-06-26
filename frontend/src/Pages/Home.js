@@ -73,13 +73,7 @@ const Home = () => {
 
           <Header />
           <div className="d-flex justify-content-end mb-3">
-            <button
-              className="btn btn-outline-primary"
-              style={{ fontWeight: 600, borderRadius: 8 }}
-              onClick={() => navigate("/user-products")}
-            >
-              Quản lý sản phẩm
-            </button>
+
           </div>
 
           <BannerSection2 />

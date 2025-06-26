@@ -857,7 +857,7 @@ function Header() {
                       <li>
                         <Link
                           className="dropdown-item px-3 py-2"
-                          to="/orders"
+                          to="/user-products"
                           style={{
                             transition: "all 0.2s ease",
                             cursor: "pointer",
@@ -872,7 +872,7 @@ function Header() {
                           }
                         >
                           <i className="bi bi-box me-2"></i>
-                          Đơn hàng
+                          Quản lí sản phẩm
                         </Link>
                       </li>
                       <li>
@@ -970,18 +970,17 @@ function Header() {
                       className="dropdown-menu"
                       aria-labelledby="createDropdown"
                     >
-                      {/* Chỉ hiển thị tạo bài viết mới nếu là admin */}
-                      {user.role && user.role.toLowerCase() === "admin" && (
+
                         <li>
                           <button
                             className="dropdown-item"
                             type="button"
-                            onClick={() => navigate("/newPost")}
+                            onClick={() => navigate("/compare-product")}
                           >
-                            Tạo bài viết mới
+                           So sánh sản phẩm
                           </button>
                         </li>
-                      )}
+                   
                       <li>
                         <button
                           className="dropdown-item"

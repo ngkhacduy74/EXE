@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Container, Table, Button, Spinner, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import Header from "../Components/Header";
+import Footer from "../Components/Footer";
+import ChatWidget from "../Components/WidgetChat";
 const UserProductManager = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +38,10 @@ const UserProductManager = () => {
   }, []);
 
   return (
+    <div>
+      <Header />
+      
+    
     <Container style={{ maxWidth: 900, margin: "40px auto" }}>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <Button variant="outline-secondary" onClick={() => navigate("/")}>
@@ -97,6 +103,10 @@ const UserProductManager = () => {
         </Button>
       </div>
     </Container>
+    <ChatWidget/>
+    <Footer/>
+    </div>
+    
   );
 };
 

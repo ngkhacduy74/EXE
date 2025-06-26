@@ -7,7 +7,6 @@ import { useLocation } from "react-router-dom";
 import Sidebar from "../Components/Sidebar";
 import HeaderAdmin from "../Components/HeaderAdmin";
 import { Bar, Line, Doughnut, Pie } from "react-chartjs-2";
-import "./styles/AdminModal.css"; // Import CSS cho admin modal
 import { 
   Chart as ChartJS, 
   CategoryScale, 
@@ -58,9 +57,12 @@ class GA4Analytics {
           custom_parameter_2: parameters.user_role || 'admin',
           ...parameters
         });
+        console.log(`📊 GA4 Event tracked: ${eventName}`, parameters);
+      } else {
+        console.warn('⚠️ GA4 gtag not available for event tracking');
       }
     } catch (error) {
-      // No need to log here, as the caller will handle it
+      console.error('❌ Error tracking GA4 event:', error);
     }
   }
 
@@ -72,9 +74,10 @@ class GA4Analytics {
           page_title: pageTitle,
           page_location: pageLocation
         });
+        console.log(`📊 GA4 Page view tracked: ${pageTitle}`);
       }
     } catch (error) {
-      // No need to log here, as the caller will handle it
+      console.error('❌ Error tracking GA4 page view:', error);
     }
   }
 
@@ -278,6 +281,7 @@ function AdminDashboard() {
     try {
       // Check if GA4 is already loaded
       if (typeof window !== 'undefined' && window.gtag) {
+        console.log("✅ GA4 đã được tải từ index.html");
         
         // Track dashboard load event
         setTimeout(() => {
@@ -289,15 +293,16 @@ function AdminDashboard() {
               custom_parameter_1: 'overview',
               custom_parameter_2: 'admin'
             });
+            console.log("📊 Đã gửi event dashboard_loaded đến GA4");
           } catch (error) {
-            // No need to log here, as the caller will handle it
+            console.error('Error sending GA4 event:', error);
           }
         }, 1000);
         
         return;
       }
 
-      console.log("⚠️ GA4 chưa được tải, đang thử tải lại...");
+      console.log("GA4 chưa được tải, đang thử tải lại...");
       
       // Fallback: Load GA4 script if not already loaded
       const script1 = document.createElement('script');
@@ -337,9 +342,10 @@ function AdminDashboard() {
               event_label: 'Dashboard Load',
               value: 1
             });
+            console.log("📊 Đã gửi event dashboard_loaded đến GA4");
           }
         } catch (error) {
-          // No need to log here, as the caller will handle it
+          console.error('❌ Error sending GA4 event (fallback):', error);
         }
       }, 1000);
 
@@ -348,11 +354,11 @@ function AdminDashboard() {
           if (script1.parentNode) script1.parentNode.removeChild(script1);
           if (script2.parentNode) script2.parentNode.removeChild(script2);
         } catch (error) {
-          // No need to log here, as the caller will handle it
+          console.error('❌ Error cleaning up GA4 scripts:', error);
         }
       };
     } catch (error) {
-      // No need to log here, as the caller will handle it
+      console.error('❌ Error initializing GA4:', error);
     }
   }, []);
 
@@ -406,6 +412,7 @@ function AdminDashboard() {
     }
 
     try {
+      console.log("🔍 Đang lấy dữ liệu dashboard từ API...");
       // FIXED: Use proxy URL instead of direct backend URL
       const apiUrl = process.env.NODE_ENV === 'development' 
         ? '/api/dashboard/stats'
@@ -418,6 +425,8 @@ function AdminDashboard() {
           'Content-Type': 'application/json',
         },
       });
+
+      console.log("📡 Trạng thái API Response:", response.status);
 
       if (response.status === 401) {
         console.log("🔄 Token hết hạn, đang thử làm mới...");
@@ -443,6 +452,7 @@ function AdminDashboard() {
         }
         
         const data = await response.json();
+        console.log("✅ Dữ liệu API Response:", data);
         return data.data;
       }
 
@@ -516,6 +526,7 @@ function AdminDashboard() {
 
           if (response.ok) {
             const data = await response.json();
+            console.log('✅ GA4 data from backend:', data);
             
             setAnalyticsData({
               pageViews: data.data.pageViews,
@@ -570,6 +581,7 @@ function AdminDashboard() {
         const realData = await fetchRealDashboardData();
         
         if (realData) {
+          console.log("✅ Đang sử dụng dữ liệu thực từ API");
           setRealData(realData);
           
           // Update dashboard data với các giá trị thực theo yêu cầu mới
@@ -646,9 +658,12 @@ function AdminDashboard() {
     return () => clearInterval(interval);
   }, [tokens.accessToken]);
 
-  // Auto refresh dashboard data every hour
+  // Auto refresh dashboard data every 1 hour
   useEffect(() => {
     const autoRefreshDashboard = async () => {
+      console.log('🔄 Auto refreshing dashboard data...');
+      
+      // Update refresh times
       const now = new Date();
       setLastRefreshTime(now);
       setNextRefreshTime(new Date(now.getTime() + 3600000)); // 1 hour from now
@@ -690,6 +705,8 @@ function AdminDashboard() {
             pageViews: analyticsData
           }));
         }
+
+        console.log('✅ Dashboard auto refresh completed');
       } catch (error) {
         console.error('❌ Error during auto refresh:', error);
       }

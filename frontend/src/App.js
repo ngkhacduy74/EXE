@@ -25,7 +25,7 @@ import ManaPost from "./Admin/ManaPost";
 import PostDetails from "./Admin/PostDetail";
 // import ProductDetail from "./Pages/ProductDetail";
 import ErrorPage from "./Components/ErrorPage";
-import NewPostForm from "./Components/NewPost";
+
 import CreateProduct from "./Admin/CreateProduct";
 import ProductBrowser from "./Pages/ProductBrowser";
 import CompareProduct from "./Pages/CompareProduct";
@@ -77,7 +77,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/otp" element={<OTP />} />
-            <Route path="/newPost" element={<NewPostForm />} />
+
             <Route path="/profile" element={<Profile />} />
             <Route path="/productView/:productId" element={<ProductView />} />
             <Route path="/postView/:postId" element={<PostView />} />
