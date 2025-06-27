@@ -338,10 +338,10 @@ const BannerSection = () => {
               .product-banner-swiper .swiper-button-next,
               .product-banner-swiper .swiper-button-prev {
                 color: #007bff;
-                background: white;
+               
                 border-radius: 50%;
-                width: 40px;
-                height: 40px;
+                width: 20px;
+                height: 20px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                 transition: all 0.3s ease;
                 margin-top: -20px;

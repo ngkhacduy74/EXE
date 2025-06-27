@@ -13,7 +13,7 @@
   "dependencies": {
     "@livechat/livechat-visitor-sdk": "^0.36.2",
     "@redux-saga/delay-p": "^1.2.1",
-    "axios": "^1.7.9",
+    "axios": "^1.10.0",
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.9",
     "concurrently": "^8.2.2",

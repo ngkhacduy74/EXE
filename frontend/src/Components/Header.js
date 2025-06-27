@@ -7,11 +7,7 @@ import { authApiClient } from "../Services/auth.service";
 function Header() {
   const { user, loading, handleLogout } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
-  const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [loadingCategories, setLoadingCategories] = useState(true);
-  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [showBrandsDropdown, setShowBrandsDropdown] = useState(false);
 
   // Enhanced states for product suggestions
@@ -90,7 +86,7 @@ function Header() {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, selectedCategory, allProducts]);
+  }, [searchTerm, allProducts]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -139,14 +135,9 @@ function Header() {
           const matchesSearch =
             product.name?.toLowerCase().includes(query.toLowerCase()) ||
             product.brand?.toLowerCase().includes(query.toLowerCase()) ||
-            product.category?.toLowerCase().includes(query.toLowerCase()) ||
             product.description?.toLowerCase().includes(query.toLowerCase());
 
-          const matchesCategory =
-            selectedCategory === "all" ||
-            product.category?.toLowerCase() === selectedCategory.toLowerCase();
-
-          return matchesSearch && matchesCategory;
+          return matchesSearch;
         })
         .slice(0, 8)
         .map((product) => ({
@@ -217,37 +208,29 @@ function Header() {
     localStorage.removeItem("recentSearches");
   };
 
-  // Fetch categories and brands
+  // Fetch brands
   useEffect(() => {
-    const fetchCategoriesAndBrands = async () => {
+    const fetchBrands = async () => {
       try {
-        setLoadingCategories(true);
         const response = await authApiClient.get("/product/");
 
         const productData = Array.isArray(response.data.data)
           ? response.data.data
           : [];
 
-        // Extract unique categories and brands
-        const uniqueCategories = [
-          ...new Set(productData.map((p) => p.category).filter(Boolean)),
-        ];
+        // Extract unique brands
         const uniqueBrands = [
           ...new Set(productData.map((p) => p.brand).filter(Boolean)),
         ];
 
-        setCategories(uniqueCategories);
         setBrands(uniqueBrands);
       } catch (error) {
-        console.error("Error fetching categories and brands:", error);
-        setCategories([]);
+        console.error("Error fetching brands:", error);
         setBrands([]);
-      } finally {
-        setLoadingCategories(false);
       }
     };
 
-    fetchCategoriesAndBrands();
+    fetchBrands();
   }, []);
 
   const handleLogoutClick = () => {
@@ -266,10 +249,6 @@ function Header() {
 
     if (query.trim()) {
       params.append("search", query.trim());
-    }
-
-    if (selectedCategory && selectedCategory !== "all") {
-      params.append("category", selectedCategory);
     }
 
     const queryString = params.toString();
@@ -336,15 +315,6 @@ function Header() {
   const handleBrandClick = (brand) => {
     navigate(`/product-browser?brand=${encodeURIComponent(brand)}`);
     setShowBrandsDropdown(false);
-  };
-
-  const handleCategoryClick = (category) => {
-    navigate(`/product-browser?category=${encodeURIComponent(category)}`);
-    setShowCategoriesDropdown(false);
-  };
-
-  const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value);
   };
 
   // Ensure sticky positioning works
@@ -521,14 +491,163 @@ function Header() {
               padding: 10px 12px !important;
             }
           }
+          
+          /* Mobile header improvements */
+          @media (max-width: 768px) {
+            .header-top-row {
+              padding: 8px 0 !important;
+            }
+            
+            .header-logo {
+              font-size: 14px !important;
+            }
+            
+            .header-logo img {
+              width: 40px !important;
+              height: auto !important;
+            }
+            
+            .header-user-actions {
+              gap: 8px !important;
+            }
+            
+            .header-user-button {
+              width: 40px !important;
+              height: 40px !important;
+              padding: 8px !important;
+            }
+            
+            .header-user-button svg {
+              width: 18px !important;
+              height: 18px !important;
+            }
+            
+            .header-dropdown-menu {
+              min-width: 180px !important;
+              border-radius: 8px !important;
+              box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+              border: 1px solid #e5e7eb !important;
+            }
+            
+            .header-dropdown-item {
+              padding: 10px 16px !important;
+              font-size: 14px !important;
+            }
+            
+            .header-dropdown-header {
+              padding: 12px 16px 8px !important;
+              font-size: 14px !important;
+            }
+            
+            .header-dropdown-divider {
+              margin: 4px 0 !important;
+            }
+          }
+          
+          @media (max-width: 480px) {
+            .header-top-row {
+              padding: 6px 0 !important;
+            }
+            
+            .header-logo {
+              font-size: 12px !important;
+            }
+            
+            .header-logo img {
+              width: 36px !important;
+            }
+            
+            .header-user-button {
+              width: 36px !important;
+              height: 36px !important;
+              padding: 6px !important;
+            }
+            
+            .header-user-button svg {
+              width: 16px !important;
+              height: 16px !important;
+            }
+            
+            .header-dropdown-menu {
+              min-width: 160px !important;
+            }
+            
+            .header-dropdown-item {
+              padding: 8px 12px !important;
+              font-size: 13px !important;
+            }
+          }
+          
+          /* Mobile navigation improvements */
+          @media (max-width: 768px) {
+            .mobile-nav-offcanvas {
+              width: 280px !important;
+            }
+            
+            .mobile-nav-item {
+              padding: 12px 16px !important;
+              border-bottom: 1px solid #f0f0f0 !important;
+            }
+            
+            .mobile-nav-item:last-child {
+              border-bottom: none !important;
+            }
+            
+            .mobile-nav-header {
+              padding: 16px !important;
+              font-size: 16px !important;
+              font-weight: 600 !important;
+            }
+            
+            .mobile-nav-category {
+              padding: 10px 16px 10px 24px !important;
+              font-size: 14px !important;
+            }
+            
+            .mobile-nav-brand {
+              padding: 8px 16px 8px 24px !important;
+              font-size: 14px !important;
+            }
+          }
+          
+          /* Hover effects for mobile */
+          @media (hover: hover) {
+            .header-user-button:hover {
+              background-color: #f8f9fa !important;
+              transform: scale(1.05) !important;
+            }
+            
+            .header-dropdown-item:hover {
+              background-color: #f8f9fa !important;
+            }
+          }
+          
+          /* Touch-friendly improvements */
+          @media (max-width: 768px) {
+            .header-user-button {
+              transition: all 0.2s ease !important;
+            }
+            
+            .header-user-button:active {
+              transform: scale(0.95) !important;
+            }
+            
+            .header-dropdown-item {
+              transition: background-color 0.15s ease !important;
+            }
+            
+            .header-dropdown-item:active {
+              background-color: #e9ecef !important;
+            }
+          }
         `}
       </style>
       {/* Top Header */}
       <div className="container-fluid border-bottom">
-        <div className="row py-3 align-items-center">
+        <div className="row py-3 align-items-center header-top-row">
           {/* Logo */}
           <div className="col-6 col-sm-4 col-lg-3">
-            <div className="main-logo">
+            <div className="main-logo header-logo">
               <a href="/" className="d-flex align-items-center">
                 <img
                   src="../images/Logo.png"
@@ -548,20 +667,6 @@ function Header() {
             <div className="search-bar" ref={searchRef}>
               <form onSubmit={handleSearch}>
                 <div className="input-group shadow-sm rounded-pill overflow-hidden">
-                  <select
-                    className="form-select border-0 bg-light"
-                    value={selectedCategory}
-                    onChange={handleCategoryChange}
-                    disabled={loadingCategories}
-                    style={{ maxWidth: "200px", borderRadius: "50px 0 0 50px" }}
-                  >
-                    <option value="all">Tất cả danh mục</option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
                   <input
                     type="text"
                     className="form-control border-0"
@@ -569,7 +674,7 @@ function Header() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onFocus={handleSearchFocus}
-                    style={{ boxShadow: "none" }}
+                    style={{ boxShadow: "none", borderRadius: "50px 0 0 50px" }}
                     autoComplete="off"
                   />
                   <button
@@ -625,27 +730,25 @@ function Header() {
                           {recentSearches.map((term, index) => (
                             <div
                               key={index}
-                              className="py-2 px-3 cursor-pointer hover-bg-light d-flex align-items-center"
+                              className="suggestion-item py-3 px-3 cursor-pointer d-flex align-items-center"
                               onClick={() => {
                                 setSearchTerm(term);
                                 handleSearch(null, term);
                               }}
                               style={{ cursor: "pointer" }}
-                              onMouseEnter={(e) =>
-                                e.target.classList.add("bg-light")
-                              }
-                              onMouseLeave={(e) =>
-                                e.target.classList.remove("bg-light")
-                              }
                             >
-                              <Search size={14} className="text-muted me-2" />
-                              <span className="small">{term}</span>
+                              <Search size={16} className="text-muted me-3" />
+                              <span
+                                style={{ fontSize: "14px", fontWeight: "500" }}
+                              >
+                                {term}
+                              </span>
                             </div>
                           ))}
                         </div>
                       )}
 
-                      {/* Enhanced Product Suggestions */}
+                      {/* Product Suggestions */}
                       {suggestions.length > 0 && (
                         <div className="p-2">
                           <div className="d-flex justify-content-between align-items-center mb-2 px-2">
@@ -659,54 +762,55 @@ function Header() {
                           {suggestions.map((suggestion) => (
                             <div
                               key={suggestion.id}
-                              className="suggestion-item d-flex align-items-start p-3 cursor-pointer rounded"
+                              className="suggestion-item d-flex align-items-center p-3 cursor-pointer rounded"
                               onClick={() => handleSuggestionClick(suggestion)}
                               style={{
                                 cursor: "pointer",
                               }}
                             >
+                              {/* Product Image */}
+                              <div className="me-3 flex-shrink-0">
+                                <img
+                                  src={suggestion.image}
+                                  alt={suggestion.name}
+                                  style={{
+                                    width: "48px",
+                                    height: "48px",
+                                    objectFit: "cover",
+                                    borderRadius: "6px",
+                                  }}
+                                  onError={(e) => {
+                                    e.target.src = "./styles/images/product-thumb-1.png";
+                                  }}
+                                />
+                              </div>
+
                               {/* Product Info */}
                               <div className="flex-grow-1 min-w-0">
                                 <div
-                                  className="fw-semibold text-truncate mb-2"
-                                  style={{
-                                    maxWidth: "100%",
-                                    fontSize: "14px",
-                                    lineHeight: "1.4",
-                                  }}
+                                  className="fw-semibold text-truncate mb-1"
+                                  style={{ maxWidth: "300px" }}
                                 >
                                   {suggestion.name}
                                 </div>
 
-                                <div className="small text-muted mb-2">
-                                  <span
-                                    className="badge bg-light text-dark me-2"
-                                    style={{
-                                      fontSize: "10px",
-                                      padding: "4px 8px",
-                                    }}
-                                  >
+                                <div className="small text-muted mb-1">
+                                  <span className="badge bg-light text-dark me-2">
                                     {suggestion.brand}
                                   </span>
-                                  <span
-                                    className="text-muted"
-                                    style={{ fontSize: "12px" }}
-                                  >
+                                  <span className="text-muted">
                                     {suggestion.category}
                                   </span>
                                 </div>
 
                                 {/* Price and Rating */}
-                                <div className="d-flex justify-content-between align-items-center mb-1">
-                                  <div
-                                    className="text-primary fw-bold"
-                                    style={{ fontSize: "13px" }}
-                                  >
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <div className="text-primary fw-bold small">
                                     {formatPrice(suggestion.price)}
                                   </div>
 
                                   {suggestion.rating && (
-                                    <div style={{ fontSize: "11px" }}>
+                                    <div className="small">
                                       {renderStars(suggestion.rating)}
                                     </div>
                                   )}
@@ -720,11 +824,7 @@ function Header() {
                                         suggestion.quantity > 0
                                           ? "bg-success"
                                           : "bg-danger"
-                                      }`}
-                                      style={{
-                                        fontSize: "10px",
-                                        padding: "4px 8px",
-                                      }}
+                                      } small`}
                                     >
                                       {suggestion.quantity > 0
                                         ? `Còn ${suggestion.quantity}`
@@ -735,39 +835,8 @@ function Header() {
                               </div>
                             </div>
                           ))}
-
-                          {/* View All Results */}
-                          <div className="p-2 border-top bg-light">
-                            <button
-                              className="btn btn-sm btn-outline-primary w-100"
-                              onClick={() => handleSearch(null, searchTerm)}
-                            >
-                              Xem tất cả kết quả cho "{searchTerm}"
-                            </button>
-                          </div>
                         </div>
                       )}
-
-                      {/* No results */}
-                      {searchTerm.trim() &&
-                        suggestions.length === 0 &&
-                        !loadingSuggestions && (
-                          <div className="p-4 text-center text-muted">
-                            <div className="mb-2">
-                              <Search
-                                size={32}
-                                className="text-muted opacity-50"
-                              />
-                            </div>
-                            <div className="fw-semibold mb-1">
-                              Không tìm thấy sản phẩm
-                            </div>
-                            <small>
-                              Thử tìm kiếm với từ khóa khác hoặc kiểm tra chính
-                              tả
-                            </small>
-                          </div>
-                        )}
                     </>
                   )}
                 </div>
@@ -775,12 +844,12 @@ function Header() {
             </div>
           </div>
 
-          {/* User Actions */}
-          <div className="col-6 col-sm-8 col-lg-3 d-flex justify-content-end align-items-center">
-            <div className="d-flex align-items-center gap-2">
+          {/* User Actions - Right Side */}
+          <div className="col-6 col-sm-8 col-lg-3">
+            <div className="d-flex align-items-center gap-2 header-user-actions">
               {/* Mobile Search Toggle */}
               <button
-                className="btn btn-light rounded-circle p-2 d-lg-none"
+                className="btn btn-light rounded-circle p-2 d-lg-none header-user-button"
                 data-bs-toggle="offcanvas"
                 data-bs-target="#offcanvasSearch"
                 aria-controls="offcanvasSearch"
@@ -791,7 +860,7 @@ function Header() {
               {/* User Profile */}
               <div className="dropdown">
                 <button
-                  className="btn btn-light rounded-circle p-2 dropdown-toggle"
+                  className="btn btn-light rounded-circle p-2 dropdown-toggle header-user-button"
                   type="button"
                   id="userDropdown"
                   data-bs-toggle="dropdown"
@@ -810,7 +879,7 @@ function Header() {
                   </svg>
                 </button>
                 <ul
-                  className="dropdown-menu dropdown-menu-end shadow-lg"
+                  className="dropdown-menu dropdown-menu-end shadow-lg header-dropdown-menu"
                   aria-labelledby="userDropdown"
                   data-bs-auto-close="true"
                   data-bs-offset="0,8"
@@ -826,16 +895,16 @@ function Header() {
                   {user ? (
                     <>
                       <li>
-                        <h6 className="dropdown-header text-primary fw-bold px-3 py-2">
+                        <h6 className="dropdown-header text-primary fw-bold px-3 py-2 header-dropdown-header">
                           Xin chào, {user.name || user.email}
                         </h6>
                       </li>
                       <li>
-                        <hr className="dropdown-divider" />
+                        <hr className="dropdown-divider header-dropdown-divider" />
                       </li>
                       <li>
                         <Link
-                          className="dropdown-item px-3 py-2"
+                          className="dropdown-item px-3 py-2 header-dropdown-item"
                           to="/profile"
                           style={{
                             transition: "all 0.2s ease",
@@ -856,7 +925,7 @@ function Header() {
                       </li>
                       <li>
                         <Link
-                          className="dropdown-item px-3 py-2"
+                          className="dropdown-item px-3 py-2 header-dropdown-item"
                           to="/user-products"
                           style={{
                             transition: "all 0.2s ease",
@@ -876,11 +945,11 @@ function Header() {
                         </Link>
                       </li>
                       <li>
-                        <hr className="dropdown-divider" />
+                        <hr className="dropdown-divider header-dropdown-divider" />
                       </li>
                       <li>
                         <button
-                          className="dropdown-item px-3 py-2 text-danger"
+                          className="dropdown-item px-3 py-2 text-danger header-dropdown-item"
                           onClick={handleLogoutClick}
                           style={{
                             border: "none",
@@ -906,7 +975,7 @@ function Header() {
                     <>
                       <li>
                         <Link
-                          className="dropdown-item px-3 py-2"
+                          className="dropdown-item px-3 py-2 header-dropdown-item"
                           to="/login"
                           style={{
                             transition: "all 0.2s ease",
@@ -927,7 +996,7 @@ function Header() {
                       </li>
                       <li>
                         <Link
-                          className="dropdown-item px-3 py-2"
+                          className="dropdown-item px-3 py-2 header-dropdown-item"
                           to="/register"
                           style={{
                             transition: "all 0.2s ease",
@@ -957,7 +1026,7 @@ function Header() {
                   {/* Plus button with dropdown for create actions */}
                   <div className="dropdown d-inline-block me-2">
                     <button
-                      className="btn btn-light rounded-circle p-2 dropdown-toggle"
+                      className="btn btn-light rounded-circle p-2 dropdown-toggle header-user-button"
                       type="button"
                       id="createDropdown"
                       data-bs-toggle="dropdown"
@@ -967,13 +1036,12 @@ function Header() {
                       <Plus size={20} />
                     </button>
                     <ul
-                      className="dropdown-menu"
+                      className="dropdown-menu header-dropdown-menu"
                       aria-labelledby="createDropdown"
                     >
-
                         <li>
                           <button
-                            className="dropdown-item"
+                            className="dropdown-item header-dropdown-item"
                             type="button"
                             onClick={() => navigate("/compare-product")}
                           >
@@ -983,7 +1051,7 @@ function Header() {
                    
                       <li>
                         <button
-                          className="dropdown-item"
+                          className="dropdown-item header-dropdown-item"
                           type="button"
                           onClick={() => {
                             if (
@@ -1006,7 +1074,7 @@ function Header() {
 
               {/* Mobile Menu Toggle */}
               <button
-                className="btn btn-light rounded-circle p-2 d-lg-none"
+                className="btn btn-light rounded-circle p-2 d-lg-none header-user-button"
                 data-bs-toggle="offcanvas"
                 data-bs-target="#offcanvasNavbar"
                 aria-controls="offcanvasNavbar"
@@ -1037,74 +1105,6 @@ function Header() {
                 >
                   Tất cả sản phẩm
                 </a>
-              </li>
-
-              {/* Categories Dropdown */}
-              <li className="nav-item dropdown position-relative">
-                <button
-                  className="nav-link dropdown-toggle fw-medium px-3 py-2 btn btn-link text-decoration-none border-0 bg-transparent"
-                  onMouseEnter={() => setShowCategoriesDropdown(true)}
-                  onMouseLeave={() => setShowCategoriesDropdown(false)}
-                  style={{ color: "inherit" }}
-                >
-                  Danh mục <ChevronDown size={16} className="ms-1" />
-                </button>
-                <div
-                  className={`dropdown-menu ${
-                    showCategoriesDropdown ? "show" : ""
-                  } shadow-lg border-0`}
-                  style={{
-                    minWidth: "280px",
-                    maxHeight: "400px",
-                    overflowY: "auto",
-                    borderRadius: "12px",
-                  }}
-                  onMouseEnter={() => setShowCategoriesDropdown(true)}
-                  onMouseLeave={() => setShowCategoriesDropdown(false)}
-                >
-                  <h6 className="dropdown-header text-primary fw-bold">
-                    Danh mục sản phẩm
-                  </h6>
-                  <div className="row g-0 px-3">
-                    {loadingCategories ? (
-                      <div className="text-center py-3">
-                        <div
-                          className="spinner-border spinner-border-sm text-primary"
-                          role="status"
-                        >
-                          <span className="visually-hidden">Loading...</span>
-                        </div>
-                      </div>
-                    ) : (
-                      categories.map((category) => (
-                        <div key={category} className="col-12">
-                          <a
-                            className="dropdown-item py-2 px-2 rounded"
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleCategoryClick(category);
-                            }}
-                            style={{
-                              transition: "all 0.2s ease",
-                              borderLeft: "3px solid transparent",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.borderLeftColor = "#0d6efd";
-                              e.target.style.backgroundColor = "#f8f9fa";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.borderLeftColor = "transparent";
-                              e.target.style.backgroundColor = "transparent";
-                            }}
-                          >
-                            {category}
-                          </a>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
               </li>
 
               {/* Brands Dropdown */}
@@ -1193,21 +1193,6 @@ function Header() {
           <div className="search-bar" ref={mobileSearchRef}>
             <form onSubmit={handleSearch}>
               <div className="row g-2 mb-3">
-                <div className="col-12">
-                  <select
-                    className="form-select"
-                    value={selectedCategory}
-                    onChange={handleCategoryChange}
-                    disabled={loadingCategories}
-                  >
-                    <option value="all">Tất cả danh mục</option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
                 <div className="col-9">
                   <input
                     type="text"
@@ -1365,13 +1350,13 @@ function Header() {
 
       {/* Mobile Navigation Offcanvas */}
       <div
-        className="offcanvas offcanvas-end"
+        className="offcanvas offcanvas-end mobile-nav-offcanvas"
         tabIndex="-1"
         id="offcanvasNavbar"
         aria-labelledby="offcanvasNavbarLabel"
       >
         <div className="offcanvas-header">
-          <h5 className="offcanvas-title" id="offcanvasNavbarLabel">
+          <h5 className="offcanvas-title mobile-nav-header" id="offcanvasNavbarLabel">
             Menu
           </h5>
           <button
@@ -1384,50 +1369,31 @@ function Header() {
         <div className="offcanvas-body">
           <ul className="navbar-nav">
             <li className="nav-item">
-              <a className="nav-link fw-medium py-3 border-bottom" href="/">
+              <a className="nav-link fw-medium py-3 border-bottom mobile-nav-item" href="/">
                 Trang chủ
               </a>
             </li>
             <li className="nav-item">
               <a
-                className="nav-link fw-medium py-3 border-bottom"
+                className="nav-link fw-medium py-3 border-bottom mobile-nav-item"
                 href="/product-browser"
               >
                 Tất cả sản phẩm
               </a>
             </li>
 
-            {/* Mobile Categories */}
-            <li className="nav-item">
-              <h6 className="nav-link text-primary fw-bold mt-3 mb-2">
-                Danh mục
-              </h6>
-            </li>
-            {categories.map((category) => (
-              <li className="nav-item" key={category}>
-                <a
-                  className="nav-link ps-3 py-2 border-bottom"
-                  href={`/product-browser?category=${encodeURIComponent(
-                    category
-                  )}`}
-                >
-                  {category}
-                </a>
-              </li>
-            ))}
-
             {/* Mobile Brands */}
             {brands.length > 0 && (
               <>
                 <li className="nav-item">
-                  <h6 className="nav-link text-primary fw-bold mt-3 mb-2">
+                  <h6 className="nav-link text-primary fw-bold mt-3 mb-2 mobile-nav-header">
                     Thương hiệu
                   </h6>
                 </li>
                 {brands.slice(0, 10).map((brand) => (
                   <li className="nav-item" key={brand}>
                     <a
-                      className="nav-link ps-3 py-2 border-bottom"
+                      className="nav-link ps-3 py-2 border-bottom mobile-nav-brand"
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
@@ -1440,7 +1406,7 @@ function Header() {
                 ))}
                 {brands.length > 10 && (
                   <li className="nav-item">
-                    <a className="nav-link ps-3 text-primary" href="/brands">
+                    <a className="nav-link ps-3 text-primary mobile-nav-brand" href="/brands">
                       Xem tất cả thương hiệu...
                     </a>
                   </li>

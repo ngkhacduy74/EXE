@@ -1,33 +1,25 @@
 const express = require("express");
-const searchLinks = require("../Config/searchLink");
-const crawlWebsite = require("../Config/crawl");
-const getChatResponse = require("../Config/openAI");
+const { 
+  ChatGpt, 
+  getChatStatistics, 
+  searchProductsForChat, 
+  searchPostsForChat,
+  getProductDetailsForChat,
+  getPostDetailsForChat,
+  askQuestion
+} = require("../Controller/chatgpt.controller");
 const router = express.Router();
-
-const SMART_KEYWORDS = [
-  "phân tích",
-  "đánh giá",
-  "số liệu",
-  "cụ thể",
-  "chi tiết",
-  "đo lường",
-  "tính toán",
-  "chi phí",
-  "thống kê",
-];
-
-function containsSmartKeyword(text) {
-  return SMART_KEYWORDS.some((keyword) =>
-    text.toLowerCase().includes(keyword.toLowerCase())
-  );
-}
 
 let chatHistory = [];
 
+// Endpoint chính để chat - Sử dụng ChatService mới
 router.post("/ask", async (req, res) => {
   const { prompt } = req.body;
 
+  console.log("[CHAT] Nhận prompt:", prompt);
+
   if (!prompt) {
+    console.log("[CHAT] Thiếu prompt đầu vào");
     return res.status(400).json({
       success: false,
       error: "Thiếu prompt đầu vào",
@@ -35,52 +27,230 @@ router.post("/ask", async (req, res) => {
   }
 
   try {
-    let finalPrompt = "";
-    let usedSources = [];
-
-    if (containsSmartKeyword(prompt)) {
-      const links = await searchLinks(prompt);
-      if (!links.length) {
-        return res.status(404).json({
-          success: false,
-          error: "Không tìm thấy nguồn phù hợp",
-        });
-      }
-
-      const contents = await Promise.all(links.map(crawlWebsite));
-      const mergedText = contents.join("\n---\n").slice(0, 8000);
-      finalPrompt = `Bạn là một trợ lý AI thông minh, hãy trả lời bằng ngôn ngữ tiếng Việt. Dưới đây là nội dung cần xử lý liên quan đến: "${prompt}"\n\n${mergedText}`;
-      usedSources = links;
-    } else {
-      finalPrompt = `Bạn là một trợ lý AI thông minh, hãy trả lời bằng tiếng Việt. Câu hỏi: ${prompt}`;
+    // Sử dụng ChatService mới để xử lý câu hỏi
+    const result = await askQuestion(req, res);
+    
+    if (result) {
+      console.log("[CHAT] ChatService trả lời:", result.answer);
+      return result; // askQuestion đã gửi response
     }
-
-    chatHistory.push({ role: "user", content: finalPrompt });
-
-    const groqPayload = chatHistory
-      .slice(-20)
-      .filter(
-        (m) =>
-          m &&
-          typeof m === "object" &&
-          typeof m.role === "string" &&
-          typeof m.content === "string"
-      );
-
-    const answer = await getChatResponse(groqPayload);
-
-    chatHistory.push({ role: "assistant", content: answer });
-
-    res.json({
-      success: true,
-      answer,
-      sources: usedSources,
-    });
   } catch (err) {
-    console.error("Lỗi /ask:", err.response?.data || err.message);
+    console.error("Lỗi /ask:", err);
     res.status(500).json({
       success: false,
       error: "Lỗi server hoặc AI",
+      details: err.message,
+    });
+  }
+});
+
+// Endpoint để lấy thống kê
+router.get("/statistics", async (req, res) => {
+  try {
+    console.log("[CHAT] Yêu cầu lấy thống kê");
+    const result = await getChatStatistics();
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        statistics: result.statistics
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (err) {
+    console.error("Lỗi /statistics:", err);
+    res.status(500).json({
+      success: false,
+      error: "Lỗi server",
+      details: err.message,
+    });
+  }
+});
+
+// Endpoint để tìm kiếm sản phẩm
+router.post("/search-products", async (req, res) => {
+  const { query, filters } = req.body;
+
+  console.log("[CHAT] Tìm kiếm sản phẩm:", { query, filters });
+
+  if (!query) {
+    return res.status(400).json({
+      success: false,
+      error: "Thiếu query tìm kiếm",
+    });
+  }
+
+  try {
+    const result = await searchProductsForChat({ query, filters });
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        products: result.products
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (err) {
+    console.error("Lỗi /search-products:", err);
+    res.status(500).json({
+      success: false,
+      error: "Lỗi server",
+      details: err.message,
+    });
+  }
+});
+
+// Endpoint để tìm kiếm bài viết
+router.post("/search-posts", async (req, res) => {
+  const { query, filters } = req.body;
+
+  console.log("[CHAT] Tìm kiếm bài viết:", { query, filters });
+
+  if (!query) {
+    return res.status(400).json({
+      success: false,
+      error: "Thiếu query tìm kiếm",
+    });
+  }
+
+  try {
+    const result = await searchPostsForChat({ query, filters });
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        posts: result.posts
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (err) {
+    console.error("Lỗi /search-posts:", err);
+    res.status(500).json({
+      success: false,
+      error: "Lỗi server",
+      details: err.message,
+    });
+  }
+});
+
+// Endpoint để lấy chi tiết sản phẩm
+router.get("/product/:productId", async (req, res) => {
+  const { productId } = req.params;
+
+  console.log("[CHAT] Lấy chi tiết sản phẩm:", productId);
+
+  if (!productId) {
+    return res.status(400).json({
+      success: false,
+      error: "Thiếu product ID",
+    });
+  }
+
+  try {
+    const result = await getProductDetailsForChat({ productId });
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        product: result.product
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (err) {
+    console.error("Lỗi /product/:productId:", err);
+    res.status(500).json({
+      success: false,
+      error: "Lỗi server",
+      details: err.message,
+    });
+  }
+});
+
+// Endpoint để lấy chi tiết bài viết
+router.get("/post/:postId", async (req, res) => {
+  const { postId } = req.params;
+
+  console.log("[CHAT] Lấy chi tiết bài viết:", postId);
+
+  if (!postId) {
+    return res.status(400).json({
+      success: false,
+      error: "Thiếu post ID",
+    });
+  }
+
+  try {
+    const result = await getPostDetailsForChat({ postId });
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        post: result.post
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (err) {
+    console.error("Lỗi /post/:postId:", err);
+    res.status(500).json({
+      success: false,
+      error: "Lỗi server",
+      details: err.message,
+    });
+  }
+});
+
+// Endpoint để xóa lịch sử chat
+router.delete("/clear-history", (req, res) => {
+  try {
+    chatHistory = [];
+    console.log("[CHAT] Đã xóa lịch sử chat");
+    res.json({
+      success: true,
+      message: "Đã xóa lịch sử chat"
+    });
+  } catch (err) {
+    console.error("Lỗi /clear-history:", err);
+    res.status(500).json({
+      success: false,
+      error: "Lỗi server",
+      details: err.message,
+    });
+  }
+});
+
+// Endpoint để lấy lịch sử chat
+router.get("/history", (req, res) => {
+  try {
+    res.json({
+      success: true,
+      history: chatHistory
+    });
+  } catch (err) {
+    console.error("Lỗi /history:", err);
+    res.status(500).json({
+      success: false,
+      error: "Lỗi server",
+      details: err.message,
     });
   }
 });

@@ -421,8 +421,8 @@ const ProductView = () => {
           .product-image-swiper .swiper-button-prev {
             color: #007bff;
             background: rgba(255, 255, 255, 0.9);
-            width: 40px;
-            height: 40px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             margin-top: -20px;
           }
