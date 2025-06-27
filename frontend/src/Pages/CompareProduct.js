@@ -35,6 +35,95 @@ const CompareProduct = () => {
 
   const MAX_COMPARE_PRODUCTS = 4;
 
+  // Backup image path
+  const backUpImg = "/images/frigde.png";
+
+  // Get product image (handle array format) - Same as BrandCarousel
+  const getProductImage = (product) => {
+    if (product.image) {
+      if (Array.isArray(product.image) && product.image.length > 0) {
+        const firstImage = product.image[0];
+
+        // Check if URL is valid
+        if (firstImage && firstImage.trim() !== "") {
+          // If it's a relative URL, make it absolute
+          if (firstImage.startsWith("/") || firstImage.startsWith("./")) {
+            const baseUrl = `${process.env.REACT_APP_BACKEND_URL}`;
+            const fullUrl = firstImage.startsWith("/")
+              ? `${baseUrl}${firstImage}`
+              : `${baseUrl}/${firstImage.replace("./", "")}`;
+            return fullUrl;
+          }
+
+          // If it's already a full URL (http/https), use it directly
+          if (
+            firstImage.startsWith("http://") ||
+            firstImage.startsWith("https://")
+          ) {
+            return firstImage;
+          }
+
+          // If it's a Cloudinary URL or other image service, use it directly
+          if (
+            firstImage.includes("cloudinary.com") ||
+            firstImage.includes("res.cloudinary.com") ||
+            firstImage.includes("imgur.com") ||
+            firstImage.includes("unsplash.com")
+          ) {
+            return firstImage;
+          }
+
+          return firstImage;
+        }
+      } else if (typeof product.image === "string") {
+        if (product.image.trim() !== "") {
+          // If it's a relative URL, make it absolute
+          if (product.image.startsWith("/") || product.image.startsWith("./")) {
+            const baseUrl = `${process.env.REACT_APP_BACKEND_URL}`;
+            const fullUrl = product.image.startsWith("/")
+              ? `${baseUrl}${product.image}`
+              : `${baseUrl}/${product.image.replace("./", "")}`;
+            return fullUrl;
+          }
+
+          // If it's already a full URL (http/https), use it directly
+          if (
+            product.image.startsWith("http://") ||
+            product.image.startsWith("https://")
+          ) {
+            return product.image;
+          }
+
+          // If it's a Cloudinary URL or other image service, use it directly
+          if (
+            product.image.includes("cloudinary.com") ||
+            product.image.includes("res.cloudinary.com") ||
+            product.image.includes("imgur.com") ||
+            product.image.includes("unsplash.com")
+          ) {
+            return product.image;
+          }
+
+          return product.image;
+        }
+      }
+    }
+    // Fallback image
+    return backUpImg;
+  };
+
+  // Handle image load error
+  const handleImageError = (e) => {
+    // Prevent infinite loop
+    if (e.target.src === backUpImg) {
+      return;
+    }
+
+    e.target.src = backUpImg;
+    e.target.alt = "product placeholder";
+    e.target.onerror = null; // Prevent infinite loop
+  };
+
   // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
@@ -169,10 +258,11 @@ const CompareProduct = () => {
       case "image":
         return (
           <img
-            src={value || "./styles/images/product-thumb-1.png"}
+            src={getProductImage(product)}
             alt={product.name}
             className="img-fluid rounded mx-auto d-block"
             style={{ height: "60px", width: "60px", objectFit: "cover" }}
+            onError={handleImageError}
           />
         );
       case "price":
@@ -285,297 +375,296 @@ const CompareProduct = () => {
 
         <Header />
 
-        {/* Main Content */}
-        <div className="container-fluid py-4">
-          {/* Page Header */}
-          <div className="row mb-4">
-            <div className="col-12">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <h2 className="mb-1">
-                    <Scale className="me-2" size={28} />
-                    So sánh sản phẩm
-                  </h2>
-                  <p className="text-muted mb-0">
-                    So sánh tối đa {MAX_COMPARE_PRODUCTS} sản phẩm để đưa ra lựa
-                    chọn tốt nhất
-                  </p>
-                </div>
-                {compareProducts.length > 0 && (
-                  <button
-                    className="btn btn-outline-danger"
-                    onClick={clearAllComparisons}
-                  >
-                    <Trash2 size={16} className="me-1" />
-                    Xóa tất cả
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Add Product Section */}
-          <div className="row mb-4">
-            <div className="col-12">
-              <div className="card">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5 className="mb-0">Thêm sản phẩm để so sánh</h5>
-                    <span className="badge bg-primary">
-                      {compareProducts.length}/{MAX_COMPARE_PRODUCTS} Sản phẩm
-                    </span>
+        <div className="content-wrapper">
+          <div className="container" style={{ paddingTop: "2rem" }}>
+            {/* Page Header */}
+            <div className="row mb-4">
+              <div className="col-12">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <h2 className="mb-1">
+                      <Scale className="me-2" size={28} />
+                      So sánh sản phẩm
+                    </h2>
+                    <p className="text-muted mb-0">
+                      So sánh tối đa {MAX_COMPARE_PRODUCTS} sản phẩm để đưa ra lựa
+                      chọn tốt nhất
+                    </p>
                   </div>
-
-                  {/* Search Bar */}
-                  <div className="position-relative">
-                    <div className="input-group">
-                      <span className="input-group-text">
-                        <Search size={16} />
-                      </span>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Tìm kiếm sản phẩm theo tên, thương hiệu hoặc danh mục..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        onFocus={() => setShowProductSearch(true)}
-                      />
-                    </div>
-
-                    {/* Search Results Dropdown */}
-                    {showProductSearch &&
-                      (searchTerm || searchResults.length > 0) && (
-                        <div
-                          className="position-absolute w-100 bg-white border border-top-0 rounded-bottom shadow-lg"
-                          style={{
-                            zIndex: 1000,
-                            maxHeight: "300px",
-                            overflowY: "auto",
-                          }}
-                        >
-                          {searchLoading ? (
-                            <div className="p-3 text-center">
-                              <div
-                                className="spinner-border spinner-border-sm text-primary"
-                                role="status"
-                              >
-                                <span className="visually-hidden">
-                                  Đang tìm kiếm...
-                                </span>
-                              </div>
-                            </div>
-                          ) : searchResults.length > 0 ? (
-                            searchResults.map((product) => (
-                              <div
-                                key={product.id}
-                                className="p-3 border-bottom hover-bg-light cursor-pointer d-flex align-items-center"
-                                onClick={() => addToCompare(product)}
-                                style={{ cursor: "pointer" }}
-                                onMouseEnter={(e) =>
-                                  (e.target.closest(
-                                    ".p-3"
-                                  ).style.backgroundColor = "#f8f9fa")
-                                }
-                                onMouseLeave={(e) =>
-                                  (e.target.closest(
-                                    ".p-3"
-                                  ).style.backgroundColor = "transparent")
-                                }
-                              >
-                                <img
-                                  src={
-                                    product.image ||
-                                    "./styles/images/product-thumb-1.png"
-                                  }
-                                  alt={product.name}
-                                  className="me-3 rounded"
-                                  style={{
-                                    width: "50px",
-                                    height: "50px",
-                                    objectFit: "cover",
-                                  }}
-                                />
-                                <div className="flex-grow-1">
-                                  <h6 className="mb-1">{product.name}</h6>
-                                  <small className="text-muted">
-                                    {product.brand} • {product.category} •{" "}
-                                    {formatPrice(product.price)}
-                                  </small>
-                                </div>
-                                <Plus size={16} className="text-primary" />
-                              </div>
-                            ))
-                          ) : (
-                            searchTerm && (
-                              <div className="p-3 text-center text-muted">
-                                Không tìm thấy sản phẩm nào khớp với "
-                                {searchTerm}"
-                              </div>
-                            )
-                          )}
-
-                          {searchResults.length > 0 && (
-                            <div className="p-2 border-top bg-light">
-                              <button
-                                className="btn btn-sm btn-link text-decoration-none w-100"
-                                onClick={() => setShowProductSearch(false)}
-                              >
-                                Đóng
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                  </div>
+                  {compareProducts.length > 0 && (
+                    <button
+                      className="btn btn-outline-danger"
+                      onClick={clearAllComparisons}
+                    >
+                      <Trash2 size={16} className="me-1" />
+                      Xóa tất cả
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Comparison Table */}
-          {compareProducts.length > 0 ? (
-            <div className="row">
+            {/* Add Product Section */}
+            <div className="row mb-4">
               <div className="col-12">
                 <div className="card">
-                  <div className="card-body p-0">
-                    <div className="table-responsive">
-                      <table className="table table-hover mb-0 table-sm">
-                        <thead className="table-light">
-                          <tr>
-                            <th
-                              scope="col"
-                              className="border-end bg-white sticky-column"
-                              style={{ width: "150px", minWidth: "150px" }}
-                            >
-                              <strong>Thông số</strong>
-                            </th>
-                            {compareProducts.map((product, index) => (
-                              <th
-                                key={product.id}
-                                scope="col"
-                                className="text-center position-relative"
-                                style={{
-                                  width: `${Math.floor(
-                                    75 / compareProducts.length
-                                  )}%`,
-                                  minWidth: "180px",
-                                }}
-                              >
-                                <button
-                                  className="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-1"
-                                  onClick={() => removeFromCompare(product.id)}
-                                  style={{ zIndex: 10 }}
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h5 className="mb-0">Thêm sản phẩm để so sánh</h5>
+                      <span className="badge bg-primary">
+                        {compareProducts.length}/{MAX_COMPARE_PRODUCTS} Sản phẩm
+                      </span>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div className="position-relative">
+                      <div className="input-group">
+                        <span className="input-group-text">
+                          <Search size={16} />
+                        </span>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Tìm kiếm sản phẩm theo tên, thương hiệu hoặc danh mục..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          onFocus={() => setShowProductSearch(true)}
+                        />
+                      </div>
+
+                      {/* Search Results Dropdown */}
+                      {showProductSearch &&
+                        (searchTerm || searchResults.length > 0) && (
+                          <div
+                            className="position-absolute w-100 bg-white border border-top-0 rounded-bottom shadow-lg"
+                            style={{
+                              zIndex: 1000,
+                              maxHeight: "300px",
+                              overflowY: "auto",
+                            }}
+                          >
+                            {searchLoading ? (
+                              <div className="p-3 text-center">
+                                <div
+                                  className="spinner-border spinner-border-sm text-primary"
+                                  role="status"
                                 >
-                                  <X size={12} />
-                                </button>
-                                <div className="pt-3 pb-1">
-                                  <small className="text-muted">
-                                    Sản phẩm {index + 1}
-                                  </small>
+                                  <span className="visually-hidden">
+                                    Đang tìm kiếm...
+                                  </span>
                                 </div>
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {getComparisonFeatures().map((feature) => (
-                            <tr key={feature.key}>
-                              <td
-                                className="fw-semibold border-end bg-light sticky-column"
-                                style={{ fontSize: "0.9rem" }}
+                              </div>
+                            ) : searchResults.length > 0 ? (
+                              searchResults.map((product) => (
+                                <div
+                                  key={product.id}
+                                  className="p-3 border-bottom hover-bg-light cursor-pointer d-flex align-items-center"
+                                  onClick={() => addToCompare(product)}
+                                  style={{ cursor: "pointer" }}
+                                  onMouseEnter={(e) =>
+                                    (e.target.closest(
+                                      ".p-3"
+                                    ).style.backgroundColor = "#f8f9fa")
+                                  }
+                                  onMouseLeave={(e) =>
+                                    (e.target.closest(
+                                      ".p-3"
+                                    ).style.backgroundColor = "transparent")
+                                  }
+                                >
+                                  <img
+                                    src={getProductImage(product)}
+                                    alt={product.name}
+                                    className="me-3 rounded"
+                                    style={{
+                                      width: "50px",
+                                      height: "50px",
+                                      objectFit: "cover",
+                                    }}
+                                    onError={handleImageError}
+                                  />
+                                  <div className="flex-grow-1">
+                                    <h6 className="mb-1">{product.name}</h6>
+                                    <small className="text-muted">
+                                      {product.brand} • {product.category} •{" "}
+                                      {formatPrice(product.price)}
+                                    </small>
+                                  </div>
+                                  <Plus size={16} className="text-primary" />
+                                </div>
+                              ))
+                            ) : (
+                              searchTerm && (
+                                <div className="p-3 text-center text-muted">
+                                  Không tìm thấy sản phẩm nào khớp với "
+                                  {searchTerm}"
+                                </div>
+                              )
+                            )}
+
+                            {searchResults.length > 0 && (
+                              <div className="p-2 border-top bg-light">
+                                <button
+                                  className="btn btn-sm btn-link text-decoration-none w-100"
+                                  onClick={() => setShowProductSearch(false)}
+                                >
+                                  Đóng
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Comparison Table */}
+            {compareProducts.length > 0 ? (
+              <div className="row">
+                <div className="col-12">
+                  <div className="card">
+                    <div className="card-body p-0">
+                      <div className="table-responsive">
+                        <table className="table table-hover mb-0 table-sm">
+                          <thead className="table-light">
+                            <tr>
+                              <th
+                                scope="col"
+                                className="border-end bg-white sticky-column"
+                                style={{ width: "150px", minWidth: "150px" }}
                               >
-                                {feature.label}
+                                <strong>Thông số</strong>
+                              </th>
+                              {compareProducts.map((product, index) => (
+                                <th
+                                  key={product.id}
+                                  scope="col"
+                                  className="text-center position-relative"
+                                  style={{
+                                    width: `${Math.floor(
+                                      75 / compareProducts.length
+                                    )}%`,
+                                    minWidth: "180px",
+                                  }}
+                                >
+                                  <button
+                                    className="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-1"
+                                    onClick={() => removeFromCompare(product.id)}
+                                    style={{ zIndex: 10 }}
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                  <div className="pt-3 pb-1">
+                                    <small className="text-muted">
+                                      Sản phẩm {index + 1}
+                                    </small>
+                                  </div>
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {getComparisonFeatures().map((feature) => (
+                              <tr key={feature.key}>
+                                <td
+                                  className="fw-semibold border-end bg-light sticky-column"
+                                  style={{ fontSize: "0.9rem" }}
+                                >
+                                  {feature.label}
+                                </td>
+                                {compareProducts.map((product) => (
+                                  <td
+                                    key={product.id}
+                                    className="text-center align-middle"
+                                    style={{
+                                      padding: "0.5rem",
+                                      fontSize: "0.85rem",
+                                    }}
+                                  >
+                                    {renderFeatureValue(product, feature)}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+
+                            {/* Action Row */}
+                            <tr className="table-light">
+                              <td className="fw-semibold border-end bg-light sticky-column">
+                                <strong>Thao tác</strong>
                               </td>
                               {compareProducts.map((product) => (
                                 <td
                                   key={product.id}
-                                  className="text-center align-middle"
-                                  style={{
-                                    padding: "0.5rem",
-                                    fontSize: "0.85rem",
-                                  }}
+                                  className="text-center"
+                                  style={{ padding: "0.5rem" }}
                                 >
-                                  {renderFeatureValue(product, feature)}
+                                  <button
+                                    className="btn btn-sm btn-outline-primary"
+                                    onClick={() =>
+                                      navigate(`/productView/${product.id}`)
+                                    }
+                                  >
+                                    <Eye size={12} className="me-1" />
+                                    Xem chi tiết
+                                  </button>
                                 </td>
                               ))}
                             </tr>
-                          ))}
-
-                          {/* Action Row */}
-                          <tr className="table-light">
-                            <td className="fw-semibold border-end bg-light sticky-column">
-                              <strong>Thao tác</strong>
-                            </td>
-                            {compareProducts.map((product) => (
-                              <td
-                                key={product.id}
-                                className="text-center"
-                                style={{ padding: "0.5rem" }}
-                              >
-                                <button
-                                  className="btn btn-sm btn-outline-primary"
-                                  onClick={() =>
-                                    navigate(`/productView/${product.id}`)
-                                  }
-                                >
-                                  <Eye size={12} className="me-1" />
-                                  Xem chi tiết
-                                </button>
-                              </td>
-                            ))}
-                          </tr>
-                        </tbody>
-                      </table>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            /* Empty State */
-            <div className="row">
-              <div className="col-12">
-                <div className="text-center py-5">
-                  <Package size={64} className="text-muted mb-3" />
-                  <h4 className="text-muted mb-3">
-                    Chưa có sản phẩm để so sánh
-                  </h4>
-                  <p className="text-muted mb-4">
-                    Bắt đầu bằng cách tìm kiếm và thêm sản phẩm để so sánh các
-                    tính năng của chúng.
-                  </p>
-                  <div className="row justify-content-center">
-                    <div className="col-md-6">
-                      <div className="card bg-light">
-                        <div className="card-body">
-                          <h6 className="card-title">
-                            <CheckCircle
-                              size={20}
-                              className="text-success me-2"
-                            />
-                            Cách so sánh sản phẩm
-                          </h6>
-                          <ol className="text-start mb-0">
-                            <li>
-                              Sử dụng thanh tìm kiếm phía trên để tìm sản phẩm
-                            </li>
-                            <li>
-                              Nhấp vào sản phẩm từ menu thả xuống để thêm chúng
-                            </li>
-                            <li>
-                              So sánh tối đa {MAX_COMPARE_PRODUCTS} sản phẩm
-                              cùng lúc
-                            </li>
-                            <li>Xem bảng so sánh chi tiết bên dưới</li>
-                          </ol>
+            ) : (
+              /* Empty State */
+              <div className="row">
+                <div className="col-12">
+                  <div className="text-center py-5">
+                    <Package size={64} className="text-muted mb-3" />
+                    <h4 className="text-muted mb-3">
+                      Chưa có sản phẩm để so sánh
+                    </h4>
+                    <p className="text-muted mb-4">
+                      Bắt đầu bằng cách tìm kiếm và thêm sản phẩm để so sánh các
+                      tính năng của chúng.
+                    </p>
+                    <div className="row justify-content-center">
+                      <div className="col-md-6">
+                        <div className="card bg-light">
+                          <div className="card-body">
+                            <h6 className="card-title">
+                              <CheckCircle
+                                size={20}
+                                className="text-success me-2"
+                              />
+                              Cách so sánh sản phẩm
+                            </h6>
+                            <ol className="text-start mb-0">
+                              <li>
+                                Sử dụng thanh tìm kiếm phía trên để tìm sản phẩm
+                              </li>
+                              <li>
+                                Nhấp vào sản phẩm từ menu thả xuống để thêm chúng
+                              </li>
+                              <li>
+                                So sánh tối đa {MAX_COMPARE_PRODUCTS} sản phẩm
+                                cùng lúc
+                              </li>
+                              <li>Xem bảng so sánh chi tiết bên dưới</li>
+                            </ol>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <ChatWidget />

@@ -37,6 +37,7 @@ import PhoneFixed from "./Components/Phonefixed";
 import PostView from "./Pages/PostView";
 import UserCreateProduct from "./Admin/UserCreateProduct";
 import UserProductManager from "./Pages/UserProductManager";
+import UpdateProduct from "./Admin/UpdateProduct";
 
 const App = () => {
   const [message, setMessage] = useState("");
@@ -105,6 +106,7 @@ const App = () => {
             <Route path="/product-browser" element={<ProductBrowser />} />
             <Route path="/compare-product" element={<CompareProduct />} />
             <Route path="/user-products" element={<UserProductManager />} />
+            <Route path="/update-product/:id" element={<UpdateProduct />} />
             {/* 404 Error Page */}
           </Routes>
           <PhoneFixed />

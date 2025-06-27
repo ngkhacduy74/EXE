@@ -468,7 +468,7 @@ const UserCreateProduct = () => {
   };
 
   return (
-    <div>
+    <div className="content-wrapper">
       <Header />
 
       <Container style={{ maxWidth: 800, margin: "40px auto" }}>

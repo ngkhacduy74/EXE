@@ -69,20 +69,6 @@ const ManageProduct = () => {
   const [productToDelete, setProductToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Edit modal states
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [productToEdit, setProductToEdit] = useState(null);
-  const [editLoading, setEditLoading] = useState(false);
-  const [editForm, setEditForm] = useState({
-    name: "",
-    brand: "",
-    price: "",
-    business_phone: "",
-    quantity: "",
-    status: "",
-    description: ""
-  });
-
   // Effect to update tokens when location state changes
   useEffect(() => {
     const locationToken = location.state?.token;
@@ -415,99 +401,6 @@ const ManageProduct = () => {
     setProductToDelete(null);
   };
 
-  // Handle edit product - show edit modal
-  const handleEditProduct = (product) => {
-    setProductToEdit(product);
-    setEditForm({
-      name: product.name || "",
-      brand: product.brand || "",
-      price: product.price || "",
-      business_phone: product.business_phone || "",
-      quantity: product.quantity || "",
-      status: product.status || "New",
-      description: product.description || ""
-    });
-    setShowEditModal(true);
-  };
-
-  // Confirm edit product
-  const confirmEditProduct = async () => {
-    if (!productToEdit) return;
-
-    // Check if user is admin
-    if (!isUserAdmin()) {
-      alert("Bạn không có quyền thực hiện hành động này. Chỉ Admin mới có thể chỉnh sửa sản phẩm.");
-      setShowEditModal(false);
-      setProductToEdit(null);
-      return;
-    }
-
-    try {
-      setEditLoading(true);
-      
-      const response = await makeAuthenticatedRequest({
-        method: "PUT",
-        url: `/product/update/${productToEdit.id}`,
-        data: editForm,
-      });
-
-      // Update local state
-      setProducts(
-        products.map((product) =>
-          product.id === productToEdit.id 
-            ? { ...product, ...editForm }
-            : product
-        )
-      );
-
-      // Close modal and reset state
-      setShowEditModal(false);
-      setProductToEdit(null);
-      setEditForm({
-        name: "",
-        brand: "",
-        price: "",
-        business_phone: "",
-        quantity: "",
-        status: "",
-        description: ""
-      });
-
-      alert("Cập nhật sản phẩm thành công!");
-    } catch (err) {
-      if (err.response?.status === 403) {
-        alert("Lỗi 403: Bạn không có quyền thực hiện hành động này. Vui lòng đăng nhập với tài khoản Admin.");
-      } else {
-        setError(err.message || "Failed to update product.");
-      }
-    } finally {
-      setEditLoading(false);
-    }
-  };
-
-  // Cancel edit
-  const cancelEdit = () => {
-    setShowEditModal(false);
-    setProductToEdit(null);
-    setEditForm({
-      name: "",
-      brand: "",
-      price: "",
-      business_phone: "",
-      quantity: "",
-      status: "",
-      description: ""
-    });
-  };
-
-  // Handle edit form change
-  const handleEditFormChange = (field, value) => {
-    setEditForm(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
   if (error && error.includes("Session expired")) {
     return <ErrorPage message={error} />;
   }
@@ -745,7 +638,7 @@ const ManageProduct = () => {
                           <Button
                             variant="primary"
                             size="sm"
-                            onClick={() => handleEditProduct(product)}
+                            onClick={() => navigate(`/update-product/${product.id}`)}
                             title="Sửa sản phẩm"
                           >
                             <Edit size={16} />
@@ -847,131 +740,6 @@ const ManageProduct = () => {
               </Button>
             </div>
           </div>
-        </Modal.Body>
-      </Modal>
-
-      {/* Edit Product Modal */}
-      <Modal show={showEditModal} onHide={cancelEdit} centered size="lg">
-        <Modal.Body> 
-          {productToEdit && (
-            <Form>
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Tên sản phẩm *</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={editForm.name}
-                      onChange={(e) => handleEditFormChange("name", e.target.value)}
-                      placeholder="Nhập tên sản phẩm"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Thương hiệu *</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={editForm.brand}
-                      onChange={(e) => handleEditFormChange("brand", e.target.value)}
-                      placeholder="Nhập thương hiệu"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Giá tiền (VND) *</Form.Label>
-                    <Form.Control
-                      type="number"
-                      value={editForm.price}
-                      onChange={(e) => handleEditFormChange("price", e.target.value)}
-                      placeholder="Nhập giá tiền"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Số lượng *</Form.Label>
-                    <Form.Control
-                      type="number"
-                      value={editForm.quantity}
-                      onChange={(e) => handleEditFormChange("quantity", e.target.value)}
-                      placeholder="Nhập số lượng"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Số điện thoại sản phẩm</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={editForm.business_phone}
-                      onChange={(e) => handleEditFormChange("business_phone", e.target.value)}
-                      placeholder="Nhập số điện thoại sản phẩm"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Trạng thái *</Form.Label>
-                    <Form.Select
-                      value={editForm.status}
-                      onChange={(e) => handleEditFormChange("status", e.target.value)}
-                    >
-                      <option value="New">New</option>
-                      <option value="SecondHand">Second Hand</option>
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Form.Group className="mb-3">
-                <Form.Label>Mô tả</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={editForm.description}
-                  onChange={(e) => handleEditFormChange("description", e.target.value)}
-                  placeholder="Nhập mô tả sản phẩm"
-                />
-              </Form.Group>
-              <div className="d-flex justify-content-center gap-3 mt-4">
-                <Button
-                  variant="secondary"
-                  onClick={cancelEdit}
-                  disabled={editLoading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={confirmEditProduct}
-                  disabled={editLoading}
-                  className="d-flex align-items-center"
-                >
-                  {editLoading ? (
-                    <>
-                      <div
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                      >
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <Edit size={16} className="me-2" />
-                      Update Product
-                    </>
-                  )}
-                </Button>
-              </div>
-            </Form>
-          )}
         </Modal.Body>
       </Modal>
     </Container>

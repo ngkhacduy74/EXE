@@ -312,7 +312,7 @@ const BannerSection = () => {
             </Swiper>
 
             {/* Enhanced Custom CSS for Swiper */}
-            <style jsx>{`
+            <style>{`
               .product-banner-swiper {
                 padding: 10px 0 40px 0;
               }

@@ -53,6 +53,18 @@ header.sticky-top {
   transition: all 0.3s ease !important;
 }
 
+/* Content wrapper để đẩy content xuống khỏi header fixed */
+.content-wrapper {
+  padding-top: 120px !important;
+}
+
+/* Responsive padding cho mobile */
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding-top: 100px !important;
+  }
+}
+
 /* Override any CSS variables that might interfere */
 :root {
   --header-height: auto !important;

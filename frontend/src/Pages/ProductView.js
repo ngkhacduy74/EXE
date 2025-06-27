@@ -276,35 +276,37 @@ const ProductView = () => {
     return url && (url.includes("youtube.com") || url.includes("youtu.be"));
   };
 
-  if (loading || !authChecked) {
+  if (loading) {
     return (
       <>
         <Header />
-        <Container className="py-5" style={{ minHeight: "60vh" }}>
-          <div
-            className="d-flex justify-content-center align-items-center"
-            style={{ minHeight: "40vh" }}
-          >
-            <Card className="shadow-sm w-100" style={{ maxWidth: "600px" }}>
-              <Card.Body>
-                <div className="placeholder-glow">
-                  <div
-                    className="placeholder col-6 mb-3"
-                    style={{ height: "30px" }}
-                  ></div>
-                  <div
-                    className="placeholder col-12 mb-3"
-                    style={{ height: "200px" }}
-                  ></div>
-                  <div
-                    className="placeholder col-4"
-                    style={{ height: "20px" }}
-                  ></div>
-                </div>
-              </Card.Body>
-            </Card>
-          </div>
-        </Container>
+        <div className="content-wrapper">
+          <Container className="py-5" style={{ minHeight: "60vh" }}>
+            <div
+              className="d-flex justify-content-center align-items-center"
+              style={{ minHeight: "40vh" }}
+            >
+              <Card className="shadow-sm w-100" style={{ maxWidth: "600px" }}>
+                <Card.Body>
+                  <div className="placeholder-glow">
+                    <div
+                      className="placeholder col-6 mb-3"
+                      style={{ height: "30px" }}
+                    ></div>
+                    <div
+                      className="placeholder col-12 mb-3"
+                      style={{ height: "200px" }}
+                    ></div>
+                    <div
+                      className="placeholder col-4"
+                      style={{ height: "20px" }}
+                    ></div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </div>
+          </Container>
+        </div>
         <Footer />
       </>
     );
@@ -327,37 +329,39 @@ const ProductView = () => {
     return (
       <div>
         <Header />
-        <Container className="py-5" style={{ minHeight: "60vh" }}>
-          <div
-            className="d-flex justify-content-center align-items-center"
-            style={{ minHeight: "40vh" }}
-          >
-            <Card className="shadow-sm w-100" style={{ maxWidth: "600px" }}>
-              <Card.Body className="text-center">
-                <div className="mb-4">
-                  <i className="fas fa-lock text-warning" style={{ fontSize: "3rem" }}></i>
-                </div>
-                <h4 className="mb-3">Yêu cầu đăng nhập</h4>
-                <p className="text-muted mb-4">
-                  Bạn cần đăng nhập để xem chi tiết sản phẩm này.
-                </p>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={() => navigate("/login", {
-                    state: {
-                      message: "Vui lòng đăng nhập để xem sản phẩm",
-                      returnUrl: `/productView/${productId}`
-                    }
-                  })}
-                >
-                  <i className="fas fa-sign-in-alt me-2"></i>
-                  Đăng nhập ngay
-                </Button>
-              </Card.Body>
-            </Card>
-          </div>
-        </Container>
+        <div className="content-wrapper">
+          <Container className="py-5" style={{ minHeight: "60vh" }}>
+            <div
+              className="d-flex justify-content-center align-items-center"
+              style={{ minHeight: "40vh" }}
+            >
+              <Card className="shadow-sm w-100" style={{ maxWidth: "600px" }}>
+                <Card.Body className="text-center">
+                  <div className="mb-4">
+                    <i className="fas fa-lock text-warning" style={{ fontSize: "3rem" }}></i>
+                  </div>
+                  <h4 className="mb-3">Yêu cầu đăng nhập</h4>
+                  <p className="text-muted mb-4">
+                    Bạn cần đăng nhập để xem chi tiết sản phẩm này.
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={() => navigate("/login", {
+                      state: {
+                        message: "Vui lòng đăng nhập để xem sản phẩm",
+                        returnUrl: `/productView/${productId}`
+                      }
+                    })}
+                  >
+                    <i className="fas fa-sign-in-alt me-2"></i>
+                    Đăng nhập ngay
+                  </Button>
+                </Card.Body>
+              </Card>
+            </div>
+          </Container>
+        </div>
         <Footer />
       </div>
     );
@@ -367,7 +371,9 @@ const ProductView = () => {
     return (
       <>
         <Header />
-        <ErrorPage message="Product not available." />
+        <div className="content-wrapper">
+          <ErrorPage message="Product not available." />
+        </div>
         <Footer />
       </>
     );
@@ -379,646 +385,655 @@ const ProductView = () => {
   return (
     <div>
       <Header />
-      <style>
-        {`
-          /* Swiper Styles */
-          .product-image-swiper {
-            border-radius: 0.375rem;
-            overflow: hidden;
-          }
-          
-          .product-image-swiper .swiper-slide {
-            text-align: center;
-          }
-          
-          .product-thumbs-swiper {
-            height: 100px;
-          }
-          
-          .product-thumbs-swiper .swiper-slide {
-            opacity: 0.6;
-            transition: opacity 0.3s ease;
-          }
-          
-          .product-thumbs-swiper .swiper-slide-thumb-active {
-            opacity: 1;
-          }
-          
-          .thumbnail-item {
-            transition: all 0.3s ease;
-          }
-          
-          .thumbnail-item:hover {
-            transform: scale(1.05);
-          }
-          
-          .thumbnail-item.active {
-            transform: scale(1.1);
-          }
-          
-          /* Navigation buttons */
-          .product-image-swiper .swiper-button-next,
-          .product-image-swiper .swiper-button-prev {
-            color: #007bff;
-            background: rgba(255, 255, 255, 0.9);
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            margin-top: -20px;
-          }
-          
-          .product-image-swiper .swiper-button-next:after,
-          .product-image-swiper .swiper-button-prev:after {
-            font-size: 18px;
-          }
-          
-          /* Video thumbnail styles */
-          .bg-gradient-dark {
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-          }
-          
-          /* Recently viewed product cards */
-          .product-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-          }
-          
-          .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
-          }
-          
-          .product-card .card-img-top {
-            transition: transform 0.3s ease;
-          }
-          
-          .product-card:hover .card-img-top {
-            transform: scale(1.05);
-          }
-          
-          /* Responsive */
-          @media (max-width: 768px) {
-            .product-image-swiper .swiper-slide img {
-              height: 300px !important;
+      <div className="content-wrapper">
+        <style>
+          {`
+            /* Swiper Styles */
+            .product-image-swiper {
+              border-radius: 0.375rem;
+              overflow: hidden;
+            }
+            
+            .product-image-swiper .swiper-slide {
+              text-align: center;
             }
             
             .product-thumbs-swiper {
-              height: 80px;
+              height: 100px;
             }
             
-            .product-thumbs-swiper .swiper-slide img {
-              height: 60px !important;
+            .product-thumbs-swiper .swiper-slide {
+              opacity: 0.6;
+              transition: opacity 0.3s ease;
             }
-          }
-        `}
-      </style>
-      <Container className="py-4" style={{ minHeight: "80vh" }}>
-        {/* Breadcrumb Navigation */}
-        <nav aria-label="breadcrumb" className="mb-4">
-          <ol className="breadcrumb">
-            <li className="breadcrumb-item">
-              <Button
-                variant="link"
-                className="p-0 text-decoration-none"
-                onClick={() => navigate("/")}
-              >
-                Trang chủ
-              </Button>
-            </li>
-            <li className="breadcrumb-item">
-              <Button
-                variant="link"
-                className="p-0 text-decoration-none"
-                onClick={() => navigate("/products")}
-              >
-                Sản phẩm
-              </Button>
-            </li>
-            <li className="breadcrumb-item active" aria-current="page">
-              {product.name || `Product #${productId}`}
-            </li>
-          </ol>
-        </nav>
+            
+            .product-thumbs-swiper .swiper-slide-thumb-active {
+              opacity: 1;
+            }
+            
+            .thumbnail-item {
+              transition: all 0.3s ease;
+            }
+            
+            .thumbnail-item:hover {
+              transform: scale(1.05);
+            }
+            
+            .thumbnail-item.active {
+              transform: scale(1.1);
+            }
+            
+            /* Navigation buttons */
+            .product-image-swiper .swiper-button-next,
+            .product-image-swiper .swiper-button-prev {
+              color: #007bff;
+              background: rgba(255, 255, 255, 0.9);
+              width: 20px;
+              height: 20px;
+              border-radius: 50%;
+              margin-top: -20px;
+            }
+            
+            .product-image-swiper .swiper-button-next:after,
+            .product-image-swiper .swiper-button-prev:after {
+              font-size: 18px;
+            }
+            
+            /* Video thumbnail styles */
+            .bg-gradient-dark {
+              background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            }
+            
+            /* Recently viewed product cards */
+            .product-card {
+              transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            }
+            
+            .product-card:hover {
+              transform: translateY(-5px);
+              box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+            }
+            
+            .product-card .card-img-top {
+              transition: transform 0.3s ease;
+            }
+            
+            .product-card:hover .card-img-top {
+              transform: scale(1.05);
+            }
+            
+            /* Responsive */
+            @media (max-width: 768px) {
+              .product-image-swiper .swiper-slide img {
+                height: 300px !important;
+              }
+              
+              .product-thumbs-swiper {
+                height: 80px;
+              }
+              
+              .product-thumbs-swiper .swiper-slide img {
+                height: 60px !important;
+              }
+            }
+          `}
+        </style>
+        <Container className="py-4" style={{ minHeight: "80vh" }}>
+          {/* Breadcrumb Navigation */}
+          <nav aria-label="breadcrumb" className="mb-4">
+            <ol className="breadcrumb">
+              <li className="breadcrumb-item">
+                <Button
+                  variant="link"
+                  className="p-0 text-decoration-none"
+                  onClick={() => navigate("/")}
+                >
+                  Trang chủ
+                </Button>
+              </li>
+              <li className="breadcrumb-item">
+                <Button
+                  variant="link"
+                  className="p-0 text-decoration-none"
+                  onClick={() => navigate("/products")}
+                >
+                  Sản phẩm
+                </Button>
+              </li>
+              <li className="breadcrumb-item active" aria-current="page">
+                {product.name || `Product #${productId}`}
+              </li>
+            </ol>
+          </nav>
 
-        {/* Product Header */}
-        <div className="mb-4">
-          <h1 className="mb-2 text-primary">
-            {product.name || "Product Name"}
-          </h1>
-          <div className="d-flex align-items-center gap-3 flex-wrap">
-            <p className="text-muted mb-0">Tình trạng sp: </p>
-            {product.brand && (
-              <Badge bg="outline-primary" className="px-3 py-1">
-                <i className="fas fa-tag me-1"></i>
-                {product.brand}
+          {/* Product Header */}
+          <div className="mb-4">
+            <h1 className="mb-2 text-primary">
+              {product.name || "Product Name"}
+            </h1>
+            <div className="d-flex align-items-center gap-3 flex-wrap">
+              <p className="text-muted mb-0">Tình trạng sp: </p>
+              {product.brand && (
+                <Badge bg="outline-primary" className="px-3 py-1">
+                  <i className="fas fa-tag me-1"></i>
+                  {product.brand}
+                </Badge>
+              )}
+              {product.status && (
+                <Badge bg={getStatusColor(product.status)} className="px-3 py-1">
+                  {product.status}
+                </Badge>
+              )}
+              <Badge bg={quantityStatus.variant} className="px-3 py-1">
+                {quantityStatus.text}
               </Badge>
-            )}
-            {product.status && (
-              <Badge bg={getStatusColor(product.status)} className="px-3 py-1">
-                {product.status}
-              </Badge>
-            )}
-            <Badge bg={quantityStatus.variant} className="px-3 py-1">
-              {quantityStatus.text}
-            </Badge>
+            </div>
           </div>
-        </div>
 
-        <Row>
-          {/* Product Images & Videos */}
-          <Col lg={6}>
-            <Card className="shadow-sm mb-4">
-              <Card.Body className="p-0">
-                {/* Main Image Slider */}
-                <div className="position-relative">
-                  <Swiper
-                    spaceBetween={10}
-                    navigation={true}
-                    thumbs={{
-                      swiper:
-                        thumbsSwiper && !thumbsSwiper.destroyed
-                          ? thumbsSwiper
-                          : null,
-                    }}
-                    modules={[Navigation, Pagination, Thumbs]}
-                    className="product-image-swiper"
-                    onSlideChange={(swiper) =>
-                      setSelectedImageIndex(swiper.activeIndex)
-                    }
-                  >
-                    {images.map((image, index) => (
-                      <SwiperSlide key={index}>
-                        <div className="position-relative">
-                          <img
-                            src={image}
-                            alt={`${product.name} - Image ${index + 1}`}
-                            className="img-fluid rounded"
-                            style={{
-                              width: "100%",
-                              height: "fit-content",
-                              objectFit: "cover",
-                              display: "block",
-                            }}
-                            onError={handleImageError}
-                            loading="lazy"
-                          />
-                          {product.discount && index === 0 && (
-                            <Badge
-                              bg="danger"
-                              className="position-absolute top-0 start-0 m-3 fs-5"
-                            >
-                              -{product.discount}% GIẢM
-                            </Badge>
-                          )}
-                          {/* Image counter */}
-                          <div className="position-absolute bottom-0 end-0 m-3">
-                            <Badge bg="dark" className="px-3 py-2">
-                              {index + 1} / {images.length}
-                            </Badge>
-                          </div>
-                        </div>
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                </div>
-
-                {/* Thumbnail Slider */}
-                {images.length > 1 && (
-                  <div className="mt-3 p-3">
+          <Row>
+            {/* Product Images & Videos */}
+            <Col lg={6}>
+              <Card className="shadow-sm mb-4">
+                <Card.Body className="p-0">
+                  {/* Main Image Slider */}
+                  <div className="position-relative">
                     <Swiper
-                      onSwiper={setThumbsSwiper}
                       spaceBetween={10}
-                      slidesPerView={4}
-                      freeMode={true}
-                      watchSlidesProgress={true}
-                      modules={[Navigation, Thumbs]}
-                      className="product-thumbs-swiper"
+                      navigation={true}
+                      thumbs={{
+                        swiper:
+                          thumbsSwiper && !thumbsSwiper.destroyed
+                            ? thumbsSwiper
+                            : null,
+                      }}
+                      modules={[Navigation, Pagination, Thumbs]}
+                      className="product-image-swiper"
+                      onSlideChange={(swiper) =>
+                        setSelectedImageIndex(swiper.activeIndex)
+                      }
                     >
                       {images.map((image, index) => (
                         <SwiperSlide key={index}>
-                          <div
-                            className={`thumbnail-item ${selectedImageIndex === index ? "active" : ""
-                              }`}
-                            style={{ cursor: "pointer" }}
-                          >
+                          <div className="position-relative">
                             <img
                               src={image}
-                              alt={`${product.name} thumbnail ${index + 1}`}
+                              alt={`${product.name} - Image ${index + 1}`}
                               className="img-fluid rounded"
                               style={{
                                 width: "100%",
-                                height: "80px",
+                                height: "fit-content",
                                 objectFit: "cover",
-                                border:
-                                  selectedImageIndex === index
-                                    ? "3px solid #007bff"
-                                    : "1px solid #dee2e6",
+                                display: "block",
                               }}
                               onError={handleImageError}
                               loading="lazy"
                             />
+                            {product.discount && index === 0 && (
+                              <Badge
+                                bg="danger"
+                                className="position-absolute top-0 start-0 m-3 fs-5"
+                              >
+                                -{product.discount}% GIẢM
+                              </Badge>
+                            )}
+                            {/* Image counter */}
+                            <div className="position-absolute bottom-0 end-0 m-3">
+                              <Badge bg="dark" className="px-3 py-2">
+                                {index + 1} / {images.length}
+                              </Badge>
+                            </div>
                           </div>
                         </SwiperSlide>
                       ))}
                     </Swiper>
                   </div>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
 
-          {/* Product Details & Purchase */}
-          <Col lg={6}>
-            {/* Price & Purchase Options */}
-            <Card className="shadow-sm mb-4">
-              <Card.Body>
-                <div className="mb-4">
-                  <h2 className="text-success fw-bold mb-2">
-                    {formatPrice(product.price)}
-                  </h2>
-                  {product.discount && (
-                    <p className="text-muted text-decoration-line-through mb-0">
-                      {formatPrice(
-                        product.price * (1 + product.discount / 100)
-                      )}
-                    </p>
+                  {/* Thumbnail Slider */}
+                  {images.length > 1 && (
+                    <div className="mt-3 p-3">
+                      <Swiper
+                        onSwiper={setThumbsSwiper}
+                        spaceBetween={10}
+                        slidesPerView={4}
+                        freeMode={true}
+                        watchSlidesProgress={true}
+                        modules={[Navigation, Thumbs]}
+                        className="product-thumbs-swiper"
+                      >
+                        {images.map((image, index) => (
+                          <SwiperSlide key={index}>
+                            <div
+                              className={`thumbnail-item ${selectedImageIndex === index ? "active" : ""
+                                }`}
+                              style={{ cursor: "pointer" }}
+                            >
+                              <img
+                                src={image}
+                                alt={`${product.name} thumbnail ${index + 1}`}
+                                className="img-fluid rounded"
+                                style={{
+                                  width: "100%",
+                                  height: "80px",
+                                  objectFit: "cover",
+                                  border:
+                                    selectedImageIndex === index
+                                      ? "3px solid #007bff"
+                                      : "1px solid #dee2e6",
+                                }}
+                                onError={handleImageError}
+                                loading="lazy"
+                              />
+                            </div>
+                          </SwiperSlide>
+                        ))}
+                      </Swiper>
+                    </div>
                   )}
-                </div>
+                </Card.Body>
+              </Card>
+            </Col>
 
-                <div className="mb-4">
-                  <Row className="align-items-center">
-                    <Col sm={6}>
-                      <label className="form-label fw-medium mb-2">
-                        Số lượng:
-                      </label>
-                      <div className="input-group" style={{ width: "150px" }}>
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary"
-                          onClick={() => handleQuantityChange(-1)}
-                          aria-label="Giảm số lượng"
-                        >
-                          −
-                        </button>
-                        <input
-                          type="text"
-                          className="form-control text-center fw-medium"
-                          value={quantity}
-                          readOnly
-                          aria-label="Số lượng hiện tại"
-                        />
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary"
-                          onClick={() => handleQuantityChange(1)}
-                          aria-label="Tăng số lượng"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </Col>
-                    <Col sm={6}>
-                      <p className="text-muted mb-0">
-                        {product.quantity !== undefined
-                          ? `${product.quantity} sản phẩm có sẵn`
-                          : "Liên hệ để biết tình trạng hàng"}
+            {/* Product Details & Purchase */}
+            <Col lg={6}>
+              {/* Price & Purchase Options */}
+              <Card className="shadow-sm mb-4">
+                <Card.Body>
+                  <div className="mb-4">
+                    <h2 className="text-success fw-bold mb-2">
+                      {formatPrice(product.price)}
+                    </h2>
+                    {product.discount && (
+                      <p className="text-muted text-decoration-line-through mb-0">
+                        {formatPrice(
+                          product.price * (1 + product.discount / 100)
+                        )}
                       </p>
+                    )}
+                  </div>
+
+                  <div className="mb-4">
+                    <Row className="align-items-center">
+                      <Col sm={6}>
+                        <label className="form-label fw-medium mb-2">
+                          Số lượng:
+                        </label>
+                        <div className="input-group" style={{ width: "150px" }}>
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={() => handleQuantityChange(-1)}
+                            aria-label="Giảm số lượng"
+                          >
+                            −
+                          </button>
+                          <input
+                            type="text"
+                            className="form-control text-center fw-medium"
+                            value={quantity}
+                            readOnly
+                            aria-label="Số lượng hiện tại"
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={() => handleQuantityChange(1)}
+                            aria-label="Tăng số lượng"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </Col>
+                      <Col sm={6}>
+                        <p className="text-muted mb-0">
+                          {product.quantity !== undefined
+                            ? `${product.quantity} sản phẩm có sẵn`
+                            : "Liên hệ để biết tình trạng hàng"}
+                        </p>
+                      </Col>
+                    </Row>
+                  </div>
+
+                  <div className="d-grid gap-3">
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      onClick={handleContactUs}
+                      className="py-3 fw-medium"
+                    >
+                      <i className="fas fa-phone me-2"></i>
+                      Liên hệ
+                    </Button>
+                    {showPhone && (
+                      <div className="text-center mt-3">
+                        <h5>Số điện thoại liên hệ:</h5>
+                        <p style={{ fontSize: 22, fontWeight: 600 }}>
+                          {product.business_phone || product.product_phone || "Không có số điện thoại liên hệ"}
+                        </p>
+                      </div>
+                    )}
+                    <Button
+                      variant="outline-secondary"
+                      size="lg"
+                      onClick={() => {
+                        if (product) {
+                          addToRecentlyViewed(product);
+                          alert("Đã lưu vào danh sách xem gần đây!");
+                        }
+                      }}
+                      className="py-3 fw-medium"
+                    >
+                      <i className="fas fa-bookmark me-2"></i>
+                      Lưu vào danh sách xem
+                    </Button>
+                  </div>
+                </Card.Body>
+              </Card>
+
+              {/* Product Information */}
+              <Card className="shadow-sm mb-4">
+                <Card.Header className="bg-white border-bottom">
+                  <h5 className="mb-0">
+                    <i className="fas fa-info-circle text-primary me-2"></i> Thông
+                    tin sản phẩm
+                  </h5>
+                </Card.Header>
+                <Card.Body>
+                  <Row>
+                    <Col md={6}>
+                      {product.brand && (
+                        <div className="mb-3">
+                          <label className="form-label text-muted small fw-bold">
+                            THƯƠNG HIỆU
+                          </label>
+                          <p className="mb-0">{product.brand}</p>
+                        </div>
+                      )}
+                      {product.category && (
+                        <div className="mb-3">
+                          <label className="form-label text-muted small fw-bold">
+                            DANH MỤC
+                          </label>
+                          <p className="mb-0">{product.category}</p>
+                        </div>
+                      )}
+                    </Col>
+                    <Col md={6}>
+                      {product.status && (
+                        <div className="mb-3">
+                          <label className="form-label text-muted small fw-bold">
+                            TÌNH TRẠNG
+                          </label>
+                          <Badge
+                            bg={getStatusColor(product.status)}
+                            className="fs-6 px-3 py-2"
+                          >
+                            {product.status}
+                          </Badge>
+                        </div>
+                      )}
+                      {product.warranty_period && (
+                        <div className="mb-3">
+                          <label className="form-label text-muted small fw-bold">
+                            BẢO HÀNH
+                          </label>
+                          <p className="mb-0">{product.warranty_period} tháng</p>
+                        </div>
+                      )}
+                      {product.size && (
+                        <div className="mb-3">
+                          <label className="form-label text-muted small fw-bold">
+                            KÍCH THƯỚC
+                          </label>
+                          <p className="mb-0">{product.size}</p>
+                        </div>
+                      )}
+                      {product.weight && (
+                        <div className="mb-3">
+                          <label className="form-label text-muted small fw-bold">
+                            TRỌNG LƯỢNG
+                          </label>
+                          <p className="mb-0">{product.weight} kg</p>
+                        </div>
+                      )}
+                      {product.voltage && (
+                        <div className="mb-3">
+                          <label className="form-label text-muted small fw-bold">
+                            ĐIỆN ÁP
+                          </label>
+                          <p className="mb-0">{product.voltage}</p>
+                        </div>
+                      )}
                     </Col>
                   </Row>
-                </div>
 
-                <div className="d-grid gap-3">
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    onClick={handleContactUs}
-                    className="py-3 fw-medium"
-                  >
-                    <i className="fas fa-phone me-2"></i>
-                    Liên hệ
-                  </Button>
-                  {showPhone && (
-                    <div className="text-center mt-3">
-                      <h5>Số điện thoại liên hệ:</h5>
-                      <p style={{ fontSize: 22, fontWeight: 600 }}>
-                        {product.business_phone || product.product_phone || "Không có số điện thoại liên hệ"}
-                      </p>
-                    </div>
-                  )}
-                  <Button
-                    variant="outline-secondary"
-                    size="lg"
-                    onClick={() => {
-                      if (product) {
-                        addToRecentlyViewed(product);
-                        alert("Đã lưu vào danh sách xem gần đây!");
-                      }
-                    }}
-                    className="py-3 fw-medium"
-                  >
-                    <i className="fas fa-bookmark me-2"></i>
-                    Lưu vào danh sách xem
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-
-            {/* Product Information */}
-            <Card className="shadow-sm mb-4">
-              <Card.Header className="bg-white border-bottom">
-                <h5 className="mb-0">
-                  <i className="fas fa-info-circle text-primary me-2"></i> Thông
-                  tin sản phẩm
-                </h5>
-              </Card.Header>
-              <Card.Body>
-                <Row>
-                  <Col md={6}>
-                    {product.brand && (
-                      <div className="mb-3">
+                  {product.features && product.features.length > 0 && (
+                    <>
+                      <hr className="my-4" />
+                      <div>
                         <label className="form-label text-muted small fw-bold">
-                          THƯƠNG HIỆU
+                          TÍNH NĂNG NỔI BẬT
                         </label>
-                        <p className="mb-0">{product.brand}</p>
-                      </div>
-                    )}
-                    {product.category && (
-                      <div className="mb-3">
-                        <label className="form-label text-muted small fw-bold">
-                          DANH MỤC
-                        </label>
-                        <p className="mb-0">{product.category}</p>
-                      </div>
-                    )}
-                  </Col>
-                  <Col md={6}>
-                    {product.status && (
-                      <div className="mb-3">
-                        <label className="form-label text-muted small fw-bold">
-                          TÌNH TRẠNG
-                        </label>
-                        <Badge
-                          bg={getStatusColor(product.status)}
-                          className="fs-6 px-3 py-2"
-                        >
-                          {product.status}
-                        </Badge>
-                      </div>
-                    )}
-                    {product.warranty_period && (
-                      <div className="mb-3">
-                        <label className="form-label text-muted small fw-bold">
-                          BẢO HÀNH
-                        </label>
-                        <p className="mb-0">{product.warranty_period} tháng</p>
-                      </div>
-                    )}
-                    {product.size && (
-                      <div className="mb-3">
-                        <label className="form-label text-muted small fw-bold">
-                          KÍCH THƯỚC
-                        </label>
-                        <p className="mb-0">{product.size}</p>
-                      </div>
-                    )}
-                    {product.weight && (
-                      <div className="mb-3">
-                        <label className="form-label text-muted small fw-bold">
-                          TRỌNG LƯỢNG
-                        </label>
-                        <p className="mb-0">{product.weight} kg</p>
-                      </div>
-                    )}
-                    {product.voltage && (
-                      <div className="mb-3">
-                        <label className="form-label text-muted small fw-bold">
-                          ĐIỆN ÁP
-                        </label>
-                        <p className="mb-0">{product.voltage}</p>
-                      </div>
-                    )}
-                  </Col>
-                </Row>
-
-                {product.features && product.features.length > 0 && (
-                  <>
-                    <hr className="my-4" />
-                    <div>
-                      <label className="form-label text-muted small fw-bold">
-                        TÍNH NĂNG NỔI BẬT
-                      </label>
-                      <div className="row">
-                        {product.features.map((feature, index) => (
-                          <div
-                            key={feature.id || index}
-                            className="col-md-12 mb-3"
-                          >
-                            <div className="border rounded p-3">
-                              <h6 className="text-primary mb-2">
-                                <i className="fas fa-check-circle me-2"></i>
-                                {feature.title}
-                              </h6>
-                              <p className="mb-0 small text-muted">
-                                {feature.description}
-                              </p>
+                        <div className="row">
+                          {product.features.map((feature, index) => (
+                            <div
+                              key={feature.id || index}
+                              className="col-md-12 mb-3"
+                            >
+                              <div className="border rounded p-3">
+                                <h6 className="text-primary mb-2">
+                                  <i className="fas fa-check-circle me-2"></i>
+                                  {feature.title}
+                                </h6>
+                                <p className="mb-0 small text-muted">
+                                  {feature.description}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  </>
+                    </>
+                  )}
+                </Card.Body>
+              </Card>
+
+              {/* Low Stock Alert */}
+              {product.quantity !== undefined &&
+                product.quantity < 10 &&
+                product.quantity > 0 && (
+                  <Alert variant="warning" className="mb-4">
+                    <Alert.Heading className="h6">
+                      <i className="fas fa-exclamation-triangle me-2"></i>
+                      Sắp hết hàng
+                    </Alert.Heading>
+                    <p className="mb-0 small">
+                      Chỉ còn {product.quantity} sản phẩm trong kho. Đặt hàng sớm!
+                    </p>
+                  </Alert>
                 )}
-              </Card.Body>
-            </Card>
+            </Col>
+          </Row>
 
-            {/* Low Stock Alert */}
-            {product.quantity !== undefined &&
-              product.quantity < 10 &&
-              product.quantity > 0 && (
-                <Alert variant="warning" className="mb-4">
-                  <Alert.Heading className="h6">
-                    <i className="fas fa-exclamation-triangle me-2"></i>
-                    Sắp hết hàng
-                  </Alert.Heading>
-                  <p className="mb-0 small">
-                    Chỉ còn {product.quantity} sản phẩm trong kho. Đặt hàng sớm!
-                  </p>
-                </Alert>
-              )}
-          </Col>
-        </Row>
-
-
-
-        <div className="mb-4 text-center">
-                <h2 className="fw-bold mb-3">
-                  <i className="fas fa-info-circle text-primary me-2"></i>Mô tả sản phẩm
-                </h2>
-                {product.description && (
-                  <p className="lead mb-0" style={{ margin: '0 auto', lineHeight: 1.7 }}>
-                    {product.description}
-                  </p>
-                )}
+          <div className="mb-4 text-center">
+            <h2 className="fw-bold mb-3">
+              <i className="fas fa-info-circle text-primary me-2"></i>Mô tả sản phẩm
+            </h2>
+            {product.description && (
+              <div 
+                className="lead mb-0" 
+                style={{ 
+                  margin: '0 auto', 
+                  lineHeight: 1.7,
+                  whiteSpace: 'pre-wrap',
+                  textAlign: 'left',
+                  maxWidth: '800px'
+                }}
+              >
+                {product.description}
               </div>
+            )}
+          </div>
 
-        {/* Product Videos - HIỂN THỊ TO Ở DƯỚI CÙNG */}
-        {product.video && Array.isArray(product.video) && product.video.length > 0 && (
-          <section className="py-5" style={{ background: '#fff' }}>
-            <Container>
-             
-              <Row className="justify-content-center">
-                {product.video.map((vid, index) => {
-                  const isYouTube = isYouTubeUrl(vid);
-                  const embedUrl = isYouTube ? getYouTubeEmbedUrl(vid) : vid;
-                  return (
-                    <Col key={index} xs={12} md={10} className="mb-5 d-flex justify-content-center">
-                      <div style={{ width: '100%', maxWidth: 900 }}>
-                        {isYouTube ? (
-                          <div className="ratio ratio-16x9" style={{ minHeight: 400 }}>
-                            <iframe
+          {/* Product Videos - HIỂN THỊ TO Ở DƯỚI CÙNG */}
+          {product.video && Array.isArray(product.video) && product.video.length > 0 && (
+            <section className="py-5" style={{ background: '#fff' }}>
+              <Container>
+               
+                <Row className="justify-content-center">
+                  {product.video.map((vid, index) => {
+                    const isYouTube = isYouTubeUrl(vid);
+                    const embedUrl = isYouTube ? getYouTubeEmbedUrl(vid) : vid;
+                    return (
+                      <Col key={index} xs={12} md={10} className="mb-5 d-flex justify-content-center">
+                        <div style={{ width: '100%', maxWidth: 900 }}>
+                          {isYouTube ? (
+                            <div className="ratio ratio-16x9" style={{ minHeight: 400 }}>
+                              <iframe
+                                src={embedUrl}
+                                title={`Product video ${index + 1}`}
+                                allowFullScreen
+                                style={{ border: "none", width: '100%', height: '100%' }}
+                                onError={e => {
+                                  e.target.style.display = "none";
+                                  const fallback = e.target.parentElement.querySelector('.video-fallback');
+                                  if (fallback) fallback.style.display = "flex";
+                                }}
+                              ></iframe>
+                            </div>
+                          ) : (
+                            <video
+                              controls
+                              className="w-100"
+                              style={{ maxHeight: 500, minHeight: 400, background: '#000' }}
                               src={embedUrl}
-                              title={`Product video ${index + 1}`}
-                              allowFullScreen
-                              style={{ border: "none", width: '100%', height: '100%' }}
+                              aria-label={`Product video playback ${index + 1}`}
                               onError={e => {
                                 e.target.style.display = "none";
                                 const fallback = e.target.parentElement.querySelector('.video-fallback');
                                 if (fallback) fallback.style.display = "flex";
                               }}
-                            ></iframe>
-                          </div>
-                        ) : (
-                          <video
-                            controls
-                            className="w-100"
-                            style={{ maxHeight: 500, minHeight: 400, background: '#000' }}
-                            src={embedUrl}
-                            aria-label={`Product video playback ${index + 1}`}
-                            onError={e => {
-                              e.target.style.display = "none";
-                              const fallback = e.target.parentElement.querySelector('.video-fallback');
-                              if (fallback) fallback.style.display = "flex";
+                            >
+                              Your browser does not support the video tag.
+                            </video>
+                          )}
+                          {/* Fallback message if video fails to load */}
+                          <div
+                            className="video-fallback d-none text-center p-4 bg-light"
+                            style={{
+                              minHeight: "200px",
+                              display: "none",
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
                           >
-                            Your browser does not support the video tag.
-                          </video>
-                        )}
-                        {/* Fallback message if video fails to load */}
-                        <div
-                          className="video-fallback d-none text-center p-4 bg-light"
-                          style={{
-                            minHeight: "200px",
-                            display: "none",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <div>
-                            <i
-                              className="fas fa-exclamation-triangle text-warning mb-3"
-                              style={{ fontSize: "3rem" }}
-                            ></i>
-                            <p className="mb-0">Không thể phát video này.</p>
-                            <small className="text-muted">
-                              Vui lòng thử lại sau hoặc liên hệ hỗ trợ.
-                            </small>
-                            <div className="mt-3">
+                            <div>
+                              <i
+                                className="fas fa-exclamation-triangle text-warning mb-3"
+                                style={{ fontSize: "3rem" }}
+                              ></i>
+                              <p className="mb-0">Không thể phát video này.</p>
                               <small className="text-muted">
-                                Loại: {isYouTube ? 'YouTube' : 'Direct Video'}
+                                Vui lòng thử lại sau hoặc liên hệ hỗ trợ.
                               </small>
-                              <br />
-                              <small className="text-muted">
-                                URL: {embedUrl}
-                              </small>
+                              <div className="mt-3">
+                                <small className="text-muted">
+                                  Loại: {isYouTube ? 'YouTube' : 'Direct Video'}
+                                </small>
+                                <br />
+                                <small className="text-muted">
+                                  URL: {embedUrl}
+                                </small>
+                              </div>
                             </div>
                           </div>
                         </div>
+                      </Col>
+                    );
+                  })}
+                </Row>
+              </Container>
+            </section>
+          )}
+        </Container>
+
+        {/* Recently Viewed Products */}
+        {recentlyViewed.length > 0 && (
+          <section className="py-5 bg-light">
+            <Container>
+              <div className="mb-4">
+                <h3 className="fw-bold mb-2">Sản phẩm đã xem gần đây</h3>
+                <p className="text-muted mb-0">Dựa trên lịch sử xem của bạn</p>
+              </div>
+              <Row>
+                {recentlyViewed.map((recentProduct) => (
+                  <Col key={recentProduct.id} xs={6} md={3} className="mb-3">
+                    <Card className="h-100 border-0 shadow-sm product-card">
+                      <div
+                        className="position-relative"
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          handleNavigateToProduct(recentProduct.id)
+                        }
+                      >
+                        <img
+                          src={getProductImages(recentProduct)[0]}
+                          className="card-img-top"
+                          alt={recentProduct.name}
+                          style={{
+                            height: "300px",
+                            width: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
+                          onError={handleImageError}
+                          loading="lazy"
+                        />
+
+                        {recentProduct.discount && (
+                          <Badge
+                            bg="danger"
+                            className="position-absolute top-0 start-0 m-2"
+                          >
+                            -{recentProduct.discount}%
+                          </Badge>
+                        )}
                       </div>
-                    </Col>
-                  );
-                })}
+                      <Card.Body className="d-flex flex-column">
+                        <h6
+                          className="card-title fw-bold mb-2"
+                          style={{ fontSize: "0.9rem" }}
+                        >
+                          {recentProduct.name}
+                        </h6>
+                        <p className="text-muted mb-2 small">
+                          {recentProduct.brand}
+                        </p>
+                        <div className="mt-auto">
+                          <div className="h6 text-success fw-bold mb-2">
+                            {formatPrice(recentProduct.price)}
+                          </div>
+                          <Button
+                            variant="outline-primary"
+                            size="sm"
+                            className="w-100"
+                            onClick={() =>
+                              handleNavigateToProduct(recentProduct.id)
+                            }
+                          >
+                            Xem lại
+                          </Button>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
               </Row>
             </Container>
           </section>
         )}
-      </Container>
 
-      {/* Recently Viewed Products */}
-      {recentlyViewed.length > 0 && (
-        <section className="py-5 bg-light">
-          <Container>
-            <div className="mb-4">
-              <h3 className="fw-bold mb-2">Sản phẩm đã xem gần đây</h3>
-              <p className="text-muted mb-0">Dựa trên lịch sử xem của bạn</p>
-            </div>
-            <Row>
-              {recentlyViewed.map((recentProduct) => (
-                <Col key={recentProduct.id} xs={6} md={3} className="mb-3">
-                  <Card className="h-100 border-0 shadow-sm product-card">
-                    <div
-                      className="position-relative"
-                      style={{ cursor: "pointer" }}
-                      onClick={() =>
-                        handleNavigateToProduct(recentProduct.id)
-                      }
-                    >
-                      <img
-                        src={getProductImages(recentProduct)[0]}
-                        className="card-img-top"
-                        alt={recentProduct.name}
-                        style={{
-                          height: "300px",
-                          width: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                        onError={handleImageError}
-                        loading="lazy"
-                      />
-
-                      {recentProduct.discount && (
-                        <Badge
-                          bg="danger"
-                          className="position-absolute top-0 start-0 m-2"
-                        >
-                          -{recentProduct.discount}%
-                        </Badge>
-                      )}
-                    </div>
-                    <Card.Body className="d-flex flex-column">
-                      <h6
-                        className="card-title fw-bold mb-2"
-                        style={{ fontSize: "0.9rem" }}
-                      >
-                        {recentProduct.name}
-                      </h6>
-                      <p className="text-muted mb-2 small">
-                        {recentProduct.brand}
-                      </p>
-                      <div className="mt-auto">
-                        <div className="h6 text-success fw-bold mb-2">
-                          {formatPrice(recentProduct.price)}
-                        </div>
-                        <Button
-                          variant="outline-primary"
-                          size="sm"
-                          className="w-100"
-                          onClick={() =>
-                            handleNavigateToProduct(recentProduct.id)
-                          }
-                        >
-                          Xem lại
-                        </Button>
-                      </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-          </Container>
-        </section>
-      )}
-
-      <WigdetChat></WigdetChat>
+        <WigdetChat></WigdetChat>
+      </div>
       <Footer />
     </div>
   );

@@ -415,146 +415,148 @@ const PostView = () => {
   return (
     <>
       <Header />
-      <div style={styles.container}>
-        <style>
-          {`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-            .image-item:hover {
-              transform: scale(1.05);
-            }
-            .image-item:hover img {
-              transform: scale(1.1);
-            }
-            .modal-image-zoom:hover {
-              transform: scale(1.1);
-            }
-            @media (max-width: 768px) {
-              .title {
-                font-size: 2rem !important;
+      <div className="content-wrapper">
+        <div style={styles.container}>
+          <style>
+            {`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
               }
-              .user-info {
-                flex-direction: column !important;
-                text-align: center !important;
+              .image-item:hover {
+                transform: scale(1.05);
               }
-              .user-meta {
-                text-align: center !important;
+              .image-item:hover img {
+                transform: scale(1.1);
               }
-              .image-section {
-                flex-direction: column !important;
-                gap: 16px !important;
+              .modal-image-zoom:hover {
+                transform: scale(1.1);
               }
-              .image-grid {
-                grid-template-columns: 1fr !important;
+              @media (max-width: 768px) {
+                .title {
+                  font-size: 2rem !important;
+                }
+                .user-info {
+                  flex-direction: column !important;
+                  text-align: center !important;
+                }
+                .user-meta {
+                  text-align: center !important;
+                }
+                .image-section {
+                  flex-direction: column !important;
+                  gap: 16px !important;
+                }
+                .image-grid {
+                  grid-template-columns: 1fr !important;
+                }
+                .video-grid {
+                  grid-template-columns: 1fr !important;
+                }
               }
-              .video-grid {
-                grid-template-columns: 1fr !important;
-              }
-            }
-          `}
-        </style>
-        <div style={styles.wrapper}>
-          {/* Title - Center aligned */}
-          <h1 style={styles.title} className="title">
-            {post.title}
-          </h1>
+            `}
+          </style>
+          <div style={styles.wrapper}>
+            {/* Title - Center aligned */}
+            <h1 style={styles.title} className="title">
+              {post.title}
+            </h1>
 
-          {/* User Info */}
-          <div style={styles.card}>
-            <div style={styles.userInfo} className="user-info">
-              {post.seller?.ava_img_url ? (
-                <img 
-                  src={post.seller.ava_img_url} 
-                  alt="Avatar" 
-                  style={styles.avatar}
-                />
-              ) : (
-                <div style={styles.avatarPlaceholder}>
-                  <User size={32} />
-                </div>
-              )}
-              <div style={styles.userDetails}>
-                <div style={styles.userName}>
-                  <User size={20} />
-                  <span>
-                    {post.seller?.fullname || 'Admin'}
-                  </span>
-                </div>
-                <div style={styles.userPhone}>
-                  <Phone size={16} />
-                  <span>
-                    {post.seller?.phone || '0903 242 748'}
-                  </span>
-                </div>
-              </div>
-              <div style={styles.userMeta} className="user-meta">
-                <div style={styles.metaItem}>
-                  <Calendar size={16} />
-                  <span>{new Date(post.createdAt).toLocaleDateString('vi-VN')}</span>
-                </div>
-                {post.user_position && (
-                  <div style={styles.metaItem}>
-                    <MapPin size={16} />
-                    <span>{post.user_position}</span>
+            {/* User Info */}
+            <div style={styles.card}>
+              <div style={styles.userInfo} className="user-info">
+                {post.seller?.ava_img_url ? (
+                  <img 
+                    src={post.seller.ava_img_url} 
+                    alt="Avatar" 
+                    style={styles.avatar}
+                  />
+                ) : (
+                  <div style={styles.avatarPlaceholder}>
+                    <User size={32} />
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          {/* Product Description */}
-          <div style={styles.card}>
-            <div style={{ display: 'flex', gap: 24, alignItems: 'center', marginBottom: 16 }}>
-              <div style={{...styles.detailItem, ...styles.categoryDetail}}>
-                <strong>Danh mục:</strong> {post.category}
-              </div>
-              <div style={{...styles.detailItem, ...styles.conditionDetail}}>
-                <strong>Tình trạng:</strong> {post.condition}
-              </div>
-            </div>
-            <h2 style={styles.sectionTitle}>Nội dung sản phẩm</h2>
-            <div style={styles.description}>
-              {post.content || post.description || 'Không có nội dung'}
-            </div>
-          </div>
-
-          {/* Images and Likes */}
-          <div style={styles.card}>
-            <h2 style={styles.sectionTitle}>Hình ảnh sản phẩm</h2>
-            {post.image && post.image.length > 0 ? (
-              <div style={styles.imageGrid} className="image-grid">
-                {post.image.map((img, idx) => (
-                  <div key={idx} style={styles.imageItem} className="image-item">
-                    <img
-                      src={img}
-                      alt={`Ảnh sản phẩm ${idx + 1}`}
-                      style={styles.image}
-                      onClick={() => {
-                        setActiveImageIndex(idx);
-                        setIsImageModalOpen(true);
-                      }}
-                    />
+                <div style={styles.userDetails}>
+                  <div style={styles.userName}>
+                    <User size={20} />
+                    <span>
+                      {post.seller?.fullname || 'Admin'}
+                    </span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div style={styles.noImages}>
-                <div style={styles.noImagesIcon}>
-                  <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                  <div style={styles.userPhone}>
+                    <Phone size={16} />
+                    <span>
+                      {post.seller?.phone || '0903 242 748'}
+                    </span>
+                  </div>
                 </div>
-                <p>Không có hình ảnh</p>
+                <div style={styles.userMeta} className="user-meta">
+                  <div style={styles.metaItem}>
+                    <Calendar size={16} />
+                    <span>{new Date(post.createdAt).toLocaleDateString('vi-VN')}</span>
+                  </div>
+                  {post.user_position && (
+                    <div style={styles.metaItem}>
+                      <MapPin size={16} />
+                      <span>{post.user_position}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-            {/* Likes - dưới grid ảnh */}
-            <div style={{...styles.likesContainer, marginTop: 12}}>
-              <Heart size={20} fill="currentColor" />
-              <span>
-                {post.likes ? post.likes.length : 0} lượt thích
-              </span>
+            </div>
+
+            {/* Product Description */}
+            <div style={styles.card}>
+              <div style={{ display: 'flex', gap: 24, alignItems: 'center', marginBottom: 16 }}>
+                <div style={{...styles.detailItem, ...styles.categoryDetail}}>
+                  <strong>Danh mục:</strong> {post.category}
+                </div>
+                <div style={{...styles.detailItem, ...styles.conditionDetail}}>
+                  <strong>Tình trạng:</strong> {post.condition}
+                </div>
+              </div>
+              <h2 style={styles.sectionTitle}>Nội dung sản phẩm</h2>
+              <div style={styles.description}>
+                {post.content || post.description || 'Không có nội dung'}
+              </div>
+            </div>
+
+            {/* Images and Likes */}
+            <div style={styles.card}>
+              <h2 style={styles.sectionTitle}>Hình ảnh sản phẩm</h2>
+              {post.image && post.image.length > 0 ? (
+                <div style={styles.imageGrid} className="image-grid">
+                  {post.image.map((img, idx) => (
+                    <div key={idx} style={styles.imageItem} className="image-item">
+                      <img
+                        src={img}
+                        alt={`Ảnh sản phẩm ${idx + 1}`}
+                        style={styles.image}
+                        onClick={() => {
+                          setActiveImageIndex(idx);
+                          setIsImageModalOpen(true);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={styles.noImages}>
+                  <div style={styles.noImagesIcon}>
+                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p>Không có hình ảnh</p>
+                </div>
+              )}
+              {/* Likes - dưới grid ảnh */}
+              <div style={{...styles.likesContainer, marginTop: 12}}>
+                <Heart size={20} fill="currentColor" />
+                <span>
+                  {post.likes ? post.likes.length : 0} lượt thích
+                </span>
+              </div>
             </div>
           </div>
         </div>
