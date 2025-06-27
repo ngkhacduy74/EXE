@@ -348,7 +348,6 @@ export default function ChatWidget() {
             throw new Error("Không tìm thấy tên người dùng hợp lệ");
           }
         } catch (error) {
-          console.error("Lỗi phân tích dữ liệu người dùng:", error);
           handleAuthError();
         }
       } else {

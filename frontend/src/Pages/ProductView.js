@@ -847,11 +847,9 @@ const ProductView = () => {
           </Col>
         </Row>
 
-        {/* Product Videos - HIỂN THỊ TO Ở DƯỚI CÙNG */}
-        {product.video && Array.isArray(product.video) && product.video.length > 0 && (
-          <section className="py-5" style={{ background: '#fff' }}>
-            <Container>
-              <div className="mb-4 text-center">
+
+
+        <div className="mb-4 text-center">
                 <h2 className="fw-bold mb-3">
                   <i className="fas fa-info-circle text-primary me-2"></i>Mô tả sản phẩm
                 </h2>
@@ -861,6 +859,12 @@ const ProductView = () => {
                   </p>
                 )}
               </div>
+
+        {/* Product Videos - HIỂN THỊ TO Ở DƯỚI CÙNG */}
+        {product.video && Array.isArray(product.video) && product.video.length > 0 && (
+          <section className="py-5" style={{ background: '#fff' }}>
+            <Container>
+             
               <Row className="justify-content-center">
                 {product.video.map((vid, index) => {
                   const isYouTube = isYouTubeUrl(vid);

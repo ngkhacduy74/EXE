@@ -262,7 +262,7 @@ const CreateProduct = () => {
 
   // Add new image URL input (max 3)
   const addImageUrl = () => {
-    if (imageUrls.length < 3) {
+    if (imageUrls.length < 5) {
       setImageUrls([...imageUrls, ""]);
     }
   };
@@ -1036,7 +1036,7 @@ const CreateProduct = () => {
                       <Link size={20} className="me-2" />
                       URL Hình ảnh sản phẩm
                     </h5>
-                    {imageUrls.length < 3 && (
+                    {imageUrls.length < 5 && (
                       <Button
                         variant="outline-primary"
                         size="sm"
@@ -1055,10 +1055,10 @@ const CreateProduct = () => {
                           type="file"
                           accept="image/*"
                           onChange={handleUploadImageFile}
-                          disabled={imageUrls.length >= 3}
+                          disabled={imageUrls.length >= 5}
                         />
                         <Form.Text className="text-muted">
-                          Tối đa 3 ảnh. Ảnh upload sẽ tự động thêm vào danh sách
+                          Tối đa 5 ảnh. Ảnh upload sẽ tự động thêm vào danh sách
                           URL.
                         </Form.Text>
                       </Form.Group>
