@@ -263,19 +263,13 @@ const UserCreateProduct = () => {
   // Sử dụng toPlainText cho mọi trường hợp nhập/chỉnh sửa mô tả
   const handleDescriptionInput = () => {
     if (descriptionDivRef.current) {
-      // Loại bỏ mọi tag HTML, chỉ giữ lại text và ảnh
-      let html = descriptionDivRef.current.innerHTML;
-      // Giữ lại ảnh, loại bỏ tag khác
-      html = html.replace(/<(?!img\b)[^>]+>/gi, "");
-      // Loại bỏ style khỏi img
-      html = html.replace(/<img([^>]*)style=["'][^"']*["']/gi, "<img$1");
-      descriptionDivRef.current.innerHTML = html;
-      // Lấy text thuần (không lấy alt của img)
-      let text = Array.from(descriptionDivRef.current.childNodes)
-        .filter((node) => node.nodeType === 3)
-        .map((node) => node.textContent)
-        .join(" ");
-      text = toPlainText(text);
+      // Lấy text thuần từ contentEditable div
+      let text =
+        descriptionDivRef.current.textContent ||
+        descriptionDivRef.current.innerText ||
+        "";
+
+      // Cập nhật formData với text thuần
       setFormData((prev) => ({
         ...prev,
         description: text.trim(),
@@ -286,11 +280,7 @@ const UserCreateProduct = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    let newValue = value;
-    if (name === "description") {
-      newValue = toPlainText(value);
-    }
-    setFormData((prev) => ({ ...prev, [name]: newValue }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
