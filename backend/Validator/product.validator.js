@@ -51,28 +51,36 @@ const ProductSchema = Joi.object({
   }),
 
   description: Joi.string().required(),
-  size: Joi.string().required(),
+  size: Joi.string().optional().allow(null, "").messages({
+    "string.base": "Kích thước phải là chuỗi",
+  }),
 
-  weight: Joi.number()
-    .min(0)
-    .required()
-    .messages({ "number.min": "Cân nặng không thể nhỏ hơn 0" }),
+  weight: Joi.number().min(0).optional().allow(null).messages({
+    "number.base": "Cân nặng phải là số",
+    "number.min": "Cân nặng không thể nhỏ hơn 0",
+  }),
 
   warranty_period: Joi.number()
     .integer()
     .min(0)
     .optional()
-    .messages({ "number.min": "Thời gian bảo hành không thể âm" }),
+    .allow(null)
+    .messages({
+      "number.base": "Thời gian bảo hành phải là số",
+      "number.min": "Thời gian bảo hành không thể âm",
+    }),
 
-  capacity: Joi.number()
-    .min(0)
-    .optional()
-    .messages({ "number.min": "Dung tích không thể âm" }),
+  capacity: Joi.number().min(0).optional().allow(null).messages({
+    "number.base": "Dung tích phải là số",
+    "number.min": "Dung tích không thể âm",
+  }),
 
   voltage: Joi.string()
     .pattern(/^\d+(V)?$/)
     .optional()
+    .allow(null, "")
     .messages({
+      "string.base": "Điện áp phải là chuỗi",
       "string.pattern.base": "Điện áp không hợp lệ (ví dụ: 220V)",
     }),
 
@@ -100,7 +108,9 @@ const ProductSchema = Joi.object({
   business_phone: Joi.string()
     .pattern(/^\d{10,15}$/)
     .optional()
+    .allow(null, "")
     .messages({
+      "string.base": "Số điện thoại doanh nghiệp phải là chuỗi",
       "string.pattern.base": "Số điện thoại doanh nghiệp không hợp lệ",
     }),
 });
