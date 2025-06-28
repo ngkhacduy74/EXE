@@ -321,7 +321,7 @@ const UserCreateProduct = () => {
     if (errors.images) setErrors((prev) => ({ ...prev, images: "" }));
   };
   const addImageUrl = () => {
-    if (imageUrls.length < 3) setImageUrls([...imageUrls, ""]);
+    if (imageUrls.length < 5) setImageUrls([...imageUrls, ""]);
   };
   const removeImageUrl = (index) => {
     if (imageUrls.length > 1)
@@ -362,7 +362,7 @@ const UserCreateProduct = () => {
       if (urls.length > 0) {
         setImageUrls((prev) => {
           const combined = [...prev, ...urls];
-          return combined.slice(0, 3);
+          return combined.slice(0, 5);
         });
       } else {
         alert("Không lấy được URL ảnh từ server!");
@@ -403,11 +403,14 @@ const UserCreateProduct = () => {
       newErrors.business_phone = "Số điện thoại là bắt buộc";
     if (!formData.description.trim())
       newErrors.description = "Mô tả là bắt buộc";
-    if (!formData.size.trim()) newErrors.size = "Kích thước là bắt buộc";
-    if (!formData.weight || parseFloat(formData.weight) <= 0)
+    if (formData.weight && parseFloat(formData.weight) <= 0)
       newErrors.weight = "Trọng lượng phải lớn hơn 0";
-    if (!formData.voltage.trim()) newErrors.voltage = "Điện áp là bắt buộc";
-    if (!formData.quantity || parseInt(formData.quantity) <= 0)
+    if (
+      formData.voltage &&
+      !/^\d+(V)?$/.test(formData.voltage.replace(/\s/g, ""))
+    )
+      newErrors.voltage = "Điện áp không hợp lệ (ví dụ: 220V)";
+    if (formData.quantity && parseInt(formData.quantity) <= 0)
       newErrors.quantity = "Số lượng phải lớn hơn 0";
     if (formData.features.some((f) => !f.title.trim() || !f.description.trim()))
       newErrors.features = "Tất cả tính năng phải có tiêu đề và mô tả";
@@ -472,7 +475,6 @@ const UserCreateProduct = () => {
       <Header />
 
       <Container style={{ maxWidth: 800, margin: "40px auto" }}>
-
         <style>{`
         .user-create-product-card {
           background: #fff;
@@ -554,8 +556,8 @@ const UserCreateProduct = () => {
               </h3>
             </div>
             <div className="user-create-product-tip">
-              <b>Gợi ý:</b> Hãy điền thông tin sản phẩm thật chi tiết, hình ảnh rõ
-              nét và giá hợp lý để tăng khả năng bán hàng!
+              <b>Gợi ý:</b> Hãy điền thông tin sản phẩm thật chi tiết, hình ảnh
+              rõ nét và giá hợp lý để tăng khả năng bán hàng!
             </div>
             {error && <Alert variant="danger">{error}</Alert>}
             {success && <Alert variant="success">{success}</Alert>}
@@ -709,7 +711,7 @@ const UserCreateProduct = () => {
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label className="user-create-product-label">
-                          Kích thước (cm) *
+                          Kích thước (cm)
                         </Form.Label>
                         <Form.Control
                           type="text"
@@ -727,7 +729,7 @@ const UserCreateProduct = () => {
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label className="user-create-product-label">
-                          Trọng lượng *
+                          Trọng lượng
                         </Form.Label>
                         <Form.Control
                           type="text"
@@ -747,7 +749,7 @@ const UserCreateProduct = () => {
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label className="user-create-product-label">
-                          Điện áp *
+                          Điện áp
                         </Form.Label>
                         <Form.Control
                           type="text"
@@ -791,11 +793,16 @@ const UserCreateProduct = () => {
                             type="text"
                             value={feature.title}
                             onChange={(e) =>
-                              handleFeatureChange(index, "title", e.target.value)
+                              handleFeatureChange(
+                                index,
+                                "title",
+                                e.target.value
+                              )
                             }
                             placeholder={`Tiêu đề tính năng ${index + 1}`}
                             isInvalid={!!errors.features}
-                            maxLength={100}
+                            minLength={1}
+                            maxLength={25}
                           />
                         </Col>
                         <Col md={6}>
@@ -849,7 +856,6 @@ const UserCreateProduct = () => {
                     style={{ background: "#fff", borderRadius: 12 }}
                   >
                     <Card.Header
-                      className="d-flex align-items-center"
                       style={{
                         background: "#f6f8fa",
                         borderRadius: "12px 12px 0 0",
@@ -869,11 +875,11 @@ const UserCreateProduct = () => {
                             type="file"
                             accept="image/*"
                             onChange={handleUploadImageFile}
-                            disabled={imageUrls.length >= 3}
+                            disabled={imageUrls.length >= 5}
                           />
                           <Form.Text className="text-muted">
-                            Tối đa 3 ảnh. Ảnh upload sẽ tự động thêm vào danh sách
-                            URL.
+                            Tối đa 5 ảnh. Ảnh upload sẽ tự động thêm vào danh
+                            sách URL.
                           </Form.Text>
                         </Form.Group>
                       </div>
@@ -938,12 +944,12 @@ const UserCreateProduct = () => {
                         variant="outline-primary"
                         size="sm"
                         onClick={addImageUrl}
-                        disabled={imageUrls.length >= 3}
+                        disabled={imageUrls.length >= 5}
                       >
                         <Plus size={16} /> Thêm ảnh
                       </Button>
                       <Form.Text className="text-muted d-block">
-                        Tối đa 3 URL hình ảnh. Hỗ trợ: JPG, PNG, GIF, WebP
+                        Tối đa 5 URL hình ảnh. Hỗ trợ: JPG, PNG, GIF, WebP
                       </Form.Text>
                       {errors.images && (
                         <Form.Text className="text-danger d-block">
@@ -1064,7 +1070,6 @@ const UserCreateProduct = () => {
             </Toast>
           </Card.Body>
         </Card>
-
       </Container>
       <Footer />
     </div>
