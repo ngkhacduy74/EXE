@@ -104,6 +104,7 @@ const App = () => {
             />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/product-browser" element={<ProductBrowser />} />
+            <Route path="/products" element={<ProductBrowser />} />
             <Route path="/compare-product" element={<CompareProduct />} />
             <Route path="/user-products" element={<UserProductManager />} />
             <Route path="/update-product/:id" element={<UpdateProduct />} />

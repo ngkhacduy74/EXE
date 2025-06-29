@@ -3,14 +3,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { Search, Star, X, Plus, Menu, ChevronDown } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { authApiClient } from "../Services/auth.service";
+import SearchWithAutocomplete from "./SearchWithAutocomplete";
 
 function Header() {
   const { user, loading, handleLogout } = useAuth();
-  const [searchTerm, setSearchTerm] = useState("");
   const [brands, setBrands] = useState([]);
   const [showBrandsDropdown, setShowBrandsDropdown] = useState(false);
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
-  const [splitKeywords, setSplitKeywords] = useState([]);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   // Danh sách các danh mục sản phẩm
   const categories = [
@@ -25,228 +25,16 @@ function Header() {
     "Máy Pha Cafe",
     "Bàn Đông",
     "Bếp Từ Công Nghiệp",
-    "Máy Làm Kem"
+    "Máy Làm Kem",
   ];
 
-  // Enhanced states for product suggestions
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-  const [recentSearches, setRecentSearches] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-
-  const searchRef = useRef(null);
-  const suggestionsRef = useRef(null);
   const headerRef = useRef(null);
   const mobileSearchRef = useRef(null);
-  const mobileSuggestionsRef = useRef(null);
   const navigate = useNavigate();
 
-  // Load recent searches from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("recentSearches");
-    if (saved) {
-      try {
-        setRecentSearches(JSON.parse(saved));
-      } catch (e) {
-        console.error("Error loading recent searches:", e);
-      }
-    }
-  }, []);
-
-  // Fetch all products for better search
-  useEffect(() => {
-    const fetchAllProducts = async () => {
-      try {
-        const response = await authApiClient.get("/product/");
-
-        const productData = Array.isArray(response.data.data)
-          ? response.data.data
-          : [];
-        setAllProducts(productData);
-      } catch (error) {
-        console.error("Error fetching all products:", error);
-        setAllProducts([]);
-      }
-    };
-
-    fetchAllProducts();
-  }, []);
-
-  // Function to get first image safely
-  const getFirstImage = (product) => {
-    // Kiểm tra nếu có mảng images và có ít nhất 1 ảnh
-    if (
-      product.images &&
-      Array.isArray(product.images) &&
-      product.images.length > 0
-    ) {
-      return product.images[0];
-    }
-    // Fallback về image đơn lẻ nếu có
-    if (product.image) {
-      return product.image;
-    }
-    // Fallback về ảnh mặc định
-    return "./styles/images/product-thumb-1.png";
-  };
-
-  // Enhanced debounced search suggestions
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchTerm.trim() && searchTerm.length >= 2) {
-        fetchEnhancedSuggestions(searchTerm);
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, allProducts]);
-
-  // Close suggestions when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      // Check if click is on dropdown menu or dropdown toggle
-      const isDropdownClick = event.target.closest('.dropdown-menu') || 
-                             event.target.closest('[data-bs-toggle="dropdown"]') ||
-                             event.target.closest('.dropdown') ||
-                             event.target.closest('.header-dropdown-menu') ||
-                             event.target.closest('.header-user-button');
-      
-      if (isDropdownClick) {
-        return; // Don't close suggestions if clicking on dropdown
-      }
-
-      // Check desktop search
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target) &&
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target)
-      ) {
-        // Only close if not in mobile search
-        if (!isMobileSearchOpen) {
-          setShowSuggestions(false);
-        }
-      }
-
-      // Check mobile search
-      if (
-        mobileSearchRef.current &&
-        !mobileSearchRef.current.contains(event.target) &&
-        mobileSuggestionsRef.current &&
-        !mobileSuggestionsRef.current.contains(event.target)
-      ) {
-        // Only close if in mobile search
-        if (isMobileSearchOpen) {
-          setShowSuggestions(false);
-        }
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isMobileSearchOpen]);
-
-  // Enhanced product suggestions with detailed info
-  const fetchEnhancedSuggestions = async (query) => {
-    try {
-      setLoadingSuggestions(true);
-
-      // Tách từ khóa dựa trên khoảng trắng
-      const keywords = query.trim().split(/\s+/).filter(keyword => keyword.length > 0);
-      setSplitKeywords(keywords);
-
-      // Filter products locally for faster response
-      const filteredProducts = allProducts
-        .filter((product) => {
-          // Tìm kiếm với từ khóa gốc
-          const originalMatch = 
-            product.name?.toLowerCase().includes(query.toLowerCase()) ||
-            product.brand?.toLowerCase().includes(query.toLowerCase()) ||
-            product.description?.toLowerCase().includes(query.toLowerCase());
-
-          // Tìm kiếm với từ khóa đã tách
-          const splitMatch = keywords.length > 1 && keywords.every(keyword => 
-            product.name?.toLowerCase().includes(keyword.toLowerCase()) ||
-            product.brand?.toLowerCase().includes(keyword.toLowerCase()) ||
-            product.description?.toLowerCase().includes(keyword.toLowerCase())
-          );
-
-          return originalMatch || splitMatch;
-        })
-        .slice(0, 8)
-        .map((product) => ({
-          id: product.id,
-          name: product.name,
-          brand: product.brand,
-          category: product.category,
-          price: product.price,
-          image: getFirstImage(product),
-          rating: product.rating,
-          quantity: product.quantity,
-          description: product.description,
-          type: "product",
-        }));
-
-      setSuggestions(filteredProducts);
-      setShowSuggestions(filteredProducts.length > 0);
-    } catch (error) {
-      console.error("Error fetching suggestions:", error);
-      setSuggestions([]);
-      setShowSuggestions(false);
-    } finally {
-      setLoadingSuggestions(false);
-    }
-  };
-
-  // Format price like in Compare Product
-  const formatPrice = (price) => {
-    if (!price) return "Chưa có giá";
-    return `${parseFloat(price).toLocaleString("vi-VN")} VND`;
-  };
-
-  // Render star rating like in Compare Product
-  const renderStars = (rating) => {
-    if (!rating) return <span className="text-muted small">Chưa đánh giá</span>;
-
-    return (
-      <div className="d-flex align-items-center">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            size={12}
-            fill={i < Math.floor(rating) ? "currentColor" : "none"}
-            className="text-warning"
-          />
-        ))}
-        <span className="ms-1 small text-muted">({rating})</span>
-      </div>
-    );
-  };
-
-  // Save search term to recent searches
-  const saveRecentSearch = (term) => {
-    if (!term.trim()) return;
-
-    const newSearches = [
-      term.trim(),
-      ...recentSearches.filter((s) => s !== term.trim()),
-    ].slice(0, 5);
-
-    setRecentSearches(newSearches);
-    localStorage.setItem("recentSearches", JSON.stringify(newSearches));
-  };
-
-  // Clear recent searches
-  const clearRecentSearches = () => {
-    setRecentSearches([]);
-    localStorage.removeItem("recentSearches");
+  // Handle search from autocomplete
+  const handleSearch = (searchQuery) => {
+    navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
   };
 
   // Fetch brands
@@ -254,17 +42,13 @@ function Header() {
     const fetchBrands = async () => {
       try {
         const response = await authApiClient.get("/product/");
-
-        const productData = Array.isArray(response.data.data)
-          ? response.data.data
-          : [];
+        const products = response.data.data || [];
 
         // Extract unique brands
         const uniqueBrands = [
-          ...new Set(productData.map((p) => p.brand).filter(Boolean)),
+          ...new Set(products.map((product) => product.brand).filter(Boolean)),
         ];
-
-        setBrands(uniqueBrands);
+        setBrands(uniqueBrands.slice(0, 10)); // Limit to 10 brands
       } catch (error) {
         console.error("Error fetching brands:", error);
         setBrands([]);
@@ -278,180 +62,21 @@ function Header() {
     handleLogout();
   };
 
-  const handleSearch = (e, searchQuery = null) => {
-    if (e) e.preventDefault();
-
-    const query = searchQuery || searchTerm;
-    if (query.trim()) {
-      saveRecentSearch(query.trim());
-    }
-
-    const params = new URLSearchParams();
-
-    if (query.trim()) {
-      // Tách từ khóa và thêm vào URL params
-      const keywords = query.trim().split(/\s+/).filter(keyword => keyword.length > 0);
-      
-      // Thêm từ khóa gốc
-      params.append("search", query.trim());
-      
-      // Thêm từ khóa đã tách nếu có nhiều hơn 1 từ
-      if (keywords.length > 1) {
-        params.append("keywords", keywords.join(","));
-      }
-    }
-
-    const queryString = params.toString();
-    navigate(`/product-browser${queryString ? `?${queryString}` : ""}`);
-    setShowSuggestions(false);
-
-    // Close mobile search offcanvas if open
-    if (isMobileSearchOpen) {
-      const offcanvasElement = document.getElementById("offcanvasSearch");
-      if (offcanvasElement) {
-        // Use data attributes to close offcanvas
-        const closeButton = offcanvasElement.querySelector(
-          '[data-bs-dismiss="offcanvas"]'
-        );
-        if (closeButton) {
-          closeButton.click();
-        }
-      }
-      setIsMobileSearchOpen(false);
-    }
-  };
-
-  const handleSuggestionClick = (suggestion) => {
-    if (suggestion.type === "product") {
-      // Scroll to top before navigating
-      window.scrollTo(0, 0);
-      navigate(`/productView/${suggestion.id}`);
-    } else {
-      setSearchTerm(suggestion.name);
-      handleSearch(null, suggestion.name);
-    }
-    setShowSuggestions(false);
-
-    // Close mobile search offcanvas if open
-    if (isMobileSearchOpen) {
-      const offcanvasElement = document.getElementById("offcanvasSearch");
-      if (offcanvasElement) {
-        // Use data attributes to close offcanvas
-        const closeButton = offcanvasElement.querySelector(
-          '[data-bs-dismiss="offcanvas"]'
-        );
-        if (closeButton) {
-          closeButton.click();
-        }
-      }
-      setIsMobileSearchOpen(false);
-    }
-  };
-
-  const handleSearchFocus = () => {
-    // Show suggestions if there are recent searches or current search term is long enough
-    if (searchTerm.trim().length >= 2 && suggestions.length > 0) {
-      setShowSuggestions(true);
-    } else if (recentSearches.length > 0) {
-      setShowSuggestions(true);
-    }
-
-    // For mobile, always show suggestions when focused if there are recent searches
-    if (isMobileSearchOpen && recentSearches.length > 0) {
-      setShowSuggestions(true);
-    }
-  };
-
   const handleBrandClick = (brand) => {
-    // Navigate to product browser with brand filter in URL
-    navigate(`/product-browser?brand=${encodeURIComponent(brand)}`);
-    setShowBrandsDropdown(false);
+    navigate(`/products?brand=${encodeURIComponent(brand)}`);
   };
 
   const handleCategoryClick = (category) => {
-    // Navigate to product browser with category filter in URL
-    navigate(`/product-browser?category=${encodeURIComponent(category)}`);
-    setShowCategoriesDropdown(false);
+    navigate(`/products?category=${encodeURIComponent(category)}`);
   };
 
-  // Ensure sticky positioning works
-  useEffect(() => {
-    const header = headerRef.current;
-    if (header) {
-      // Force sticky positioning
-      header.style.position = "fixed";
-      header.style.top = "0";
-      header.style.left = "0";
-      header.style.right = "0";
-      header.style.zIndex = "1030";
-      header.style.backgroundColor = "white";
-      header.style.boxShadow = "0 2px 10px rgba(0,0,0,0.1)";
-      header.style.width = "100%";
-    }
-  }, []);
-
-  // Monitor mobile search offcanvas state
-  useEffect(() => {
-    const offcanvasElement = document.getElementById("offcanvasSearch");
-    if (offcanvasElement) {
-      const handleShow = () => setIsMobileSearchOpen(true);
-      const handleHide = () => {
-        setIsMobileSearchOpen(false);
-        setShowSuggestions(false); // Close suggestions when offcanvas closes
-      };
-
-      offcanvasElement.addEventListener("shown.bs.offcanvas", handleShow);
-      offcanvasElement.addEventListener("hidden.bs.offcanvas", handleHide);
-
-      return () => {
-        offcanvasElement.removeEventListener("shown.bs.offcanvas", handleShow);
-        offcanvasElement.removeEventListener("hidden.bs.offcanvas", handleHide);
-      };
-    }
-  }, []);
-
-  // Show suggestions when mobile search is opened
-  useEffect(() => {
-    if (isMobileSearchOpen) {
-      // Always show suggestions if there are recent searches
-      if (recentSearches.length > 0) {
-        setShowSuggestions(true);
-      }
-      // Or if there's a search term with suggestions
-      else if (searchTerm.trim().length >= 2 && suggestions.length > 0) {
-        setShowSuggestions(true);
-      }
-
-      // Focus on mobile search input when opened
-      setTimeout(() => {
-        const mobileInput = document.getElementById("mobileSearchInput");
-        if (mobileInput) {
-          mobileInput.focus();
-        }
-      }, 100);
-    }
-  }, [
-    isMobileSearchOpen,
-    recentSearches.length,
-    searchTerm,
-    suggestions.length,
-  ]);
-
-  // Ensure header is fixed positioned
-  useEffect(() => {
-    const header = headerRef.current;
-    if (header) {
-      // Force fixed positioning
-      header.style.position = "fixed";
-      header.style.top = "0";
-      header.style.left = "0";
-      header.style.right = "0";
-      header.style.zIndex = "1030";
-      header.style.backgroundColor = "white";
-      header.style.boxShadow = "0 2px 10px rgba(0,0,0,0.1)";
-      header.style.width = "100%";
-    }
-  }, []);
+  // Mobile search handlers
+  const handleMobileSearch = {
+    handleShow: () => setIsMobileSearchOpen(true),
+    handleHide: () => {
+      setIsMobileSearchOpen(false);
+    },
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -925,188 +550,7 @@ function Header() {
 
           {/* Enhanced Search Bar - Desktop */}
           <div className="col-lg-6 d-none d-lg-block position-relative">
-            <div className="search-bar" ref={searchRef}>
-              <form onSubmit={handleSearch}>
-                <div className="input-group shadow-sm rounded-pill overflow-hidden">
-                  <input
-                    type="text"
-                    className="form-control border-0"
-                    placeholder="Tìm kiếm hơn 20,000 sản phẩm..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onFocus={handleSearchFocus}
-                    style={{ boxShadow: "none", borderRadius: "50px 0 0 50px" }}
-                    autoComplete="off"
-                  />
-                  <button
-                    type="submit"
-                    className="btn btn-primary px-4"
-                    style={{ borderRadius: "0 50px 50px 0" }}
-                  >
-                    <Search size={20} />
-                  </button>
-                </div>
-              </form>
-
-              {/* Enhanced Search Suggestions Dropdown */}
-              {showSuggestions && (
-                <div
-                  ref={suggestionsRef}
-                  className="position-absolute w-100 bg-white shadow-lg border rounded mt-1"
-                  style={{
-                    zIndex: 1050,
-                    maxHeight: "500px",
-                    overflowY: "auto",
-                    top: "100%",
-                  }}
-                >
-                  {loadingSuggestions ? (
-                    <div className="p-4 text-center">
-                      <div
-                        className="spinner-border spinner-border-sm text-primary"
-                        role="status"
-                      >
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                      <div className="mt-2 text-muted small">
-                        Đang tìm kiếm sản phẩm...
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      {/* Recent Searches */}
-                      {recentSearches.length > 0 && !searchTerm.trim() && (
-                        <div className="border-bottom">
-                          <div className="d-flex justify-content-between align-items-center p-3 pb-2">
-                            <small className="text-muted fw-bold">
-                              Tìm kiếm gần đây
-                            </small>
-                            <button
-                              className="btn btn-sm btn-link text-muted p-0"
-                              onClick={clearRecentSearches}
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                          {recentSearches.map((term, index) => (
-                            <div
-                              key={index}
-                              className="suggestion-item py-3 px-3 cursor-pointer d-flex align-items-center"
-                              onClick={() => {
-                                setSearchTerm(term);
-                                handleSearch(null, term);
-                              }}
-                              style={{ cursor: "pointer" }}
-                            >
-                              <Search size={16} className="text-muted me-3" />
-                              <span
-                                style={{ fontSize: "14px", fontWeight: "500" }}
-                              >
-                                {term}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Product Suggestions */}
-                      {suggestions.length > 0 && (
-                        <div className="p-2">
-                          <div className="d-flex justify-content-between align-items-center mb-2 px-2">
-                            <small className="text-muted fw-bold">
-                              Sản phẩm gợi ý
-                            </small>
-                            <small className="text-muted">
-                              {suggestions.length} kết quả
-                            </small>
-                          </div>
-                          
-                          {/* Hiển thị từ khóa đã tách */}
-                          {splitKeywords.length > 1 && (
-                            <div className="mb-3 px-2">
-                              <small className="text-muted d-block mb-1">
-                                Từ khóa tìm kiếm:
-                              </small>
-                              <div className="d-flex flex-wrap gap-1">
-                                {splitKeywords.map((keyword, index) => (
-                                  <span
-                                    key={index}
-                                    className="badge bg-primary bg-opacity-10 text-primary small"
-                                    style={{ fontSize: "11px" }}
-                                  >
-                                    {keyword}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {suggestions.map((suggestion) => (
-                            <div
-                              key={suggestion.id}
-                              className="suggestion-item d-flex align-items-center p-3 cursor-pointer rounded"
-                              onClick={() => handleSuggestionClick(suggestion)}
-                              style={{
-                                cursor: "pointer",
-                              }}
-                            >
-                              {/* Product Info */}
-                              <div className="flex-grow-1 min-w-0">
-                                <div
-                                  className="fw-semibold text-truncate mb-1"
-                                  style={{ maxWidth: "300px" }}
-                                >
-                                  {suggestion.name}
-                                </div>
-
-                                <div className="small text-muted mb-1">
-                                  <span className="badge bg-light text-dark me-2">
-                                    {suggestion.brand}
-                                  </span>
-                                  <span className="text-muted">
-                                    {suggestion.category}
-                                  </span>
-                                </div>
-
-                                {/* Price and Rating */}
-                                <div className="d-flex justify-content-between align-items-center">
-                                  <div className="text-primary fw-bold small">
-                                    {formatPrice(suggestion.price)}
-                                  </div>
-
-                                  {suggestion.rating && (
-                                    <div className="small">
-                                      {renderStars(suggestion.rating)}
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Stock Status */}
-                                {suggestion.quantity !== undefined && (
-                                  <div className="mt-1">
-                                    <span
-                                      className={`badge ${
-                                        suggestion.quantity > 0
-                                          ? "bg-success"
-                                          : "bg-danger"
-                                      } small`}
-                                    >
-                                      {suggestion.quantity > 0
-                                        ? `Còn ${suggestion.quantity}`
-                                        : "Hết hàng"}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+            <SearchWithAutocomplete onSearch={handleSearch} />
           </div>
 
           {/* User Actions - Right Side */}
@@ -1252,17 +696,17 @@ function Header() {
                         padding: "8px 0",
                       }}
                     >
-                        <li>
-                          <button
-                            className="dropdown-item px-3 py-2 header-dropdown-item"
-                            type="button"
-                            onClick={() => navigate("/compare-product")}
-                          >
-                            <i className="bi bi-arrow-left-right"></i>
-                            So sánh sản phẩm
-                          </button>
-                        </li>
-                   
+                      <li>
+                        <button
+                          className="dropdown-item px-3 py-2 header-dropdown-item"
+                          type="button"
+                          onClick={() => navigate("/compare-product")}
+                        >
+                          <i className="bi bi-arrow-left-right"></i>
+                          So sánh sản phẩm
+                        </button>
+                      </li>
+
                       <li>
                         <button
                           className="dropdown-item px-3 py-2 header-dropdown-item"
@@ -1467,182 +911,11 @@ function Header() {
           ></button>
         </div>
         <div className="offcanvas-body">
-          <div className="search-bar" ref={mobileSearchRef}>
-            <form onSubmit={handleSearch}>
-              <div className="row g-2 mb-3">
-                <div className="col-9">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Tìm kiếm hơn 20,000 sản phẩm..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onFocus={handleSearchFocus}
-                    autoComplete="off"
-                    id="mobileSearchInput"
-                  />
-                </div>
-                <div className="col-3">
-                  <button className="btn btn-primary w-100" type="submit">
-                    <Search size={20} />
-                  </button>
-                </div>
-              </div>
-            </form>
-
-            {/* Mobile Search Suggestions */}
-            {showSuggestions && (
-              <div
-                ref={mobileSuggestionsRef}
-                className="mobile-search-suggestions suggestions-container"
-              >
-                {loadingSuggestions ? (
-                  <div className="p-4 text-center">
-                    <div
-                      className="spinner-border spinner-border-sm text-primary"
-                      role="status"
-                    >
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                    <div className="mt-2 text-muted small">
-                      Đang tìm kiếm sản phẩm...
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {/* Recent Searches */}
-                    {recentSearches.length > 0 && !searchTerm.trim() && (
-                      <div className="border-bottom">
-                        <div className="d-flex justify-content-between align-items-center p-3 pb-2">
-                          <small className="text-muted fw-bold">
-                            Tìm kiếm gần đây
-                          </small>
-                          <button
-                            className="btn btn-sm btn-link text-muted p-0"
-                            onClick={clearRecentSearches}
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                        {recentSearches.map((term, index) => (
-                          <div
-                            key={index}
-                            className="suggestion-item py-3 px-3 cursor-pointer d-flex align-items-center"
-                            onClick={() => {
-                              setSearchTerm(term);
-                              handleSearch(null, term);
-                            }}
-                            style={{ cursor: "pointer" }}
-                          >
-                            <Search size={16} className="text-muted me-3" />
-                            <span
-                              style={{ fontSize: "14px", fontWeight: "500" }}
-                            >
-                              {term}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Product Suggestions */}
-                    {suggestions.length > 0 && (
-                      <div className="p-2">
-                        <div className="d-flex justify-content-between align-items-center mb-2 px-2">
-                          <small className="text-muted fw-bold">
-                            Sản phẩm gợi ý
-                          </small>
-                          <small className="text-muted">
-                            {suggestions.length} kết quả
-                          </small>
-                        </div>
-                        
-                        {/* Hiển thị từ khóa đã tách */}
-                        {splitKeywords.length > 1 && (
-                          <div className="mb-3 px-2">
-                            <small className="text-muted d-block mb-1">
-                              Từ khóa tìm kiếm:
-                            </small>
-                            <div className="d-flex flex-wrap gap-1">
-                              {splitKeywords.map((keyword, index) => (
-                                <span
-                                  key={index}
-                                  className="badge bg-primary bg-opacity-10 text-primary small"
-                                  style={{ fontSize: "11px" }}
-                                >
-                                  {keyword}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {suggestions.map((suggestion) => (
-                          <div
-                            key={suggestion.id}
-                            className="suggestion-item d-flex align-items-center p-3 cursor-pointer rounded"
-                            onClick={() => handleSuggestionClick(suggestion)}
-                            style={{
-                              cursor: "pointer",
-                            }}
-                          >
-                            {/* Product Info */}
-                            <div className="flex-grow-1 min-w-0">
-                              <div
-                                className="fw-semibold text-truncate mb-1"
-                                style={{ maxWidth: "300px" }}
-                              >
-                                {suggestion.name}
-                              </div>
-
-                              <div className="small text-muted mb-1">
-                                <span className="badge bg-light text-dark me-2">
-                                  {suggestion.brand}
-                                </span>
-                                <span className="text-muted">
-                                  {suggestion.category}
-                                </span>
-                              </div>
-
-                              {/* Price and Rating */}
-                              <div className="d-flex justify-content-between align-items-center">
-                                <div className="text-primary fw-bold small">
-                                  {formatPrice(suggestion.price)}
-                                </div>
-
-                                {suggestion.rating && (
-                                  <div className="small">
-                                    {renderStars(suggestion.rating)}
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Stock Status */}
-                              {suggestion.quantity !== undefined && (
-                                <div className="mt-1">
-                                  <span
-                                    className={`badge ${
-                                      suggestion.quantity > 0
-                                        ? "bg-success"
-                                        : "bg-danger"
-                                    } small`}
-                                  >
-                                    {suggestion.quantity > 0
-                                      ? `Còn ${suggestion.quantity}`
-                                      : "Hết hàng"}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+          <SearchWithAutocomplete
+            onSearch={handleSearch}
+            size="lg"
+            placeholder="Tìm kiếm hơn 20,000 sản phẩm..."
+          />
         </div>
       </div>
 
@@ -1654,7 +927,10 @@ function Header() {
         aria-labelledby="offcanvasNavbarLabel"
       >
         <div className="offcanvas-header">
-          <h5 className="offcanvas-title mobile-nav-header" id="offcanvasNavbarLabel">
+          <h5
+            className="offcanvas-title mobile-nav-header"
+            id="offcanvasNavbarLabel"
+          >
             Menu
           </h5>
           <button
@@ -1667,7 +943,10 @@ function Header() {
         <div className="offcanvas-body">
           <ul className="navbar-nav">
             <li className="nav-item">
-              <a className="nav-link fw-medium py-3 border-bottom mobile-nav-item" href="/">
+              <a
+                className="nav-link fw-medium py-3 border-bottom mobile-nav-item"
+                href="/"
+              >
                 Trang chủ
               </a>
             </li>
@@ -1702,8 +981,8 @@ function Header() {
             ))}
             {categories.length > 8 && (
               <li className="nav-item">
-                <a 
-                  className="nav-link ps-3 text-primary mobile-nav-category" 
+                <a
+                  className="nav-link ps-3 text-primary mobile-nav-category"
                   href="/product-browser"
                   onClick={(e) => {
                     e.preventDefault();
@@ -1739,7 +1018,10 @@ function Header() {
                 ))}
                 {brands.length > 10 && (
                   <li className="nav-item">
-                    <a className="nav-link ps-3 text-primary mobile-nav-brand" href="/brands">
+                    <a
+                      className="nav-link ps-3 text-primary mobile-nav-brand"
+                      href="/brands"
+                    >
                       Xem tất cả thương hiệu...
                     </a>
                   </li>
@@ -1754,4 +1036,3 @@ function Header() {
 }
 
 export default Header;
-

@@ -13,10 +13,16 @@ import ChatWidget from "../Components/WidgetChat";
 import Header from "../Components/Header";
 import BannerSection from "../Components/BannerSection";
 import BannerSection2 from "../Components/BannerSection2";
+import SearchSuggestions from "../Components/SearchSuggestions";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const navigate = useNavigate();
+
+  const handleSearchSelect = (searchQuery) => {
+    // Navigate to product search page with the selected query
+    navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+  };
 
   return (
     <HelmetProvider>
@@ -74,12 +80,20 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="d-flex justify-content-end mb-3">
-
-            </div>
+            <div className="d-flex justify-content-end mb-3"></div>
 
             <BannerSection2 />
             <BannerSection />
+
+            {/* Search Suggestions Section */}
+            <div className="container-fluid mb-4">
+              <div className="row">
+                <div className="col-12">
+                  <SearchSuggestions onSearchSelect={handleSearchSelect} />
+                </div>
+              </div>
+            </div>
+
             <BrandCarousel />
             <ProductsCarousel />
             <BestSellingCarousel />

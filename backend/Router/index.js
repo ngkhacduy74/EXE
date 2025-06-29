@@ -7,6 +7,7 @@ const productRouter = require("./product.router");
 const postRouter = require("./post.router");
 const userRouter = require("./user.router");
 const chatRouter = require("./chat.router");
+const searchHistoryRouter = require("./searchHistory.route");
 const bannerRouter = require("./banner.route");
 const dashboardRouter = require("./dashboard.route");
 
@@ -18,6 +19,7 @@ module.exports = (app) => {
   app.use("/post", postRouter);
   app.use("/user", userRouter);
   app.use("/chat", chatRouter);
+  app.use("/search-history", searchHistoryRouter);
   app.use("/banner", bannerRouter);
   app.use("/api/dashboard", dashboardRouter);
 };

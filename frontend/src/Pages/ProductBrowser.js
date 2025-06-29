@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import "./styles/style.css";
 import "./styles/vendor.css";
 import Footer from "../Components/Footer";
@@ -22,18 +22,37 @@ import {
   Sliders,
 } from "lucide-react";
 import { authApiClient } from "../Services/auth.service";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Badge,
+  Spinner,
+  Alert,
+  Form,
+  Button,
+} from "react-bootstrap";
+import SearchWithAutocomplete from "../Components/SearchWithAutocomplete";
+import axios from "axios";
 
 const ProductBrowser = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState("");
-  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
+  const [pagination, setPagination] = useState({});
+  const [filters, setFilters] = useState({
+    search: searchParams.get("search") || "",
+    category: searchParams.get("category") || "",
+    brand: searchParams.get("brand") || "",
+    minPrice: searchParams.get("minPrice") || "",
+    maxPrice: searchParams.get("maxPrice") || "",
+    status: searchParams.get("status") || "",
+  });
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
   const [viewMode, setViewMode] = useState("grid"); // grid or list
@@ -148,9 +167,13 @@ const ProductBrowser = () => {
         setFilteredProducts(productData);
 
         // Extract unique categories and brands
-        const uniqueCategories = [...new Set(productData.map(p => p.category).filter(Boolean))];
-        const uniqueBrands = [...new Set(productData.map(p => p.brand).filter(Boolean))];
-        
+        const uniqueCategories = [
+          ...new Set(productData.map((p) => p.category).filter(Boolean)),
+        ];
+        const uniqueBrands = [
+          ...new Set(productData.map((p) => p.brand).filter(Boolean)),
+        ];
+
         setCategories(uniqueCategories);
         setBrands(uniqueBrands);
       } catch (err) {
@@ -171,38 +194,48 @@ const ProductBrowser = () => {
     let filtered = [...products];
 
     // Search filter
-    if (searchTerm.trim()) {
+    if (filters.search.trim()) {
       filtered = filtered.filter(
         (product) =>
-          product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+          product.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          product.brand?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          product.category
+            ?.toLowerCase()
+            .includes(filters.search.toLowerCase()) ||
+          product.description
+            ?.toLowerCase()
+            .includes(filters.search.toLowerCase())
       );
     }
 
     // Category filter
-    if (selectedCategory) {
+    if (filters.category) {
       filtered = filtered.filter(
-        (product) => product.category === selectedCategory
+        (product) => product.category === filters.category
       );
     }
 
     // Brand filter
-    if (selectedBrand) {
-      filtered = filtered.filter(
-        (product) => product.brand === selectedBrand
-      );
+    if (filters.brand) {
+      filtered = filtered.filter((product) => product.brand === filters.brand);
     }
 
     // Price range filter
-    if (priceRange.min !== "" || priceRange.max !== "") {
+    if (filters.minPrice !== "" || filters.maxPrice !== "") {
       filtered = filtered.filter((product) => {
         const price = parseFloat(product.price) || 0;
-        const min = priceRange.min !== "" ? parseFloat(priceRange.min) : 0;
-        const max = priceRange.max !== "" ? parseFloat(priceRange.max) : Infinity;
+        const min = filters.minPrice !== "" ? parseFloat(filters.minPrice) : 0;
+        const max =
+          filters.maxPrice !== "" ? parseFloat(filters.maxPrice) : Infinity;
         return price >= min && price <= max;
       });
+    }
+
+    // Status filter
+    if (filters.status) {
+      filtered = filtered.filter(
+        (product) => product.status === filters.status
+      );
     }
 
     // Sort products
@@ -227,22 +260,36 @@ const ProductBrowser = () => {
 
     setFilteredProducts(filtered);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [products, searchTerm, selectedCategory, selectedBrand, priceRange, sortBy, sortOrder]);
+  }, [
+    products,
+    filters.search,
+    filters.category,
+    filters.brand,
+    filters.minPrice,
+    filters.maxPrice,
+    filters.status,
+  ]);
 
   // Pagination
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = filteredProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   // Clear all filters
   const clearFilters = () => {
-    setSearchTerm("");
-    setSelectedCategory("");
-    setSelectedBrand("");
-    setPriceRange({ min: "", max: "" });
-    setSortBy("name");
-    setSortOrder("asc");
+    setFilters({
+      search: "",
+      category: "",
+      brand: "",
+      minPrice: "",
+      maxPrice: "",
+      status: "",
+    });
+    setSearchParams({});
   };
 
   // Format price
@@ -275,7 +322,8 @@ const ProductBrowser = () => {
 
   // Get stock status
   const getStockStatus = (quantity) => {
-    if (quantity === undefined || quantity === null) return { variant: "secondary", text: "Liên hệ" };
+    if (quantity === undefined || quantity === null)
+      return { variant: "secondary", text: "Liên hệ" };
     if (quantity === 0) return { variant: "danger", text: "Hết hàng" };
     if (quantity < 10) return { variant: "warning", text: "Sắp hết hàng" };
     return { variant: "success", text: "Còn hàng" };
@@ -296,6 +344,29 @@ const ProductBrowser = () => {
   const handleAddToWishlist = (product) => {
     // Implement add to wishlist functionality
     console.log("Add to wishlist:", product);
+  };
+
+  const handleSearch = (searchQuery) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (searchQuery) {
+      newParams.set("search", searchQuery);
+    } else {
+      newParams.delete("search");
+    }
+    setSearchParams(newParams);
+  };
+
+  const handleFilterChange = (key, value) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set(key, value);
+    } else {
+      newParams.delete(key);
+    }
+    setSearchParams(newParams);
   };
 
   if (loading) {
@@ -342,7 +413,10 @@ const ProductBrowser = () => {
       <div>
         <Helmet>
           <title>Duyệt Sản Phẩm - Vinsaky Shop</title>
-          <meta name="description" content="Duyệt và tìm kiếm sản phẩm tại Vinsaky Shop" />
+          <meta
+            name="description"
+            content="Duyệt và tìm kiếm sản phẩm tại Vinsaky Shop"
+          />
         </Helmet>
 
         {/* Cart Offcanvas */}
@@ -394,12 +468,9 @@ const ProductBrowser = () => {
                         <span className="input-group-text">
                           <Search size={14} />
                         </span>
-                        <input
-                          type="text"
-                          className="form-control"
+                        <SearchWithAutocomplete
+                          onSearch={handleSearch}
                           placeholder="Tìm sản phẩm..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
                         />
                       </div>
                     </div>
@@ -409,8 +480,10 @@ const ProductBrowser = () => {
                       <label className="form-label">Danh mục</label>
                       <select
                         className="form-select"
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        value={filters.category}
+                        onChange={(e) =>
+                          handleFilterChange("category", e.target.value)
+                        }
                       >
                         <option value="">Tất cả danh mục</option>
                         {categories.map((category) => (
@@ -426,8 +499,10 @@ const ProductBrowser = () => {
                       <label className="form-label">Thương hiệu</label>
                       <select
                         className="form-select"
-                        value={selectedBrand}
-                        onChange={(e) => setSelectedBrand(e.target.value)}
+                        value={filters.brand}
+                        onChange={(e) =>
+                          handleFilterChange("brand", e.target.value)
+                        }
                       >
                         <option value="">Tất cả thương hiệu</option>
                         {brands.map((brand) => (
@@ -447,9 +522,9 @@ const ProductBrowser = () => {
                             type="number"
                             className="form-control"
                             placeholder="Từ"
-                            value={priceRange.min}
+                            value={filters.minPrice}
                             onChange={(e) =>
-                              setPriceRange({ ...priceRange, min: e.target.value })
+                              handleFilterChange("minPrice", e.target.value)
                             }
                           />
                         </div>
@@ -458,38 +533,28 @@ const ProductBrowser = () => {
                             type="number"
                             className="form-control"
                             placeholder="Đến"
-                            value={priceRange.max}
+                            value={filters.maxPrice}
                             onChange={(e) =>
-                              setPriceRange({ ...priceRange, max: e.target.value })
+                              handleFilterChange("maxPrice", e.target.value)
                             }
                           />
                         </div>
                       </div>
                     </div>
 
-                    {/* Sort */}
+                    {/* Status Filter */}
                     <div className="mb-3">
-                      <label className="form-label">Sắp xếp theo</label>
+                      <label className="form-label">Tình trạng</label>
                       <select
                         className="form-select"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
+                        value={filters.status}
+                        onChange={(e) =>
+                          handleFilterChange("status", e.target.value)
+                        }
                       >
-                        <option value="name">Tên sản phẩm</option>
-                        <option value="price">Giá</option>
-                        <option value="brand">Thương hiệu</option>
-                        <option value="category">Danh mục</option>
-                      </select>
-                    </div>
-
-                    <div className="mb-3">
-                      <select
-                        className="form-select"
-                        value={sortOrder}
-                        onChange={(e) => setSortOrder(e.target.value)}
-                      >
-                        <option value="asc">Tăng dần</option>
-                        <option value="desc">Giảm dần</option>
+                        <option value="">Tất cả</option>
+                        <option value="New">Mới</option>
+                        <option value="SecondHand">Đã qua sử dụng</option>
                       </select>
                     </div>
                   </div>
@@ -530,8 +595,46 @@ const ProductBrowser = () => {
                   </div>
                 </div>
 
+                {/* Results Info */}
+                <Row className="mb-3">
+                  <Col>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div>
+                        <h5 className="mb-0">
+                          Kết quả tìm kiếm
+                          {filters.search && (
+                            <span className="text-muted">
+                              {" "}
+                              cho "{filters.search}"
+                            </span>
+                          )}
+                        </h5>
+                        <small className="text-muted">
+                          {pagination.totalItems || filteredProducts.length} sản
+                          phẩm
+                        </small>
+                      </div>
+                      {pagination.totalPages > 1 && (
+                        <div>
+                          <small className="text-muted">
+                            Trang {pagination.currentPage} /{" "}
+                            {pagination.totalPages}
+                          </small>
+                        </div>
+                      )}
+                    </div>
+                  </Col>
+                </Row>
+
+                {/* Error Message */}
+                {error && (
+                  <Alert variant="danger" className="mb-4">
+                    {error}
+                  </Alert>
+                )}
+
                 {/* Products Grid/List */}
-                {currentProducts.length === 0 ? (
+                {filteredProducts.length === 0 ? (
                   <div className="text-center py-5">
                     <h5>Không tìm thấy sản phẩm</h5>
                     <p className="text-muted">
@@ -543,13 +646,25 @@ const ProductBrowser = () => {
                     {currentProducts.map((product) => (
                       <div
                         key={product.id}
-                        className={viewMode === "list" ? "col-12" : "col-md-6 col-lg-4 col-xl-3"}
+                        className={
+                          viewMode === "list"
+                            ? "col-12"
+                            : "col-md-6 col-lg-4 col-xl-3"
+                        }
                       >
-                        <div className={`card h-100 product-browser ${viewMode === "list" ? "flex-row" : ""}`}>
-                          <div className={viewMode === "list" ? "col-md-3" : ""}>
+                        <div
+                          className={`card h-100 product-browser ${
+                            viewMode === "list" ? "flex-row" : ""
+                          }`}
+                        >
+                          <div
+                            className={viewMode === "list" ? "col-md-3" : ""}
+                          >
                             <img
                               src={getProductImage(product)}
-                              className={`card-img-top ${viewMode === "list" ? "h-100" : ""}`}
+                              className={`card-img-top ${
+                                viewMode === "list" ? "h-100" : ""
+                              }`}
                               alt={product.name}
                               style={{
                                 width: "250px",
@@ -557,15 +672,17 @@ const ProductBrowser = () => {
                                 objectFit: "contain",
                                 backgroundColor: "#f9f9f9",
                                 border: "1px solid #eee",
-                                borderRadius: "6px"
+                                borderRadius: "6px",
                               }}
-                              
-                              
                               onError={handleImageError}
                               onClick={() => handleProductClick(product.id)}
                             />
                           </div>
-                          <div className={`card-body ${viewMode === "list" ? "col-md-9" : ""}`}>
+                          <div
+                            className={`card-body ${
+                              viewMode === "list" ? "col-md-9" : ""
+                            }`}
+                          >
                             <h6
                               className="card-title"
                               onClick={() => handleProductClick(product.id)}
@@ -582,7 +699,9 @@ const ProductBrowser = () => {
                                 {formatPrice(product.price)}
                               </span>
                               <span
-                                className={`badge ${getStockStatus(product.quantity).variant}`}
+                                className={`badge ${
+                                  getStockStatus(product.quantity).variant
+                                }`}
                               >
                                 {getStockStatus(product.quantity).text}
                               </span>
@@ -607,7 +726,11 @@ const ProductBrowser = () => {
                 {totalPages > 1 && (
                   <nav className="mt-4">
                     <ul className="pagination justify-content-center">
-                      <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                      <li
+                        className={`page-item ${
+                          currentPage === 1 ? "disabled" : ""
+                        }`}
+                      >
                         <button
                           className="page-link"
                           onClick={() => setCurrentPage(currentPage - 1)}
@@ -634,7 +757,11 @@ const ProductBrowser = () => {
                           </li>
                         );
                       })}
-                      <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                      <li
+                        className={`page-item ${
+                          currentPage === totalPages ? "disabled" : ""
+                        }`}
+                      >
                         <button
                           className="page-link"
                           onClick={() => setCurrentPage(currentPage + 1)}

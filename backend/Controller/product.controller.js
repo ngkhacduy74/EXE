@@ -1,5 +1,6 @@
 const { number } = require("joi");
 const Product = require("../Model/product.model");
+const SearchHistory = require("../Model/searchHistory.model");
 const mongoose = require("mongoose");
 const { v1 } = require("uuid");
 const stripHtmlTags = (str) => str.replace(/<[^>]*>?/gm, "").trim();
@@ -162,6 +163,133 @@ const loadAllProduct = async () => {
   }
   return { success: true, data: product };
 };
+const searchProducts = async (req, res) => {
+  try {
+    const {
+      search,
+      category,
+      brand,
+      minPrice,
+      maxPrice,
+      status,
+      page = 1,
+      limit = 20,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
+
+    const userId = req.user?.id; // Có thể null nếu chưa đăng nhập
+
+    // Build search query
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { brand: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (category) {
+      query.category = category;
+    }
+
+    if (brand) {
+      query.brand = { $regex: brand, $options: "i" };
+    }
+
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = parseFloat(minPrice);
+      if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+    }
+
+    if (status) {
+      query.status = status;
+    }
+
+    // Build sort object
+    const sort = {};
+    sort[sortBy] = sortOrder === "desc" ? -1 : 1;
+
+    // Execute search
+    const skip = (page - 1) * limit;
+    const products = await Product.find(query)
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Product.countDocuments(query);
+
+    // Lưu lịch sử tìm kiếm nếu user đã đăng nhập
+    if (userId && search) {
+      try {
+        const searchData = {
+          searchQuery: search.toLowerCase(),
+          searchType: "product",
+          searchResults: products.map((product) => ({
+            productId: product._id,
+          })),
+          category,
+          filters: {
+            priceRange: {
+              min: minPrice ? parseFloat(minPrice) : null,
+              max: maxPrice ? parseFloat(maxPrice) : null,
+            },
+            brand: brand ? [brand] : [],
+            status,
+          },
+        };
+
+        // Kiểm tra xem từ khóa này đã được tìm kiếm trước đó chưa
+        let existingSearch = await SearchHistory.findOne({
+          userId,
+          searchQuery: search.toLowerCase(),
+          searchType: "product",
+        });
+
+        if (existingSearch) {
+          // Nếu đã tồn tại, tăng số lần tìm kiếm và cập nhật thời gian
+          existingSearch.searchCount += 1;
+          existingSearch.lastSearched = new Date();
+          existingSearch.searchResults = searchData.searchResults;
+          existingSearch.category = category || existingSearch.category;
+          existingSearch.filters = searchData.filters;
+
+          await existingSearch.save();
+        } else {
+          // Nếu chưa tồn tại, tạo mới
+          const newSearchHistory = new SearchHistory({
+            userId,
+            ...searchData,
+          });
+          await newSearchHistory.save();
+        }
+      } catch (error) {
+        console.error("Error saving search history:", error);
+        // Không throw error vì đây không phải lỗi nghiêm trọng
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: products,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error searching products:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi tìm kiếm sản phẩm",
+    });
+  }
+};
 module.exports = {
   createProduct,
   updateProduct,
@@ -170,4 +298,5 @@ module.exports = {
   getProductById,
   loadAllProduct,
   loadProductByUser,
+  searchProducts,
 };

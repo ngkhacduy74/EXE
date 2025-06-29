@@ -9,6 +9,7 @@ const {
   loadAllProduct,
   getProductById,
   loadProductByUser,
+  searchProducts,
 } = require("../Controller/product.controller");
 const {
   verifyAdmin,
@@ -16,6 +17,16 @@ const {
   verifyUser,
 } = require("../Middleware/auth.middleware");
 const { JsonWebTokenError } = require("jsonwebtoken");
+
+// Search products route (optional authentication)
+router.get("/search", async (req, res) => {
+  try {
+    await searchProducts(req, res);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 router.post(
   "/createProduct",
   verifyToken,
@@ -29,6 +40,7 @@ router.post(
     res.status(200).json(result);
   }
 );
+
 router.put("/update/:id", verifyAdmin, async (req, res) => {
   const data = req.body;
   const result = await updateProduct(req.params.id, data);
@@ -49,6 +61,7 @@ router.get("/status/:status", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
+
 router.get("/", async (req, res) => {
   const result = await loadAllProduct();
   if (result.success === false) {
@@ -56,6 +69,7 @@ router.get("/", async (req, res) => {
   }
   res.status(200).json(result);
 });
+
 router.get("/user/products", verifyUser, async (req, res) => {
   const result = await loadProductByUser(req.user.user.email);
   if (result.success === false) {
@@ -63,6 +77,7 @@ router.get("/user/products", verifyUser, async (req, res) => {
   }
   res.status(200).json(result);
 });
+
 router.get("/:id", verifyToken, async (req, res) => {
   const result = await getProductById(req.params.id);
   if (result.success === false) {
@@ -78,4 +93,5 @@ router.delete("/:id", verifyAdmin, async (req, res) => {
   }
   res.status(200).json(result);
 });
+
 module.exports = router;
