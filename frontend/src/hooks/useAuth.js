@@ -1,6 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { isAuthenticated, getCurrentUser, validateToken, logout } from '../Services/auth.service';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  isAuthenticated,
+  getCurrentUser,
+  validateToken,
+  logout,
+} from "../Services/auth.service";
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);
@@ -13,33 +18,18 @@ export const useAuth = () => {
       try {
         setLoading(true);
         const { isValid, user: validatedUser } = await validateToken();
-        
+        console.log("useAuth - validateToken result:", {
+          isValid,
+          validatedUser,
+        });
         if (isValid && validatedUser) {
           setUser(validatedUser);
         } else {
-          // If token is invalid, try to keep user from localStorage for better UX
-          const storedUser = localStorage.getItem('user');
-          if (storedUser) {
-            try {
-              const parsedUser = JSON.parse(storedUser);
-              setUser(parsedUser);
-            } catch (error) {
-              console.error('useAuth - error parsing stored user:', error);
-            }
-          }
+          setUser(null);
         }
       } catch (error) {
-        console.error('useAuth - validateToken error:', error);
-        // Try to keep user from localStorage even if validation fails
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-          } catch (parseError) {
-            console.error('useAuth - error parsing stored user:', parseError);
-          }
-        }
+        console.error("useAuth - validateToken error:", error);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -76,6 +66,6 @@ export const useAuth = () => {
     isLoggingOut,
     handleLogout,
     refreshUser,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
   };
-}; 
+};

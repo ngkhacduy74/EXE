@@ -38,6 +38,7 @@ import PostView from "./Pages/PostView";
 import UserCreateProduct from "./Admin/UserCreateProduct";
 import UserProductManager from "./Pages/UserProductManager";
 import UpdateProduct from "./Admin/UpdateProduct";
+import Favorites from "./Pages/Favorites";
 
 const App = () => {
   const [message, setMessage] = useState("");
@@ -108,6 +109,7 @@ const App = () => {
             <Route path="/compare-product" element={<CompareProduct />} />
             <Route path="/user-products" element={<UserProductManager />} />
             <Route path="/update-product/:id" element={<UpdateProduct />} />
+            <Route path="/favorites" element={<Favorites />} />
             {/* 404 Error Page */}
           </Routes>
           <PhoneFixed />

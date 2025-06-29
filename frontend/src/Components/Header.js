@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Star, X, Plus, Menu, ChevronDown } from "lucide-react";
+import { Search, Star, X, Plus, Menu, ChevronDown, Heart } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { authApiClient } from "../Services/auth.service";
 import SearchWithAutocomplete from "./SearchWithAutocomplete";
@@ -623,6 +623,15 @@ function Header() {
                       <li>
                         <Link
                           className="dropdown-item px-3 py-2 header-dropdown-item"
+                          to="/favorites"
+                        >
+                          <i className="bi bi-heart"></i>
+                          Sản phẩm yêu thích
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          className="dropdown-item px-3 py-2 header-dropdown-item"
                           to="/user-products"
                         >
                           <i className="bi bi-box"></i>
@@ -756,16 +765,23 @@ function Header() {
                   Trang chủ
                 </a>
               </li>
-
               <li className="nav-item">
-                <a
-                  className="nav-link fw-medium px-3 py-2"
-                  href="/product-browser"
-                >
+                <a className="nav-link fw-medium px-3 py-2" href="/products">
                   Tất cả sản phẩm
                 </a>
               </li>
-
+              {/* Nút yêu thích */}
+              <li className="nav-item">
+                <a
+                  className="nav-link fw-medium px-3 py-2 d-flex align-items-center"
+                  href="/favorites"
+                  title="Sản phẩm yêu thích"
+                  style={{ gap: 4 }}
+                >
+                  <Heart size={18} style={{ color: "#e74c3c" }} />
+                  Yêu thích
+                </a>
+              </li>
               {/* Categories Dropdown */}
               <li className="nav-item dropdown position-relative">
                 <button

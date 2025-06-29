@@ -20,6 +20,7 @@ import Header from "../Components/Header"; // User header component
 import Footer from "../Components/Footer"; // User footer component
 import ErrorPage from "../Components/ErrorPage";
 import WigdetChat from "../Components/WidgetChat.js";
+import FavoriteButton from "../Components/FavoriteButton";
 import {
   addToRecentlyViewed,
   loadRecentlyViewed,
@@ -47,8 +48,8 @@ const ProductView = () => {
       navigate("/login", {
         state: {
           message: "Vui lòng đăng nhập để xem sản phẩm",
-          returnUrl: `/productView/${productId}`
-        }
+          returnUrl: `/productView/${productId}`,
+        },
       });
       return;
     }
@@ -67,8 +68,8 @@ const ProductView = () => {
         navigate("/login", {
           state: {
             message: "Vui lòng đăng nhập để xem sản phẩm",
-            returnUrl: `/productView/${productId}`
-          }
+            returnUrl: `/productView/${productId}`,
+          },
         });
         return;
       }
@@ -88,17 +89,13 @@ const ProductView = () => {
       if (err.response) {
         switch (err.response.status) {
           case 401:
-            console.log("🔒 401 Unauthorized - Redirecting to login");
-            // Token expired or invalid - redirect to login
-            navigate("/login", {
-              state: {
-                message: "Vui lòng đăng nhập để xem sản phẩm",
-                returnUrl: `/productView/${productId}`
-              }
-            });
+            console.log("�� 401 Unauthorized - Không redirect để debug");
+            setError(
+              "Bạn không có quyền truy cập sản phẩm này (401). Vui lòng kiểm tra token hoặc đăng nhập lại."
+            );
             return;
           case 403:
-            setError("Sản phẩm này không khả dụng để xem.");
+            setError("Sản phẩm này không khả dụng để xem (403).");
             break;
           case 404:
             setError(
@@ -110,7 +107,8 @@ const ProductView = () => {
             break;
           default:
             setError(
-              `Error ${err.response.status}: ${err.response.data?.message || "Unknown error occurred"
+              `Error ${err.response.status}: ${
+                err.response.data?.message || "Unknown error occurred"
               }`
             );
         }
@@ -163,14 +161,14 @@ const ProductView = () => {
         if (scrollPosition > windowHeight * 0.5) {
           addToRecentlyViewed(product);
           // Remove scroll listener after adding to recently viewed
-          window.removeEventListener('scroll', handleScroll);
+          window.removeEventListener("scroll", handleScroll);
         }
       };
 
-      window.addEventListener('scroll', handleScroll);
+      window.addEventListener("scroll", handleScroll);
 
       return () => {
-        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener("scroll", handleScroll);
       };
     }
   }, [product]);
@@ -317,7 +315,7 @@ const ProductView = () => {
       navigate("/login", {
         state: {
           message: error || "Vui lòng đăng nhập để xem sản phẩm",
-          returnUrl: `/productView/${productId}`
+          returnUrl: `/productView/${productId}`,
         },
       });
     }
@@ -338,7 +336,10 @@ const ProductView = () => {
               <Card className="shadow-sm w-100" style={{ maxWidth: "600px" }}>
                 <Card.Body className="text-center">
                   <div className="mb-4">
-                    <i className="fas fa-lock text-warning" style={{ fontSize: "3rem" }}></i>
+                    <i
+                      className="fas fa-lock text-warning"
+                      style={{ fontSize: "3rem" }}
+                    ></i>
                   </div>
                   <h4 className="mb-3">Yêu cầu đăng nhập</h4>
                   <p className="text-muted mb-4">
@@ -347,12 +348,14 @@ const ProductView = () => {
                   <Button
                     variant="primary"
                     size="lg"
-                    onClick={() => navigate("/login", {
-                      state: {
-                        message: "Vui lòng đăng nhập để xem sản phẩm",
-                        returnUrl: `/productView/${productId}`
-                      }
-                    })}
+                    onClick={() =>
+                      navigate("/login", {
+                        state: {
+                          message: "Vui lòng đăng nhập để xem sản phẩm",
+                          returnUrl: `/productView/${productId}`,
+                        },
+                      })
+                    }
                   >
                     <i className="fas fa-sign-in-alt me-2"></i>
                     Đăng nhập ngay
@@ -520,7 +523,10 @@ const ProductView = () => {
                 </Badge>
               )}
               {product.status && (
-                <Badge bg={getStatusColor(product.status)} className="px-3 py-1">
+                <Badge
+                  bg={getStatusColor(product.status)}
+                  className="px-3 py-1"
+                >
                   {product.status}
                 </Badge>
               )}
@@ -603,8 +609,9 @@ const ProductView = () => {
                         {images.map((image, index) => (
                           <SwiperSlide key={index}>
                             <div
-                              className={`thumbnail-item ${selectedImageIndex === index ? "active" : ""
-                                }`}
+                              className={`thumbnail-item ${
+                                selectedImageIndex === index ? "active" : ""
+                              }`}
                               style={{ cursor: "pointer" }}
                             >
                               <img
@@ -694,20 +701,28 @@ const ProductView = () => {
                   </div>
 
                   <div className="d-grid gap-3">
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      onClick={handleContactUs}
-                      className="py-3 fw-medium"
-                    >
-                      <i className="fas fa-phone me-2"></i>
-                      Liên hệ
-                    </Button>
+                    <div className="d-flex gap-2">
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        onClick={handleContactUs}
+                        className="py-3 fw-medium flex-fill"
+                      >
+                        <i className="fas fa-phone me-2"></i>
+                        Liên hệ
+                      </Button>
+                      <FavoriteButton
+                        productId={product._id}
+                        className="btn-lg"
+                      />
+                    </div>
                     {showPhone && (
                       <div className="text-center mt-3">
                         <h5>Số điện thoại liên hệ:</h5>
                         <p style={{ fontSize: 22, fontWeight: 600 }}>
-                          {product.business_phone || product.product_phone || "Không có số điện thoại liên hệ"}
+                          {product.business_phone ||
+                            product.product_phone ||
+                            "Không có số điện thoại liên hệ"}
                         </p>
                       </div>
                     )}
@@ -733,8 +748,8 @@ const ProductView = () => {
               <Card className="shadow-sm mb-4">
                 <Card.Header className="bg-white border-bottom">
                   <h5 className="mb-0">
-                    <i className="fas fa-info-circle text-primary me-2"></i> Thông
-                    tin sản phẩm
+                    <i className="fas fa-info-circle text-primary me-2"></i>{" "}
+                    Thông tin sản phẩm
                   </h5>
                 </Card.Header>
                 <Card.Body>
@@ -776,7 +791,9 @@ const ProductView = () => {
                           <label className="form-label text-muted small fw-bold">
                             BẢO HÀNH
                           </label>
-                          <p className="mb-0">{product.warranty_period} tháng</p>
+                          <p className="mb-0">
+                            {product.warranty_period} tháng
+                          </p>
                         </div>
                       )}
                       {product.size && (
@@ -847,7 +864,8 @@ const ProductView = () => {
                       Sắp hết hàng
                     </Alert.Heading>
                     <p className="mb-0 small">
-                      Chỉ còn {product.quantity} sản phẩm trong kho. Đặt hàng sớm!
+                      Chỉ còn {product.quantity} sản phẩm trong kho. Đặt hàng
+                      sớm!
                     </p>
                   </Alert>
                 )}
@@ -856,17 +874,18 @@ const ProductView = () => {
 
           <div className="mb-4 text-center">
             <h2 className="fw-bold mb-3">
-              <i className="fas fa-info-circle text-primary me-2"></i>Mô tả sản phẩm
+              <i className="fas fa-info-circle text-primary me-2"></i>Mô tả sản
+              phẩm
             </h2>
             {product.description && (
-              <div 
-                className="lead mb-0" 
-                style={{ 
-                  margin: '0 auto', 
+              <div
+                className="lead mb-0"
+                style={{
+                  margin: "0 auto",
                   lineHeight: 1.7,
-                  whiteSpace: 'pre-wrap',
-                  textAlign: 'left',
-                  maxWidth: '800px'
+                  whiteSpace: "pre-wrap",
+                  textAlign: "left",
+                  maxWidth: "800px",
                 }}
               >
                 {product.description}
@@ -875,85 +894,116 @@ const ProductView = () => {
           </div>
 
           {/* Product Videos - HIỂN THỊ TO Ở DƯỚI CÙNG */}
-          {product.video && Array.isArray(product.video) && product.video.length > 0 && (
-            <section className="py-5" style={{ background: '#fff' }}>
-              <Container>
-               
-                <Row className="justify-content-center">
-                  {product.video.map((vid, index) => {
-                    const isYouTube = isYouTubeUrl(vid);
-                    const embedUrl = isYouTube ? getYouTubeEmbedUrl(vid) : vid;
-                    return (
-                      <Col key={index} xs={12} md={10} className="mb-5 d-flex justify-content-center">
-                        <div style={{ width: '100%', maxWidth: 900 }}>
-                          {isYouTube ? (
-                            <div className="ratio ratio-16x9" style={{ minHeight: 400 }}>
-                              <iframe
+          {product.video &&
+            Array.isArray(product.video) &&
+            product.video.length > 0 && (
+              <section className="py-5" style={{ background: "#fff" }}>
+                <Container>
+                  <Row className="justify-content-center">
+                    {product.video.map((vid, index) => {
+                      const isYouTube = isYouTubeUrl(vid);
+                      const embedUrl = isYouTube
+                        ? getYouTubeEmbedUrl(vid)
+                        : vid;
+                      return (
+                        <Col
+                          key={index}
+                          xs={12}
+                          md={10}
+                          className="mb-5 d-flex justify-content-center"
+                        >
+                          <div style={{ width: "100%", maxWidth: 900 }}>
+                            {isYouTube ? (
+                              <div
+                                className="ratio ratio-16x9"
+                                style={{ minHeight: 400 }}
+                              >
+                                <iframe
+                                  src={embedUrl}
+                                  title={`Product video ${index + 1}`}
+                                  allowFullScreen
+                                  style={{
+                                    border: "none",
+                                    width: "100%",
+                                    height: "100%",
+                                  }}
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                    const fallback =
+                                      e.target.parentElement.querySelector(
+                                        ".video-fallback"
+                                      );
+                                    if (fallback)
+                                      fallback.style.display = "flex";
+                                  }}
+                                ></iframe>
+                              </div>
+                            ) : (
+                              <video
+                                controls
+                                className="w-100"
+                                style={{
+                                  maxHeight: 500,
+                                  minHeight: 400,
+                                  background: "#000",
+                                }}
                                 src={embedUrl}
-                                title={`Product video ${index + 1}`}
-                                allowFullScreen
-                                style={{ border: "none", width: '100%', height: '100%' }}
-                                onError={e => {
+                                aria-label={`Product video playback ${
+                                  index + 1
+                                }`}
+                                onError={(e) => {
                                   e.target.style.display = "none";
-                                  const fallback = e.target.parentElement.querySelector('.video-fallback');
+                                  const fallback =
+                                    e.target.parentElement.querySelector(
+                                      ".video-fallback"
+                                    );
                                   if (fallback) fallback.style.display = "flex";
                                 }}
-                              ></iframe>
-                            </div>
-                          ) : (
-                            <video
-                              controls
-                              className="w-100"
-                              style={{ maxHeight: 500, minHeight: 400, background: '#000' }}
-                              src={embedUrl}
-                              aria-label={`Product video playback ${index + 1}`}
-                              onError={e => {
-                                e.target.style.display = "none";
-                                const fallback = e.target.parentElement.querySelector('.video-fallback');
-                                if (fallback) fallback.style.display = "flex";
+                              >
+                                Your browser does not support the video tag.
+                              </video>
+                            )}
+                            {/* Fallback message if video fails to load */}
+                            <div
+                              className="video-fallback d-none text-center p-4 bg-light"
+                              style={{
+                                minHeight: "200px",
+                                display: "none",
+                                alignItems: "center",
+                                justifyContent: "center",
                               }}
                             >
-                              Your browser does not support the video tag.
-                            </video>
-                          )}
-                          {/* Fallback message if video fails to load */}
-                          <div
-                            className="video-fallback d-none text-center p-4 bg-light"
-                            style={{
-                              minHeight: "200px",
-                              display: "none",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <div>
-                              <i
-                                className="fas fa-exclamation-triangle text-warning mb-3"
-                                style={{ fontSize: "3rem" }}
-                              ></i>
-                              <p className="mb-0">Không thể phát video này.</p>
-                              <small className="text-muted">
-                                Vui lòng thử lại sau hoặc liên hệ hỗ trợ.
-                              </small>
-                              <div className="mt-3">
+                              <div>
+                                <i
+                                  className="fas fa-exclamation-triangle text-warning mb-3"
+                                  style={{ fontSize: "3rem" }}
+                                ></i>
+                                <p className="mb-0">
+                                  Không thể phát video này.
+                                </p>
                                 <small className="text-muted">
-                                  Loại: {isYouTube ? 'YouTube' : 'Direct Video'}
+                                  Vui lòng thử lại sau hoặc liên hệ hỗ trợ.
                                 </small>
-                                <br />
-                                <small className="text-muted">
-                                  URL: {embedUrl}
-                                </small>
+                                <div className="mt-3">
+                                  <small className="text-muted">
+                                    Loại:{" "}
+                                    {isYouTube ? "YouTube" : "Direct Video"}
+                                  </small>
+                                  <br />
+                                  <small className="text-muted">
+                                    URL: {embedUrl}
+                                  </small>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </Col>
-                    );
-                  })}
-                </Row>
-              </Container>
-            </section>
-          )}
+                        </Col>
+                      );
+                    })}
+                  </Row>
+                </Container>
+              </section>
+            )}
         </Container>
 
         {/* Recently Viewed Products */}

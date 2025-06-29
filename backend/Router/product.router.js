@@ -10,6 +10,7 @@ const {
   getProductById,
   loadProductByUser,
   searchProducts,
+  getProductByObjectId,
 } = require("../Controller/product.controller");
 const {
   verifyAdmin,
@@ -71,7 +72,7 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/user/products", verifyUser, async (req, res) => {
-  const result = await loadProductByUser(req.user.user.email);
+  const result = await loadProductByUser(req.user.email);
   if (result.success === false) {
     return res.status(500).json(result);
   }
@@ -90,6 +91,15 @@ router.delete("/:id", verifyAdmin, async (req, res) => {
   const result = await deleteProduct(req.params.id);
   if (result.success === false) {
     return res.status(500).json(result);
+  }
+  res.status(200).json(result);
+});
+
+router.get("/by-objectid/:objectId", verifyToken, async (req, res) => {
+  const { objectId } = req.params;
+  const result = await getProductByObjectId(objectId);
+  if (result.success === false) {
+    return res.status(404).json(result);
   }
   res.status(200).json(result);
 });

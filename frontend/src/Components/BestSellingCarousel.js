@@ -11,6 +11,7 @@ import {
   addToRecentlyViewed,
   clearRecentlyViewed,
 } from "../utils/recentlyViewed";
+import FavoriteButton from "./FavoriteButton";
 const backUpImg = "/images/frigde.png";
 
 const BestSellingCarousel = () => {
@@ -170,10 +171,14 @@ const BestSellingCarousel = () => {
     >
       <div className="position-relative">
         {product.discount && (
-          <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1 fs-7">
+          <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1">
             -{product.discount}%
           </span>
         )}
+        <FavoriteButton
+          productId={product._id}
+          className="position-absolute top-0 end-0 m-2 z-index-2"
+        />
         <div
           className="card-img-top"
           style={{ cursor: "pointer" }}
@@ -227,8 +232,6 @@ const BestSellingCarousel = () => {
         </div>
 
         <div className="mt-auto">
-          
-
           <button
             onClick={() => handleProductClick(product.id)}
             className="btn btn-primary btn-sm w-100 py-2 fw-medium"

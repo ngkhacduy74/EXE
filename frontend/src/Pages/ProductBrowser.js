@@ -7,6 +7,7 @@ import Footer from "../Components/Footer";
 import Canvas from "../Components/Canvas";
 import ChatWidget from "../Components/WidgetChat";
 import Header from "../Components/Header";
+import FavoriteButton from "../Components/FavoriteButton";
 import {
   Search,
   Filter,
@@ -660,23 +661,34 @@ const ProductBrowser = () => {
                           <div
                             className={viewMode === "list" ? "col-md-3" : ""}
                           >
-                            <img
-                              src={getProductImage(product)}
-                              className={`card-img-top ${
-                                viewMode === "list" ? "h-100" : ""
-                              }`}
-                              alt={product.name}
-                              style={{
-                                width: "250px",
-                                height: "250px",
-                                objectFit: "contain",
-                                backgroundColor: "#f9f9f9",
-                                border: "1px solid #eee",
-                                borderRadius: "6px",
-                              }}
-                              onError={handleImageError}
-                              onClick={() => handleProductClick(product.id)}
-                            />
+                            <div className="position-relative">
+                              {product.discount && (
+                                <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1">
+                                  -{product.discount}%
+                                </span>
+                              )}
+                              <FavoriteButton
+                                productId={product._id}
+                                className="position-absolute top-0 end-0 m-2 z-index-2"
+                              />
+                              <img
+                                src={getProductImage(product)}
+                                className={`card-img-top ${
+                                  viewMode === "list" ? "h-100" : ""
+                                }`}
+                                alt={product.name}
+                                style={{
+                                  width: "250px",
+                                  height: "250px",
+                                  objectFit: "contain",
+                                  backgroundColor: "#f9f9f9",
+                                  border: "1px solid #eee",
+                                  borderRadius: "6px",
+                                }}
+                                onError={handleImageError}
+                                onClick={() => handleProductClick(product.id)}
+                              />
+                            </div>
                           </div>
                           <div
                             className={`card-body ${

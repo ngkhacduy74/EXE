@@ -10,6 +10,7 @@ const chatRouter = require("./chat.router");
 const searchHistoryRouter = require("./searchHistory.route");
 const bannerRouter = require("./banner.route");
 const dashboardRouter = require("./dashboard.route");
+const favoriteRouter = require("./favorite.route");
 
 module.exports = (app) => {
   app.use("/auth", authRouter);
@@ -22,4 +23,5 @@ module.exports = (app) => {
   app.use("/search-history", searchHistoryRouter);
   app.use("/banner", bannerRouter);
   app.use("/api/dashboard", dashboardRouter);
+  app.use("/favorite", favoriteRouter);
 };

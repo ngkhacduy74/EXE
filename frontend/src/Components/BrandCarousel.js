@@ -6,6 +6,7 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Container, Spinner } from "react-bootstrap";
+import FavoriteButton from "./FavoriteButton";
 const backUpImg = "/images/frigde.png"; // Ảnh từ thư mục public/images/
 const BestSellingCarousel = () => {
   const [products, setProducts] = useState([]);
@@ -256,15 +257,23 @@ const BestSellingCarousel = () => {
       }}
     >
       <div className="position-relative">
-        {/* Add "NEW" badge for new products */}
-        <span className="badge bg-danger position-absolute top-0 end-0 m-2 z-index-1 fs-7">
-          NEW
-        </span>
+        {product.isNew && (
+          <span className="badge bg-danger position-absolute top-0 start-0 m-2 z-index-1">
+            NEW
+          </span>
+        )}
         {product.discount && (
-          <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1 fs-7">
+          <span
+            className="badge bg-success position-absolute"
+            style={{ top: "2.5rem", left: "0.5rem", zIndex: 2 }}
+          >
             -{product.discount}%
           </span>
         )}
+        <FavoriteButton
+          productId={product._id}
+          className="position-absolute top-0 end-0 m-2 z-index-3"
+        />
         <div
           className="card-img-top"
           style={{ cursor: "pointer" }}

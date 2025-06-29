@@ -35,7 +35,7 @@ function UpdateRole({ show, handleClose, userId, users, roles, onRoleUpdate }) {
 
       <Modal.Body>
         <p>
-          <strong>Name:</strong> {user.userName || "N/A"}
+          <strong>Name:</strong> {user.fullname || user.userName || "N/A"}
         </p>
 
         <Form onSubmit={handleUpdate}>

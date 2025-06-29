@@ -6,6 +6,7 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Container, Spinner } from "react-bootstrap";
+import FavoriteButton from "./FavoriteButton";
 const backUpImg = "/images/frigde.png";
 const Product2Carousel = () => {
   const [products, setProducts] = useState([]);
@@ -143,10 +144,14 @@ const Product2Carousel = () => {
     >
       <div className="position-relative">
         {product.discount && (
-          <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1 fs-7">
+          <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1">
             -{product.discount}%
           </span>
         )}
+        <FavoriteButton
+          productId={product._id}
+          className="position-absolute top-0 end-0 m-2 z-index-2"
+        />
         <div
           className="card-img-top"
           style={{ cursor: "pointer" }}

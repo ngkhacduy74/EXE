@@ -40,10 +40,10 @@ const createProduct = async (data, user) => {
     voltage: voltage,
     features: features,
     creator: {
-      id: user.user.id,
-      fullname: user.user.fullname,
-      phone: user.user.phone,
-      email: user.user.email,
+      id: user.id,
+      fullname: user.fullname,
+      phone: user.phone,
+      email: user.email,
     },
     quantity: quantity,
   });
@@ -82,7 +82,15 @@ const loadProductByUser = async (userEmail) => {
   };
 };
 const getProductById = async (id) => {
-  const product = await Product.findOne({ id: id });
+  let product = null;
+  // Nếu id là ObjectId hợp lệ thì thử tìm theo _id trước
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    product = await Product.findById(id);
+  }
+  // Nếu không tìm thấy theo _id hoặc id không phải ObjectId, thử tìm theo custom id
+  if (!product) {
+    product = await Product.findOne({ id: id });
+  }
   if (!product) {
     return {
       success: false,
@@ -290,12 +298,27 @@ const searchProducts = async (req, res) => {
     });
   }
 };
+const getProductByObjectId = async (objectId) => {
+  const product = await Product.findById(objectId);
+  if (!product) {
+    return {
+      success: false,
+      message: "Not found product",
+      description: "func getProductByObjectId",
+    };
+  }
+  return {
+    success: true,
+    product,
+  };
+};
 module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
   loadProductStatus,
   getProductById,
+  getProductByObjectId,
   loadAllProduct,
   loadProductByUser,
   searchProducts,
