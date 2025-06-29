@@ -7,10 +7,10 @@ const {
   deleteSearchHistory,
   clearAllSearchHistory,
 } = require("../Controller/searchHistory.controller");
-const { authenticateToken } = require("../Middleware/auth.middleware");
+const authMiddleware = require("../Middleware/auth.middleware");
 
 // Tất cả routes đều cần authentication
-router.use(authenticateToken);
+router.use(authMiddleware.verifyToken);
 
 // Lưu lịch sử tìm kiếm
 router.post("/save", saveSearchHistory);

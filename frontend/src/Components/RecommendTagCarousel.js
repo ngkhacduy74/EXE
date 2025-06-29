@@ -44,38 +44,7 @@ const RecommendTagCarousel = () => {
       <div className="container-fluid">
         <h2 className="my-5">Người dùng thường tìm kiếm</h2>
         
-        {/* Ví dụ tìm kiếm để demo tính năng tách từ khóa */}
-        <div className="mb-4">
-          <h6 className="text-muted mb-3">Ví dụ tìm kiếm (tự động tách từ khóa):</h6>
-          <div className="d-flex flex-wrap gap-2 mb-3">
-            {searchExamples.map((example, index) => (
-              <button
-                key={index}
-                className="btn btn-outline-primary btn-sm"
-                onClick={() => handleCategoryClick(example)}
-                style={{
-                  transition: "all 0.3s ease",
-                  border: "1px solid #007bff",
-                  borderRadius: "20px",
-                  padding: "6px 12px",
-                  fontSize: "12px",
-                  fontWeight: "500"
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = "translateY(-1px)";
-                  e.target.style.boxShadow = "0 2px 8px rgba(0, 123, 255, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = "translateY(0)";
-                  e.target.style.boxShadow = "none";
-                }}
-              >
-                {example}
-                <small className="ms-1 text-muted">→ {example.split(/\s+/).join(" + ")}</small>
-              </button>
-            ))}
-          </div>
-        </div>
+        
         
         {categories.map((category, index) => (
             <button
