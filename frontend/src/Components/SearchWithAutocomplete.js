@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Form, InputGroup } from "react-bootstrap";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { getProducts } from "../Services/api.service";
 
 const LOCAL_KEY = "searchHistory";
 
@@ -35,6 +36,7 @@ const SearchWithAutocomplete = ({
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [productSuggestions, setProductSuggestions] = useState([]);
   const searchRef = useRef(null);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
@@ -42,8 +44,18 @@ const SearchWithAutocomplete = ({
   // Load suggestions khi component mount hoặc searchQuery thay đổi
   useEffect(() => {
     if (showDropdown) {
-      // Nếu đang show dropdown (do focus hoặc gõ), luôn lấy lịch sử theo input, tối đa 5
       setSuggestions(getSearchHistory(searchQuery).slice(0, 5));
+      // Gọi API lấy sản phẩm theo tên
+      if (searchQuery.trim()) {
+        getProducts({ search: searchQuery.trim() })
+          .then((res) => {
+            let products = res.data?.data || [];
+            setProductSuggestions(products.slice(0, 5));
+          })
+          .catch(() => setProductSuggestions([]));
+      } else {
+        setProductSuggestions([]);
+      }
     }
   }, [searchQuery, showDropdown]);
 
@@ -111,6 +123,14 @@ const SearchWithAutocomplete = ({
     setSelectedIndex(-1);
   };
 
+  // Handle product suggestion click
+  const handleProductClick = (product) => {
+    saveSearchHistory(product.name);
+    navigate(`/product/${product.id}`);
+    setShowDropdown(false);
+    setSelectedIndex(-1);
+  };
+
   // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -149,19 +169,36 @@ const SearchWithAutocomplete = ({
           border-top: none;
           border-radius: 0 0 8px 8px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          max-height: 300px;
+          max-height: 350px;
           overflow-y: auto;
         }
-        .suggestion-item {
+        .suggestion-item, .product-suggestion-item {
           padding: 12px 16px;
           cursor: pointer;
           border-bottom: 1px solid #f8f9fa;
           transition: background-color 0.2s;
+          display: flex;
+          align-items: center;
         }
-        .suggestion-item:hover, .suggestion-item.selected {
+        .suggestion-item:hover, .suggestion-item.selected, .product-suggestion-item:hover {
           background-color: #f8f9fa;
         }
-        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:last-child, .product-suggestion-item:last-child { border-bottom: none; }
+        .product-thumb {
+          width: 40px;
+          height: 40px;
+          object-fit: cover;
+          border-radius: 6px;
+          margin-right: 12px;
+        }
+        .product-info {
+          flex: 1;
+        }
+        .product-price {
+          color: #16a34a;
+          font-weight: 600;
+          font-size: 15px;
+        }
         .clear-history-btn {
           display: block;
           width: 100%;
@@ -194,22 +231,44 @@ const SearchWithAutocomplete = ({
           <Search size={18} />
         </InputGroup.Text>
       </InputGroup>
-      {showDropdown && suggestions.length > 0 && (
+      {showDropdown && (suggestions.length > 0 || productSuggestions.length > 0) && (
         <div className="search-dropdown" ref={dropdownRef}>
+          {/* Gợi ý sản phẩm thực tế */}
+          {productSuggestions.map((product, index) => (
+            <div
+              key={product.id || index}
+              className="product-suggestion-item"
+              onClick={() => handleProductClick(product)}
+            >
+              <img
+                src={Array.isArray(product.image) ? product.image[0] : product.image || "/images/frigde.png"}
+                alt={product.name}
+                className="product-thumb"
+                onError={e => e.target.src = "/images/frigde.png"}
+              />
+              <div className="product-info">
+                <div>{product.name}</div>
+                <div className="product-price">
+                  {product.price ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND` : "Chưa có giá"}
+                </div>
+              </div>
+            </div>
+          ))}
+          {/* Gợi ý lịch sử tìm kiếm */}
           {suggestions.map((item, index) => (
             <div
-              key={index}
-              className={`suggestion-item${
-                selectedIndex === index ? " selected" : ""
-              }`}
+              key={item + index}
+              className={`suggestion-item${selectedIndex === index ? " selected" : ""}`}
               onClick={() => handleSuggestionClick(item)}
             >
               {item}
             </div>
           ))}
-          <button className="clear-history-btn" onClick={handleClearHistory}>
-            Xóa lịch sử tìm kiếm
-          </button>
+          {suggestions.length > 0 && (
+            <button className="clear-history-btn" onClick={handleClearHistory}>
+              Xóa lịch sử tìm kiếm
+            </button>
+          )}
         </div>
       )}
     </div>

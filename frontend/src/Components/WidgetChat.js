@@ -398,13 +398,13 @@ export default function ChatWidget() {
 
       const { data } = response;
 
-      if (data && data.data && data.data.response) {
+      if (data && (data.answer || (data.data && data.data.response))) {
+        const text = data.answer || (data.data && data.data.response);
         const botResponse = {
           id: Date.now() + 1,
-          text: data.data.response,
+          text,
           sender: "bot",
         };
-
         setMessages((prevMessages) => [...prevMessages, botResponse]);
       } else {
         throw new Error("Invalid response format");

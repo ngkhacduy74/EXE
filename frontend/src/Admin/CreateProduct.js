@@ -169,10 +169,7 @@ const CreateProduct = () => {
 
   // Hàm kiểm tra và làm sạch văn bản (loại bỏ ký tự đặc biệt, emoji)
   const sanitizeText = (text) => {
-    // Loại bỏ các ký tự đặc biệt, emoji, chỉ giữ lại chữ cái, số, dấu cách và một số ký tự cơ bản
-    return text
-      .replace(/[^\w\s\u00C0-\u024F\u1E00-\u1EFF.,!?()%-]/g, "")
-      .trim();
+    return text.replace(/[^\w\s\u00C0-\u024F\u1E00-\u1EFF.,!?()%-]/g, "").trimStart();
   };
 
   // Hàm kiểm tra chỉ cho phép số và dấu chấm
@@ -226,7 +223,7 @@ const CreateProduct = () => {
 
   // Handle features array với validation
   const handleFeatureChange = (index, field, value) => {
-    const sanitizedValue = sanitizeText(value);
+    const sanitizedValue = value.replace(/[^\w\s\u00C0-\u024F\u1E00-\u1EFF.,!?()%-]/g, "");
     const newFeatures = [...formData.features];
     newFeatures[index] = { ...newFeatures[index], [field]: sanitizedValue };
     setFormData((prev) => ({ ...prev, features: newFeatures }));
@@ -396,11 +393,10 @@ const CreateProduct = () => {
       newErrors.features = "Tất cả tính năng phải có tiêu đề và mô tả";
     } else if (
       formData.features.some(
-        (f) => f.title.length < 3 || f.description.length < 5
+        (f) => f.title.trim().length < 2 || f.title.trim().length > 25 || f.description.trim().length < 2 || f.description.trim().length > 25
       )
     ) {
-      newErrors.features =
-        "Tiêu đề tính năng ít nhất 3 ký tự, mô tả ít nhất 5 ký tự";
+      newErrors.features = "Tiêu đề và mô tả tính năng phải từ 2 đến 25 ký tự";
     }
 
     // Validate image URLs
@@ -988,7 +984,8 @@ const CreateProduct = () => {
                             }
                             placeholder={`Tiêu đề tính năng ${index + 1}`}
                             isInvalid={!!errors.features}
-                            maxLength={100}
+                            minLength={2}
+                            maxLength={25}
                           />
                         </Col>
                         <Col md={6}>
@@ -1004,7 +1001,8 @@ const CreateProduct = () => {
                             }
                             placeholder={`Mô tả tính năng ${index + 1}`}
                             isInvalid={!!errors.features}
-                            maxLength={500}
+                            minLength={2}
+                            maxLength={25}
                           />
                         </Col>
                         <Col md={2}>

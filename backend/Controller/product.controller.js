@@ -192,11 +192,7 @@ const searchProducts = async (req, res) => {
     const query = {};
 
     if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { brand: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-      ];
+      query.name = { $regex: search, $options: "i" };
     }
 
     if (category) {

@@ -70,6 +70,9 @@ const updateUserProfile = (userData) => {
 
 // Product operations
 const getProducts = (params) => {
+  if (params && params.search) {
+    return apiClient.get("/product/search", { params });
+  }
   return apiClient.get("/product", { params });
 };
 

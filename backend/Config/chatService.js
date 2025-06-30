@@ -264,21 +264,12 @@ Bạn muốn so sánh sản phẩm nào cụ thể không? Tôi có thể gợi 
         const products = await this.searchProducts(userQuestion);
         
         if (products.length > 0) {
-          const productList = products.slice(0, 3).map(product => 
+          const productList = products.map(product => 
             `• ${product.name} - ${product.brand} - ${product.price ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND` : 'Chưa có giá'}`
           ).join('\n');
 
           return {
-            answer: `🔍 **Kết quả tìm kiếm sản phẩm:**
-
-${productList}
-
-${products.length > 3 ? `... và ${products.length - 3} sản phẩm khác` : ''}
-
-💡 **Gợi ý:** Bạn có thể:
-• Xem chi tiết sản phẩm
-• So sánh các sản phẩm với nhau
-• Tìm kiếm sản phẩm khác`,
+            answer: `🔍 **Kết quả tìm kiếm sản phẩm:**\n\n${productList}\n\n💡 **Gợi ý:** Bạn có thể:\n• Xem chi tiết sản phẩm\n• So sánh các sản phẩm với nhau\n• Tìm kiếm sản phẩm khác`,
             type: 'product_search',
             products: products
           };
@@ -309,16 +300,12 @@ ${suggestions}
         const posts = await this.searchPosts(userQuestion);
         
         if (posts.length > 0) {
-          const postList = posts.slice(0, 3).map(post => 
+          const postList = posts.map(post => 
             `• ${post.title} - ${post.category}`
           ).join('\n');
 
           return {
-            answer: `📰 **Kết quả tìm kiếm bài viết:**
-
-${postList}
-
-${posts.length > 3 ? `... và ${posts.length - 3} bài viết khác` : ''}`,
+            answer: `📰 **Kết quả tìm kiếm bài viết:**\n\n${postList}`,
             type: 'post_search',
             posts: posts
           };

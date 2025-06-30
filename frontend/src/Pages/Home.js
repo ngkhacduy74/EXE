@@ -13,7 +13,7 @@ import ChatWidget from "../Components/WidgetChat";
 import Header from "../Components/Header";
 import BannerSection from "../Components/BannerSection";
 import BannerSection2 from "../Components/BannerSection2";
-import SearchSuggestions from "../Components/SearchSuggestions";
+import SearchWithAutocomplete from "../Components/SearchWithAutocomplete";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
@@ -89,7 +89,7 @@ const Home = () => {
             <div className="container-fluid mb-4">
               <div className="row">
                 <div className="col-12">
-                  <SearchSuggestions onSearchSelect={handleSearchSelect} />
+                  <SearchWithAutocomplete />
                 </div>
               </div>
             </div>
