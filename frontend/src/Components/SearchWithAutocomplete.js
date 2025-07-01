@@ -19,9 +19,9 @@ function saveSearchHistory(keyword) {
 function normalizeText(text) {
   return text
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/[^a-z0-9\s]/gi, '')
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9\s]/gi, "")
     .trim();
 }
 
@@ -31,7 +31,7 @@ function getSearchHistory(filter = "") {
     const filterWords = normalizeText(filter).split(/\s+/).filter(Boolean);
     history = history.filter((k) => {
       const normalizedK = normalizeText(k);
-      return filterWords.every(word => normalizedK.includes(word));
+      return filterWords.every((word) => normalizedK.includes(word));
     });
   }
   return history;
@@ -137,7 +137,7 @@ const SearchWithAutocomplete = ({
   // Handle product suggestion click
   const handleProductClick = (product) => {
     saveSearchHistory(product.name);
-    navigate(`/product/${product.id}`);
+    navigate(`/productView/${product._id || product.id}`);
     setShowDropdown(false);
     setSelectedIndex(-1);
   };
@@ -242,46 +242,60 @@ const SearchWithAutocomplete = ({
           <Search size={18} />
         </InputGroup.Text>
       </InputGroup>
-      {showDropdown && (suggestions.length > 0 || productSuggestions.length > 0) && (
-        <div className="search-dropdown" ref={dropdownRef}>
-          {/* Gợi ý sản phẩm thực tế */}
-          {productSuggestions.map((product, index) => (
-            <div
-              key={product.id || index}
-              className="product-suggestion-item"
-              onClick={() => handleProductClick(product)}
-            >
-              <img
-                src={Array.isArray(product.image) ? product.image[0] : product.image || "/images/frigde.png"}
-                alt={product.name}
-                className="product-thumb"
-                onError={e => e.target.src = "/images/frigde.png"}
-              />
-              <div className="product-info">
-                <div>{product.name}</div>
-                <div className="product-price">
-                  {product.price ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND` : "Chưa có giá"}
+      {showDropdown &&
+        (suggestions.length > 0 || productSuggestions.length > 0) && (
+          <div className="search-dropdown" ref={dropdownRef}>
+            {/* Gợi ý sản phẩm thực tế */}
+            {productSuggestions.map((product, index) => (
+              <div
+                key={product.id || index}
+                className="product-suggestion-item"
+                onClick={() => handleProductClick(product)}
+              >
+                <img
+                  src={
+                    Array.isArray(product.image)
+                      ? product.image[0]
+                      : product.image || "/images/frigde.png"
+                  }
+                  alt={product.name}
+                  className="product-thumb"
+                  onError={(e) => (e.target.src = "/images/frigde.png")}
+                />
+                <div className="product-info">
+                  <div>{product.name}</div>
+                  <div className="product-price">
+                    {product.price
+                      ? `${parseFloat(product.price).toLocaleString(
+                          "vi-VN"
+                        )} VND`
+                      : "Chưa có giá"}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-          {/* Gợi ý lịch sử tìm kiếm */}
-          {suggestions.map((item, index) => (
-            <div
-              key={item + index}
-              className={`suggestion-item${selectedIndex === index ? " selected" : ""}`}
-              onClick={() => handleSuggestionClick(item)}
-            >
-              {item}
-            </div>
-          ))}
-          {suggestions.length > 0 && (
-            <button className="clear-history-btn" onClick={handleClearHistory}>
-              Xóa lịch sử tìm kiếm
-            </button>
-          )}
-        </div>
-      )}
+            ))}
+            {/* Gợi ý lịch sử tìm kiếm */}
+            {suggestions.map((item, index) => (
+              <div
+                key={item + index}
+                className={`suggestion-item${
+                  selectedIndex === index ? " selected" : ""
+                }`}
+                onClick={() => handleSuggestionClick(item)}
+              >
+                {item}
+              </div>
+            ))}
+            {suggestions.length > 0 && (
+              <button
+                className="clear-history-btn"
+                onClick={handleClearHistory}
+              >
+                Xóa lịch sử tìm kiếm
+              </button>
+            )}
+          </div>
+        )}
     </div>
   );
 };
