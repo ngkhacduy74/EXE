@@ -16,12 +16,23 @@ function saveSearchHistory(keyword) {
   localStorage.setItem(LOCAL_KEY, JSON.stringify(history));
 }
 
+function normalizeText(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9\s]/gi, '')
+    .trim();
+}
+
 function getSearchHistory(filter = "") {
   let history = JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]");
   if (filter) {
-    history = history.filter((k) =>
-      k.toLowerCase().includes(filter.toLowerCase())
-    );
+    const filterWords = normalizeText(filter).split(/\s+/).filter(Boolean);
+    history = history.filter((k) => {
+      const normalizedK = normalizeText(k);
+      return filterWords.every(word => normalizedK.includes(word));
+    });
   }
   return history;
 }

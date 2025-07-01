@@ -11,6 +11,7 @@ function Header() {
   const [showBrandsDropdown, setShowBrandsDropdown] = useState(false);
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [searchCategory, setSearchCategory] = useState("");
 
   // Danh sách các danh mục sản phẩm
   const categories = [
@@ -84,7 +85,7 @@ function Header() {
   };
 
   const handleCategoryClick = (category) => {
-    navigate(`/products?category=${encodeURIComponent(category)}`);
+    navigate(`/products?product=${encodeURIComponent(category)}`);
   };
 
   // Mobile search handlers
@@ -94,6 +95,25 @@ function Header() {
       setIsMobileSearchOpen(false);
     },
   };
+
+  // Thêm hàm normalizeText giống SearchWithAutocomplete
+  function normalizeText(text) {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/[^a-z0-9\s]/gi, '')
+      .trim();
+  }
+
+  // Hàm lọc danh mục giống search
+  const filteredCategories = searchCategory
+    ? categories.filter((cat) => {
+        const filterWords = normalizeText(searchCategory).split(/\s+/).filter(Boolean);
+        const normalizedCat = normalizeText(cat);
+        return filterWords.every(word => normalizedCat.includes(word));
+      })
+    : categories;
 
   if (loading) {
     return <div>Loading...</div>;
@@ -107,7 +127,7 @@ function Header() {
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 1030,
+        zIndex: 2000,
         backgroundColor: "white",
         boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
         transition: "all 0.3s ease",
@@ -825,8 +845,21 @@ function Header() {
                   <h6 className="dropdown-header text-primary fw-bold">
                     Danh mục sản phẩm
                   </h6>
+                  <div className="px-3 pb-2">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Tìm danh mục..."
+                      value={searchCategory}
+                      onChange={e => setSearchCategory(e.target.value)}
+                      style={{ fontSize: 14 }}
+                    />
+                  </div>
                   <div className="row g-0 px-3">
-                    {categories.map((category) => (
+                    {filteredCategories.length === 0 && (
+                      <div className="col-12 text-muted py-2">Không tìm thấy danh mục</div>
+                    )}
+                    {filteredCategories.map((category) => (
                       <div key={category} className="col-6">
                         <a
                           className="dropdown-item py-3 px-3 rounded text-truncate"
@@ -998,7 +1031,17 @@ function Header() {
                 Danh mục sản phẩm
               </h6>
             </li>
-            {categories.slice(0, 8).map((category) => (
+            <li className="nav-item px-3 pb-2">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Tìm danh mục..."
+                value={searchCategory}
+                onChange={e => setSearchCategory(e.target.value)}
+                style={{ fontSize: 14 }}
+              />
+            </li>
+            {filteredCategories.slice(0, 8).map((category) => (
               <li className="nav-item" key={category}>
                 <a
                   className="nav-link ps-3 py-2 border-bottom mobile-nav-category"
@@ -1012,7 +1055,7 @@ function Header() {
                 </a>
               </li>
             ))}
-            {categories.length > 8 && (
+            {filteredCategories.length > 8 && (
               <li className="nav-item">
                 <a
                   className="nav-link ps-3 text-primary mobile-nav-category"

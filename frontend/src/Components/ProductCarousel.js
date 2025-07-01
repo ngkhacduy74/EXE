@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+import { Navigation, Grid } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
+import "swiper/css/grid";
 import { Container, Spinner } from "react-bootstrap";
 import FavoriteButton from "./FavoriteButton";
 const backUpImg = "/images/frigde.png";
@@ -97,12 +98,15 @@ const Product2Carousel = () => {
     e.target.src = backUpImg;
   };
 
-  // Filter products by category/brand for tabs (only Second Hand products)
-  const allProducts = products;
-  const fushimavinaProducts = products.filter(
-    (product) => product.brand === "Fushimavina"
-  );
-  const ababaProducts = products.filter((product) => product.brand === "ABABA");
+  // Lấy danh sách brand duy nhất từ products
+  const brands = Array.from(new Set(products.map((p) => p.brand).filter(Boolean)));
+  const [activeBrand, setActiveBrand] = useState("All");
+
+  // Lọc sản phẩm theo brand đang chọn
+  const filteredProducts =
+    activeBrand === "All"
+      ? products
+      : products.filter((product) => product.brand === activeBrand);
 
   // Hide component if no Second Hand products exist
   if (loading) {
@@ -251,18 +255,19 @@ const Product2Carousel = () => {
 
   // Swiper configuration
   const swiperConfig = {
-    modules: [Navigation],
+    modules: [Navigation, Grid],
     slidesPerView: 5,
     spaceBetween: 25,
     speed: 500,
     navigation: true,
+    grid: { rows: 3, fill: "row" },
     breakpoints: {
-      0: { slidesPerView: 1, spaceBetween: 15 },
-      576: { slidesPerView: 2, spaceBetween: 20 },
-      768: { slidesPerView: 2, spaceBetween: 20 },
-      992: { slidesPerView: 3, spaceBetween: 25 },
-      1200: { slidesPerView: 4, spaceBetween: 25 },
-      1400: { slidesPerView: 5, spaceBetween: 25 },
+      0: { slidesPerView: 1, spaceBetween: 15, grid: { rows: 3 } },
+      576: { slidesPerView: 2, spaceBetween: 20, grid: { rows: 3 } },
+      768: { slidesPerView: 2, spaceBetween: 20, grid: { rows: 3 } },
+      992: { slidesPerView: 3, spaceBetween: 25, grid: { rows: 3 } },
+      1200: { slidesPerView: 4, spaceBetween: 25, grid: { rows: 3 } },
+      1400: { slidesPerView: 5, spaceBetween: 25, grid: { rows: 3 } },
     },
   };
 
@@ -296,74 +301,33 @@ const Product2Carousel = () => {
               <div className="tabs-header d-flex justify-content-between border-bottom mb-4 pb-3">
                 <h3 className="fw-bold mb-0">Đồ cũ</h3>
                 <nav>
-                  <div
-                    className="nav nav-tabs border-0"
-                    id="nav-tab"
-                    role="tablist"
-                  >
+                  <div className="nav nav-tabs border-0" id="nav-tab" role="tablist">
                     <button
-                      className="nav-link text-uppercase fs-6 active fw-medium px-4"
-                      id="nav-all-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#nav-all"
+                      className={`nav-link text-uppercase fs-6 fw-medium px-4${activeBrand === "All" ? " active" : ""}`}
                       type="button"
                       role="tab"
+                      onClick={() => setActiveBrand("All")}
                     >
                       All
                     </button>
-                    <button
-                      className="nav-link text-uppercase fs-6 fw-medium px-4"
-                      id="nav-fushima-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#nav-fushima"
-                      type="button"
-                      role="tab"
-                    >
-                      Fushimavina
-                    </button>
-                    <button
-                      className="nav-link text-uppercase fs-6 fw-medium px-4"
-                      id="nav-ababa-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#nav-ababa"
-                      type="button"
-                      role="tab"
-                    >
-                      ABABA
-                    </button>
+                    {brands.map((brand) => (
+                      <button
+                        key={brand}
+                        className={`nav-link text-uppercase fs-6 fw-medium px-4${activeBrand === brand ? " active" : ""}`}
+                        type="button"
+                        role="tab"
+                        onClick={() => setActiveBrand(brand)}
+                      >
+                        {brand}
+                      </button>
+                    ))}
                   </div>
                 </nav>
               </div>
 
               <div className="tab-content" id="nav-tabContent">
-                {/* Tab Pane: All */}
-                <div
-                  className="tab-pane fade show active"
-                  id="nav-all"
-                  role="tabpanel"
-                  aria-labelledby="nav-all-tab"
-                >
-                  {renderSwiper(allProducts)}
-                </div>
-
-                {/* Tab Pane: Fushimavina */}
-                <div
-                  className="tab-pane fade"
-                  id="nav-fushima"
-                  role="tabpanel"
-                  aria-labelledby="nav-fushima-tab"
-                >
-                  {renderSwiper(fushimavinaProducts)}
-                </div>
-
-                {/* Tab Pane: ABABA */}
-                <div
-                  className="tab-pane fade"
-                  id="nav-ababa"
-                  role="tabpanel"
-                  aria-labelledby="nav-ababa-tab"
-                >
-                  {renderSwiper(ababaProducts)}
+                <div className="tab-pane fade show active" id="nav-all" role="tabpanel">
+                  {renderSwiper(filteredProducts)}
                 </div>
               </div>
             </div>

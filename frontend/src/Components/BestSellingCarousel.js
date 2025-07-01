@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+import { Navigation, Grid } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
+import "swiper/css/grid";
 import { Container, Spinner } from "react-bootstrap";
 import {
   loadRecentlyViewed,
@@ -131,6 +132,16 @@ const BestSellingCarousel = () => {
   );
   const ababaProducts = products.filter((product) => product.brand === "ABABA");
 
+  // Lấy danh sách brand duy nhất từ products
+  const brands = Array.from(new Set(products.map((p) => p.brand).filter(Boolean)));
+  const [activeBrand, setActiveBrand] = useState("All");
+
+  // Lọc sản phẩm theo brand đang chọn
+  const filteredProducts =
+    activeBrand === "All"
+      ? products
+      : products.filter((product) => product.brand === activeBrand);
+
   // Hide component on error or if no products
   if (error || products.length === 0) {
     return null;
@@ -250,18 +261,19 @@ const BestSellingCarousel = () => {
 
   // Swiper configuration
   const swiperConfig = {
-    modules: [Navigation],
+    modules: [Navigation, Grid],
     slidesPerView: 5,
     spaceBetween: 25,
     speed: 500,
     navigation: true,
+    grid: { rows: 2, fill: "row" },
     breakpoints: {
-      0: { slidesPerView: 1, spaceBetween: 15 },
-      576: { slidesPerView: 2, spaceBetween: 20 },
-      768: { slidesPerView: 2, spaceBetween: 20 },
-      992: { slidesPerView: 3, spaceBetween: 25 },
-      1200: { slidesPerView: 4, spaceBetween: 25 },
-      1400: { slidesPerView: 5, spaceBetween: 25 },
+      0: { slidesPerView: 1, spaceBetween: 15, grid: { rows: 3 } },
+      576: { slidesPerView: 2, spaceBetween: 20, grid: { rows: 3 } },
+      768: { slidesPerView: 2, spaceBetween: 20, grid: { rows: 3 } },
+      992: { slidesPerView: 3, spaceBetween: 25, grid: { rows: 3 } },
+      1200: { slidesPerView: 4, spaceBetween: 25, grid: { rows: 3 } },
+      1400: { slidesPerView: 5, spaceBetween: 25, grid: { rows: 3 } },
     },
   };
 
@@ -295,54 +307,35 @@ const BestSellingCarousel = () => {
               <div className="tabs-header d-flex justify-content-between border-bottom mb-4 pb-3">
                 <h3 className="fw-bold mb-0">Các sản phẩm liên quan</h3>
                 <nav>
-                  <div
-                    className="nav nav-tabs border-0"
-                    id="nav-tab"
-                    role="tablist"
-                  >
+                  <div className="nav nav-tabs border-0" id="nav-tab" role="tablist">
                     <button
-                      className="nav-link text-uppercase fs-6 active fw-medium px-4"
-                      id="nav-all-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#nav-all"
+                      className={`nav-link text-uppercase fs-6 fw-medium px-4${activeBrand === "All" ? " active" : ""}`}
                       type="button"
                       role="tab"
+                      onClick={() => setActiveBrand("All")}
                     >
                       All
                     </button>
+                    {brands.map((brand) => (
+                      <button
+                        key={brand}
+                        className={`nav-link text-uppercase fs-6 fw-medium px-4${activeBrand === brand ? " active" : ""}`}
+                        type="button"
+                        role="tab"
+                        onClick={() => setActiveBrand(brand)}
+                      >
+                        {brand}
+                      </button>
+                    ))}
                     <button
-                      className="nav-link text-uppercase fs-6 fw-medium px-4"
-                      id="nav-fushima-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#nav-fushima"
+                      className={`nav-link text-uppercase fs-6 fw-medium px-4${activeBrand === "recent" ? " active" : ""}`}
                       type="button"
                       role="tab"
-                    >
-                      Fushimavina
-                    </button>
-                    <button
-                      className="nav-link text-uppercase fs-6 fw-medium px-4"
-                      id="nav-ababa-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#nav-ababa"
-                      type="button"
-                      role="tab"
-                    >
-                      ABABA
-                    </button>
-                    <button
-                      className="nav-link text-uppercase fs-6 fw-medium px-4"
-                      id="nav-recent-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#nav-recent"
-                      type="button"
-                      role="tab"
+                      onClick={() => setActiveBrand("recent")}
                     >
                       Đã xem
                       {recentlyViewed.length > 0 && (
-                        <span className="badge bg-primary ms-1">
-                          {recentlyViewed.length}
-                        </span>
+                        <span className="badge bg-primary ms-1">{recentlyViewed.length}</span>
                       )}
                     </button>
                   </div>
@@ -350,74 +343,10 @@ const BestSellingCarousel = () => {
               </div>
 
               <div className="tab-content" id="nav-tabContent">
-                {/* Tab Pane: All */}
-                <div
-                  className="tab-pane fade show active"
-                  id="nav-all"
-                  role="tabpanel"
-                  aria-labelledby="nav-all-tab"
-                >
-                  {renderSwiper(allProducts)}
-                </div>
-
-                {/* Tab Pane: Fushimavina */}
-                <div
-                  className="tab-pane fade"
-                  id="nav-fushima"
-                  role="tabpanel"
-                  aria-labelledby="nav-fushima-tab"
-                >
-                  {renderSwiper(fushimavinaProducts)}
-                </div>
-
-                {/* Tab Pane: ABABA */}
-                <div
-                  className="tab-pane fade"
-                  id="nav-ababa"
-                  role="tabpanel"
-                  aria-labelledby="nav-ababa-tab"
-                >
-                  {renderSwiper(ababaProducts)}
-                </div>
-
-                {/* Tab Pane: Recently Viewed */}
-                <div
-                  className="tab-pane fade"
-                  id="nav-recent"
-                  role="tabpanel"
-                  aria-labelledby="nav-recent-tab"
-                >
-                  {recentlyViewed.length > 0 ? (
-                    <div>
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <p className="text-muted mb-0">
-                          Sản phẩm bạn đã xem gần đây ({recentlyViewed.length}{" "}
-                          sản phẩm)
-                        </p>
-                        <button
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={handleClearRecentlyViewed}
-                        >
-                          <i className="fas fa-trash me-1"></i>
-                          Xóa lịch sử
-                        </button>
-                      </div>
-                      {renderSwiper(recentlyViewed)}
-                    </div>
-                  ) : (
-                    <div className="text-center py-5">
-                      <div
-                        className="text-muted mb-3"
-                        style={{ fontSize: "3rem" }}
-                      >
-                        👁️
-                      </div>
-                      <h5 className="text-muted">Chưa có sản phẩm đã xem</h5>
-                      <p className="text-muted">
-                        Khi bạn xem sản phẩm, chúng sẽ xuất hiện ở đây
-                      </p>
-                    </div>
-                  )}
+                <div className="tab-pane fade show active" id="nav-all" role="tabpanel">
+                  {activeBrand === "recent"
+                    ? renderSwiper(recentlyViewed)
+                    : renderSwiper(filteredProducts)}
                 </div>
               </div>
             </div>

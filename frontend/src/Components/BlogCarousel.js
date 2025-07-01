@@ -130,7 +130,7 @@ const BlogCarousel = () => {
         <div className="container-fluid">
           <div className="row">
             <div className="section-header d-flex align-items-center justify-content-between my-5">
-              <h2 className="section-title">Our Recent Blog</h2>
+              <h2 className="section-title">Các bài viết mới</h2>
               <div className="btn-wrap align-right">
                 <a href="#" className="d-flex align-items-center nav-link">
                   Read All Articles{" "}
@@ -152,7 +152,7 @@ const BlogCarousel = () => {
       <div className="container-fluid">
         <div className="row">
           <div className="section-header d-flex align-items-center justify-content-between my-5">
-            <h2 className="section-title">Our Recent Blog</h2>
+            <h2 className="section-title">Các bài viết mới</h2>
             <div className="btn-wrap align-right">
               <a href="#" className="d-flex align-items-center nav-link">
                 Read All Articles{" "}
