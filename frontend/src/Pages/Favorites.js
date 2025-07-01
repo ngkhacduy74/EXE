@@ -228,41 +228,14 @@ const Favorites = () => {
                       className="mb-4"
                     >
                       <Card className="h-100 border-0 shadow-sm product-card">
-                        <div className="position-relative">
+                        <div className="position-relative image-container">
                           <img
                             src={getProductImage(favorite)}
                             className="card-img-top"
                             alt={product.name}
-                            style={{
-                              height: "200px",
-                              width: "100%",
-                              objectFit: "cover",
-                              cursor: "pointer",
-                            }}
-                            onClick={() =>
-                              handleProductClick(product.id || product._id)
-                            }
+                            onClick={() => handleProductClick(product.id || product._id)}
                             onError={handleImageError}
                           />
-                          <div className="position-absolute top-0 end-0 m-2">
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() =>
-                                handleRemoveFromFavorites(
-                                  product.id || product._id
-                                )
-                              }
-                              className="rounded-circle"
-                              style={{
-                                width: "32px",
-                                height: "32px",
-                                padding: 0,
-                              }}
-                            >
-                              <Trash2 size={14} />
-                            </Button>
-                          </div>
                           {product.discount && (
                             <span className="badge bg-success position-absolute top-0 start-0 m-2">
                               -{product.discount}%
@@ -271,7 +244,7 @@ const Favorites = () => {
                         </div>
                         <Card.Body className="d-flex flex-column">
                           <h6
-                            className="card-title fw-bold mb-2"
+                            className="card-title fw-bold mb-2 cursor-pointer"
                             style={{
                               lineHeight: "1.3",
                               height: "2.6em",
@@ -279,11 +252,8 @@ const Favorites = () => {
                               display: "-webkit-box",
                               WebkitLineClamp: 2,
                               WebkitBoxOrient: "vertical",
-                              cursor: "pointer",
                             }}
-                            onClick={() =>
-                              handleProductClick(product.id || product._id)
-                            }
+                            onClick={() => handleProductClick(product.id || product._id)}
                           >
                             {product.name}
                           </h6>
@@ -311,17 +281,26 @@ const Favorites = () => {
                                   : "Còn hàng"}
                               </span>
                             </div>
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              className="w-100"
-                              onClick={() =>
-                                handleProductClick(product.id || product._id)
-                              }
-                            >
-                              <Eye size={14} className="me-1" />
-                              Xem chi tiết
-                            </Button>
+                            <div className="d-flex gap-2">
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                className="w-100"
+                                onClick={() => handleProductClick(product.id || product._id)}
+                              >
+                                <Eye size={14} className="me-1" />
+                                Xem chi tiết
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleRemoveFromFavorites(product.id || product._id)}
+                                className="d-flex align-items-center justify-content-center"
+                                style={{ minWidth: 40 }}
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            </div>
                           </div>
                         </Card.Body>
                       </Card>

@@ -242,12 +242,20 @@ const CompareProduct = () => {
       { key: "rating", label: "Đánh giá", type: "rating" },
       { key: "quantity", label: "Tình trạng", type: "stock" },
       { key: "capacity", label: "Dung lượng", type: "capacity" },
-      { key: "description", label: "Mô tả", type: "text" },
+      { key: "size", label: "Kích thước", type: "text" },
+      { key: "weight", label: "Trọng lượng (kg)", type: "text" },
+      { key: "voltage", label: "Điện áp", type: "text" },
+      { key: "features", label: "Tính năng nổi bật", type: "features" },
     ];
 
-    return features.filter((feature) =>
-      compareProducts.some((product) => product[feature.key])
-    );
+    return features.filter((feature) => {
+      if (feature.key === "features") {
+        return compareProducts.some(
+          (product) => Array.isArray(product.features) && product.features.length > 0
+        );
+      }
+      return compareProducts.some((product) => product[feature.key]);
+    });
   };
 
   // Render feature value
@@ -285,6 +293,20 @@ const CompareProduct = () => {
         return (
           <span className="small">{value ? `${value} kg` : "Chưa có"}</span>
         );
+      case "features":
+        if (Array.isArray(product.features) && product.features.length > 0) {
+          return (
+            <ul className="text-start ps-3 mb-0 small">
+              {product.features.map((f, idx) => (
+                <li key={f.id || idx}>
+                  <strong>{f.title}</strong>
+                  {f.description ? `: ${f.description}` : ""}
+                </li>
+              ))}
+            </ul>
+          );
+        }
+        return <span className="small">Chưa có</span>;
       case "text":
         return <span className="small">{value || "Chưa có"}</span>;
       default:

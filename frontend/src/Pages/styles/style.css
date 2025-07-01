@@ -803,6 +803,7 @@ h1,h2,h3,h4,h5,h6 {
     transition: box-shadow 0.3s ease;
     border: 1px solid #e9ecef;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: #fff !important;
 }
 
 .product-card:hover .card {
