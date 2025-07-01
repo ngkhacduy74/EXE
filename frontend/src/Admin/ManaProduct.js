@@ -63,6 +63,8 @@ const ManageProduct = () => {
   const [brands, setBrands] = useState([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Delete modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -401,6 +403,18 @@ const ManageProduct = () => {
     setProductToDelete(null);
   };
 
+  // Tính toán sản phẩm hiển thị trên trang hiện tại
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const productsToShow = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Khi filter thay đổi thì reset về trang 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, selectedBrands, minPrice, maxPrice]);
+
   if (error && error.includes("Session expired")) {
     return <ErrorPage message={error} />;
   }
@@ -576,107 +590,141 @@ const ManageProduct = () => {
                 )}
               </div>
             ) : (
-              <Table
-                striped
-                bordered
-                hover
-                className="shadow-sm"
-                style={{ borderRadius: "15px", overflow: "hidden" }}
-              >
-                <thead className="bg-primary text-white">
-                  <tr>
-                    <th>#</th>
-                    <th>Tên</th>
-                    <th>Thương hiệu</th>
-                    <th>Giá tiền</th>
-                    <th>Số lượng</th>
-                    <th>Số điện thoại liên hệ</th>
-                    <th>Trạng thái</th>
-                    <th>Chỉnh sửa</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.map((product, index) => (
-                    <tr key={product.id}>
-                      <td>{index + 1}</td>
-                      <td>{product.name || "N/A"}</td>
-                      <td>{product.brand || "N/A"}</td>
-                      <td>
-                        {product.price
-                          ? `${parseFloat(product.price).toLocaleString(
-                              "vi-VN"
-                            )} VND`
-                          : "N/A"}
-                      </td>
-                      <td>
-                        {product.quantity ? `${product.quantity} kg` : "N/A"}
-                      </td>
-                      <td>
-                        {product.business_phone ? product.business_phone : "N/A"}
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            product.status === "New"
-                              ? "bg-success"
-                              : "bg-warning"
-                          }`}
-                        >
-                          {product.status || "N/A"}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="d-flex gap-2">
-                          <Button
-                            variant="info"
-                            size="sm"
-                            onClick={() => handleViewDetails(product.id)}
-                            title="View Details"
-                          >
-                            <Eye size={16} />
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => navigate(`/update-product/${product.id}`)}
-                            title="Sửa sản phẩm"
-                          >
-                            <Edit size={16} />
-                          </Button>
-                          <Button
-                            variant={
-                              product.status === "New" ? "warning" : "success"
-                            }
-                            size="sm"
-                            onClick={() =>
-                              handleToggleStatus(product.id, product.status)
-                            }
-                            title={
-                              product.status === "New"
-                                ? "Đổi thành Second Hand"
-                                : "Đổi thành New"
-                            }
-                          >
-                            {product.status === "New" ? (
-                              <EyeOff size={16} />
-                            ) : (
-                              <Check size={16} />
-                            )}
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDeleteProduct(product)}
-                            title="Delete Product"
-                          >
-                            <Trash2 size={16} />
-                          </Button>
-                        </div>
-                      </td>
+              <>
+                <Table
+                  striped
+                  bordered
+                  hover
+                  className="shadow-sm"
+                  style={{ borderRadius: "15px", overflow: "hidden" }}
+                >
+                  <thead className="bg-primary text-white">
+                    <tr>
+                      <th>#</th>
+                      <th>Tên</th>
+                      <th>Thương hiệu</th>
+                      <th>Giá tiền</th>
+                      <th>Số lượng</th>
+                      <th>Số điện thoại liên hệ</th>
+                      <th>Trạng thái</th>
+                      <th>Chỉnh sửa</th>
                     </tr>
+                  </thead>
+                  <tbody>
+                    {productsToShow.map((product, index) => (
+                      <tr key={product.id}>
+                        <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                        <td>{product.name || "N/A"}</td>
+                        <td>{product.brand || "N/A"}</td>
+                        <td>
+                          {product.price
+                            ? `${parseFloat(product.price).toLocaleString(
+                                "vi-VN"
+                              )} VND`
+                            : "N/A"}
+                        </td>
+                        <td>
+                          {product.quantity ? `${product.quantity} kg` : "N/A"}
+                        </td>
+                        <td>
+                          {product.business_phone ? product.business_phone : "N/A"}
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              product.status === "New"
+                                ? "bg-success"
+                                : "bg-warning"
+                            }`}
+                          >
+                            {product.status || "N/A"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="d-flex gap-2">
+                            <Button
+                              variant="info"
+                              size="sm"
+                              onClick={() => handleViewDetails(product.id)}
+                              title="View Details"
+                            >
+                              <Eye size={16} />
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => navigate(`/update-product/${product.id}`)}
+                              title="Sửa sản phẩm"
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button
+                              variant={
+                                product.status === "New" ? "warning" : "success"
+                              }
+                              size="sm"
+                              onClick={() =>
+                                handleToggleStatus(product.id, product.status)
+                              }
+                              title={
+                                product.status === "New"
+                                  ? "Đổi thành Second Hand"
+                                  : "Đổi thành New"
+                              }
+                            >
+                              {product.status === "New" ? (
+                                <EyeOff size={16} />
+                              ) : (
+                                <Check size={16} />
+                              )}
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleDeleteProduct(product)}
+                              title="Delete Product"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+                {/* Pagination UI */}
+                <div className="d-flex justify-content-center align-items-center my-3">
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    className="me-2"
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={page === currentPage ? "primary" : "outline-primary"}
+                      size="sm"
+                      className="mx-1"
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </Button>
                   ))}
-                </tbody>
-              </Table>
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    className="ms-2"
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </>
             )}
           </div>
         </Col>

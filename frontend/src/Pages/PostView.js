@@ -516,9 +516,21 @@ const PostView = () => {
                 </div>
               </div>
               <h2 style={styles.sectionTitle}>Nội dung sản phẩm</h2>
-              <div style={styles.description}>
-                {post.content || post.description || 'Không có nội dung'}
-              </div>
+              {post.content && (
+                <div style={styles.description}>
+                  <strong>Nội dung:</strong>
+                  <div>{post.content}</div>
+                </div>
+              )}
+              {post.description && (
+                <div style={styles.description}>
+                  <strong>Mô tả:</strong>
+                  <div>{post.description}</div>
+                </div>
+              )}
+              {!(post.content || post.description) && (
+                <div style={styles.description}>Không có nội dung</div>
+              )}
             </div>
 
             {/* Images and Likes */}

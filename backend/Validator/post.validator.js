@@ -19,6 +19,7 @@ const postSchema = Joi.object({
   address: Joi.string().required(),
   condition: Joi.string().valid("Pending", "Active", "Reject").optional(),
   description: Joi.string().min(6).max(1500).required(),
+  content: Joi.string().allow('').max(5000).optional(),
   seller: sellerSchema.optional(),
 });
 

@@ -200,6 +200,7 @@ const CreatePost = () => {
         user_position: formData.user_position,
         address: formData.address,
         description: plainTextDescription,
+        content: formData.content,
       };
       await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/post/createPost`,

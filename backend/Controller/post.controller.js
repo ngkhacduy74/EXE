@@ -11,6 +11,7 @@ const createPost = async (data, token) => {
     user_position,
     address,
     description,
+    content,
     phone,
     email,
   } = data;
@@ -50,6 +51,7 @@ const createPost = async (data, token) => {
       user_position,
       address,
       description,
+      content,
       seller: sellerInfo,
       phone,
       email,
@@ -135,6 +137,7 @@ const updatePost = async (params) => {
       user_position: params.user_position,
       address: params.address,
       description: params.description,
+      content: params.content,
       condition: params.condition,
       seller: {
         id: params.seller?.id,

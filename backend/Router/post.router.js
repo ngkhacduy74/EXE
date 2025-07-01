@@ -77,7 +77,7 @@ router.post(
   }
 );
 
-router.put("/update-post/:id", async (req, res) => {
+router.put("/update-post/:id", verifyAdmin, async (req, res) => {
   const id = req.params.id;
   const userId = req.user.id;
   const seller = await getUserById(userId);

@@ -26,6 +26,7 @@ const postSchema = new mongoose.Schema(
     },
     address: { type: String, require: true },
     description: { type: String, require: true },
+    content: { type: String, require: false },
     seller: { type: peopleSchema, require: true },
     condition: {
       type: String,

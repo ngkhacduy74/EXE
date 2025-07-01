@@ -314,12 +314,7 @@ const ManagePost = () => {
 
   // Handle edit post
   const handleEditPost = (postId) => {
-    navigate(`/edit-post/${postId}`, {
-      state: {
-        token: tokens.accessToken,
-        refresh_token: tokens.refreshToken,
-      },
-    });
+    navigate(`/admin/edit-post/${postId}`);
   };
 
   // Handle toggle condition status with checkbox
@@ -637,7 +632,7 @@ const ManagePost = () => {
                           <Button
                             variant="warning"
                             size="sm"
-                            onClick={() => handleEditPost(post._id)}
+                            onClick={() => handleEditPost(post.id || post._id)}
                             title="Sửa bài viết"
                             style={{ borderRadius: "6px" }}
                           >
