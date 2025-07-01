@@ -25,6 +25,7 @@ import {
   addToRecentlyViewed,
   loadRecentlyViewed,
 } from "../utils/recentlyViewed";
+import { useFavorite } from "../hooks/useFavorite";
 
 const ProductView = () => {
   const { productId } = useParams();
@@ -39,6 +40,11 @@ const ProductView = () => {
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [authChecked, setAuthChecked] = useState(false);
   const [showPhone, setShowPhone] = useState(false);
+  const {
+    isFavorite,
+    loading: favoriteLoading,
+    toggleFavorite,
+  } = useFavorite(product?._id);
 
   // Check if user is authenticated
   useEffect(() => {
@@ -89,7 +95,7 @@ const ProductView = () => {
       if (err.response) {
         switch (err.response.status) {
           case 401:
-            console.log("�� 401 Unauthorized - Không redirect để debug");
+            console.log("🔒 401 Unauthorized - Không redirect để debug");
             setError(
               "Bạn không có quyền truy cập sản phẩm này (401). Vui lòng kiểm tra token hoặc đăng nhập lại."
             );
@@ -711,22 +717,20 @@ const ProductView = () => {
                         <i className="fas fa-phone me-2"></i>
                         Liên hệ
                       </Button>
-                      <FavoriteButton
-                        productId={product._id}
-                        className="btn-lg"
-                      />
                     </div>
-                    {showPhone && (
-                      <div className="text-center mt-3">
-                        <h5>Số điện thoại liên hệ:</h5>
-                        <p style={{ fontSize: 22, fontWeight: 600 }}>
-                          {product.business_phone ||
-                            product.product_phone ||
-                            "Không có số điện thoại liên hệ"}
-                        </p>
-                      </div>
+                    {!isFavorite && product && (
+                      <Button
+                        variant="outline-secondary"
+                        size="lg"
+                        onClick={toggleFavorite}
+                        className="py-3 fw-medium"
+                        disabled={favoriteLoading}
+                      >
+                        <i className="fas fa-bookmark me-2"></i>
+                        Thêm vào danh sách yêu thích
+                      </Button>
                     )}
-                    <Button
+                    {/* <Button
                       variant="outline-secondary"
                       size="lg"
                       onClick={() => {
@@ -739,7 +743,7 @@ const ProductView = () => {
                     >
                       <i className="fas fa-bookmark me-2"></i>
                       Lưu vào danh sách xem
-                    </Button>
+                    </Button> */}
                   </div>
                 </Card.Body>
               </Card>

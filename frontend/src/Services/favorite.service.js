@@ -17,16 +17,7 @@ class FavoriteService {
         throw new Error("Token không tồn tại. Vui lòng đăng nhập lại.");
       }
 
-      const response = await apiService.post(
-        FAVORITE_API.ADD,
-        { productId },
-        {
-          headers: {
-            token: token,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await apiService.post(FAVORITE_API.ADD, { productId });
       return response.data;
     } catch (error) {
       console.error("Error adding to favorites:", error);
@@ -43,13 +34,7 @@ class FavoriteService {
       }
 
       const response = await apiService.delete(
-        `${FAVORITE_API.REMOVE}/${productId}`,
-        {
-          headers: {
-            token: token,
-            "Content-Type": "application/json",
-          },
-        }
+        `${FAVORITE_API.REMOVE}/${productId}`
       );
       return response.data;
     } catch (error) {
@@ -68,10 +53,6 @@ class FavoriteService {
 
       const response = await apiService.get(FAVORITE_API.LIST, {
         params: { page, limit },
-        headers: {
-          token: token,
-          "Content-Type": "application/json",
-        },
       });
       return response.data;
     } catch (error) {
@@ -89,13 +70,7 @@ class FavoriteService {
       }
 
       const response = await apiService.get(
-        `${FAVORITE_API.CHECK}/${productId}`,
-        {
-          headers: {
-            token: token,
-            "Content-Type": "application/json",
-          },
-        }
+        `${FAVORITE_API.CHECK}/${productId}`
       );
       return response.data;
     } catch (error) {
@@ -112,12 +87,7 @@ class FavoriteService {
         throw new Error("Token không tồn tại. Vui lòng đăng nhập lại.");
       }
 
-      const response = await apiService.delete(FAVORITE_API.CLEAR, {
-        headers: {
-          token: token,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await apiService.delete(FAVORITE_API.CLEAR);
       return response.data;
     } catch (error) {
       console.error("Error clearing favorites:", error);

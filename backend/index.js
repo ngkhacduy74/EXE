@@ -47,7 +47,7 @@ app.use(express.json());
 
 const startServer = () => {
   const port = process.env.PORT || 4000;
-
+  // app.use(Router);
   Router(app);
 
   app.use("/api/*", (req, res) => {
