@@ -37,10 +37,21 @@ function Header() {
     navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
   };
 
-  // Fetch brands
+  // Fetch brands - optimized with caching
   useEffect(() => {
     const fetchBrands = async () => {
       try {
+        // Check if brands are cached
+        const cachedBrands = localStorage.getItem('cachedBrands');
+        const cacheTime = localStorage.getItem('cachedBrandsTime');
+        const now = Date.now();
+        
+        // Use cache if it's less than 5 minutes old
+        if (cachedBrands && cacheTime && (now - parseInt(cacheTime)) < 5 * 60 * 1000) {
+          setBrands(JSON.parse(cachedBrands));
+          return;
+        }
+
         const response = await authApiClient.get("/product/");
         const products = response.data.data || [];
 
@@ -48,7 +59,13 @@ function Header() {
         const uniqueBrands = [
           ...new Set(products.map((product) => product.brand).filter(Boolean)),
         ];
-        setBrands(uniqueBrands.slice(0, 10)); // Limit to 10 brands
+        const limitedBrands = uniqueBrands.slice(0, 10);
+        
+        // Cache the brands
+        localStorage.setItem('cachedBrands', JSON.stringify(limitedBrands));
+        localStorage.setItem('cachedBrandsTime', now.toString());
+        
+        setBrands(limitedBrands);
       } catch (error) {
         console.error("Error fetching brands:", error);
         setBrands([]);

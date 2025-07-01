@@ -151,12 +151,22 @@ const validateToken = async () => {
 
     const user = JSON.parse(userData);
     
+    // Check if we have a recent validation (within 5 minutes)
+    const lastValidation = localStorage.getItem('lastTokenValidation');
+    const now = Date.now();
+    
+    if (lastValidation && (now - parseInt(lastValidation)) < 5 * 60 * 1000) {
+      // Use cached validation
+      return { isValid: true, user: user };
+    }
+    
     // Try to get user info from server to validate token
     const response = await authApiClient.get(`/user/getUserByEmail?email=${encodeURIComponent(user.email)}`);
     
     if (response.data && response.data.user) {
       // Update user data in localStorage
       localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem('lastTokenValidation', now.toString());
       return { isValid: true, user: response.data.user };
     } else {
       return { isValid: false, user: null };

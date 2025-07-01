@@ -196,17 +196,33 @@ const ProductBrowser = () => {
 
     // Search filter
     if (filters.search.trim()) {
-      filtered = filtered.filter(
-        (product) =>
-          product.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-          product.brand?.toLowerCase().includes(filters.search.toLowerCase()) ||
-          product.category
-            ?.toLowerCase()
-            .includes(filters.search.toLowerCase()) ||
-          product.description
-            ?.toLowerCase()
-            .includes(filters.search.toLowerCase())
-      );
+      const searchKeywords = filters.search.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+      
+      filtered = filtered.filter((product) => {
+        const productName = product.name?.toLowerCase() || '';
+        const productBrand = product.brand?.toLowerCase() || '';
+        const productCategory = product.category?.toLowerCase() || '';
+        const productDescription = product.description?.toLowerCase() || '';
+        
+        // Kiểm tra từ khóa đầy đủ
+        const fullSearch = filters.search.toLowerCase();
+        if (productName.includes(fullSearch) || 
+            productBrand.includes(fullSearch) || 
+            productCategory.includes(fullSearch) || 
+            productDescription.includes(fullSearch)) {
+          return true;
+        }
+        
+        // Kiểm tra từng từ khóa riêng lẻ
+        return searchKeywords.some(keyword => 
+          keyword.length > 1 && (
+            productName.includes(keyword) || 
+            productBrand.includes(keyword) || 
+            productCategory.includes(keyword) || 
+            productDescription.includes(keyword)
+          )
+        );
+      });
     }
 
     // Category filter

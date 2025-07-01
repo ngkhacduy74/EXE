@@ -192,7 +192,32 @@ const searchProducts = async (req, res) => {
     const query = {};
 
     if (search) {
-      query.name = { $regex: search, $options: "i" };
+      // Tách từ khóa tìm kiếm dựa trên khoảng trắng
+      const keywords = search.trim().split(/\s+/).filter(word => word.length > 0);
+      
+      if (keywords.length > 0) {
+        const searchConditions = [];
+        
+        // Tìm kiếm theo tên sản phẩm với từ khóa đầy đủ
+        searchConditions.push({ name: { $regex: search, $options: "i" } });
+        
+        // Tìm kiếm theo thương hiệu với từ khóa đầy đủ
+        searchConditions.push({ brand: { $regex: search, $options: "i" } });
+        
+        // Tìm kiếm theo mô tả với từ khóa đầy đủ
+        searchConditions.push({ description: { $regex: search, $options: "i" } });
+        
+        // Tìm kiếm theo từng từ khóa riêng lẻ
+        keywords.forEach(keyword => {
+          if (keyword.length > 1) { // Chỉ tìm kiếm từ có độ dài > 1
+            searchConditions.push({ name: { $regex: keyword, $options: "i" } });
+            searchConditions.push({ brand: { $regex: keyword, $options: "i" } });
+            searchConditions.push({ description: { $regex: keyword, $options: "i" } });
+          }
+        });
+        
+        query.$or = searchConditions;
+      }
     }
 
     if (category) {

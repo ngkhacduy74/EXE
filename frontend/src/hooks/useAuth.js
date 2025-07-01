@@ -17,11 +17,21 @@ export const useAuth = () => {
     const validateAndSetUser = async () => {
       try {
         setLoading(true);
+        
+        // First, try to get user from localStorage for immediate display
+        const cachedUser = getCurrentUser();
+        if (cachedUser) {
+          setUser(cachedUser);
+          setLoading(false);
+        }
+        
+        // Then validate token in background
         const { isValid, user: validatedUser } = await validateToken();
         console.log("useAuth - validateToken result:", {
           isValid,
           validatedUser,
         });
+        
         if (isValid && validatedUser) {
           setUser(validatedUser);
         } else {
