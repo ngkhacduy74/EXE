@@ -57,7 +57,7 @@ class GA4Analytics {
           custom_parameter_2: parameters.user_role || 'admin',
           ...parameters
         });
-        console.log(`📊 GA4 Event tracked: ${eventName}`, parameters);
+
       } else {
         console.warn('⚠️ GA4 gtag not available for event tracking');
       }
@@ -74,7 +74,7 @@ class GA4Analytics {
           page_title: pageTitle,
           page_location: pageLocation
         });
-        console.log(`📊 GA4 Page view tracked: ${pageTitle}`);
+
       }
     } catch (error) {
       console.error('❌ Error tracking GA4 page view:', error);
@@ -281,7 +281,7 @@ function AdminDashboard() {
     try {
       // Check if GA4 is already loaded
       if (typeof window !== 'undefined' && window.gtag) {
-        console.log("✅ GA4 đã được tải từ index.html");
+
         
         // Track dashboard load event
         setTimeout(() => {
@@ -293,7 +293,6 @@ function AdminDashboard() {
               custom_parameter_1: 'overview',
               custom_parameter_2: 'admin'
             });
-            console.log("📊 Đã gửi event dashboard_loaded đến GA4");
           } catch (error) {
             console.error('Error sending GA4 event:', error);
           }
@@ -302,14 +301,13 @@ function AdminDashboard() {
         return;
       }
 
-      console.log("GA4 chưa được tải, đang thử tải lại...");
+
       
       // Fallback: Load GA4 script if not already loaded
       const script1 = document.createElement('script');
       script1.async = true;
       script1.src = `https://www.googletagmanager.com/gtag/js?id=G-0DRKJH48YN`;
       script1.onload = () => {
-        console.log("✅ GA4 script đã tải thành công (fallback)");
       };
       script1.onerror = () => {
         console.error("❌ Lỗi khi tải GA4 script");
@@ -329,7 +327,6 @@ function AdminDashboard() {
             'custom_parameter_2': 'user_role'
           }
         });
-        console.log('✅ GA4 đã được khởi tạo với ID: G-0DRKJH48YN');
       `;
       document.head.appendChild(script2);
 
@@ -342,7 +339,6 @@ function AdminDashboard() {
               event_label: 'Dashboard Load',
               value: 1
             });
-            console.log("📊 Đã gửi event dashboard_loaded đến GA4");
           }
         } catch (error) {
           console.error('❌ Error sending GA4 event (fallback):', error);
@@ -395,7 +391,6 @@ function AdminDashboard() {
         }
         
         setTokens(newTokens);
-        console.log("✅ Token đã được làm mới thành công");
         return true;
       }
     } catch (error) {
@@ -407,12 +402,10 @@ function AdminDashboard() {
   // Fetch real dashboard data from API - FIXED: Use proxy URL
   const fetchRealDashboardData = async () => {
     if (!tokens.accessToken) {
-      console.log("❌ Không có access token");
       return null;
     }
 
     try {
-      console.log("🔍 Đang lấy dữ liệu dashboard từ API...");
       // FIXED: Use proxy URL instead of direct backend URL
       const apiUrl = process.env.NODE_ENV === 'development' 
         ? '/api/dashboard/stats'
@@ -426,21 +419,17 @@ function AdminDashboard() {
         },
       });
 
-      console.log("📡 Trạng thái API Response:", response.status);
+
 
       if (response.status === 401) {
-        console.log("🔄 Token hết hạn, đang thử làm mới...");
         const refreshed = await refreshAccessToken();
         if (refreshed) {
-          console.log("✅ Token đã làm mới, thử lại API call...");
           return await fetchRealDashboardData();
         }
-        console.log("❌ Làm mới token thất bại");
         return null;
       }
 
       if (response.status === 403) {
-        console.log("❌ Truy cập bị từ chối - người dùng có thể không phải admin");
         return null;
       }
 
@@ -452,13 +441,11 @@ function AdminDashboard() {
         }
         
         const data = await response.json();
-        console.log("✅ Dữ liệu API Response:", data);
         return data.data;
       }
 
       // Log error response
       const errorText = await response.text();
-      console.log("❌ Lỗi API Response:", errorText);
       return null;
     } catch (error) {
       console.error("❌ Lỗi khi lấy dữ liệu dashboard:", error);
@@ -581,7 +568,6 @@ function AdminDashboard() {
         const realData = await fetchRealDashboardData();
         
         if (realData) {
-          console.log("✅ Đang sử dụng dữ liệu thực từ API");
           setRealData(realData);
           
           // Update dashboard data với các giá trị thực theo yêu cầu mới

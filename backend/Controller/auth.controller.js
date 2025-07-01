@@ -6,7 +6,6 @@ const User = require("../Model/user.model");
 const { sendOTP, verifyOTP } = require("./otp.controller");
 
 async function getUserByEmail(params) {
-  console.log("áouida8dqw", params);
   const user = await User.findOne({ email: params.email });
   if (!user) {
     return { success: false };
