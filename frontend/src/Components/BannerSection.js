@@ -63,9 +63,9 @@ const BannerSection = () => {
         const timeout = setTimeout(() => {
           setVisibleSlides(prev => [...prev, index]);
           if (index === savedProducts.length - 1) {
-            setTimeout(() => setAnimationComplete(true), 300);
+            setTimeout(() => setAnimationComplete(true), 500);
           }
-        }, index * 400);
+        }, index * 800);
         timeouts.push(timeout);
       });
 
@@ -208,7 +208,7 @@ const BannerSection = () => {
               navigation
               pagination={{ clickable: true }}
               autoplay={{
-                delay: 5000, // Tăng thời gian delay lên 5 giây
+                delay: 8000, // Tăng thời gian delay lên 8 giây
                 disableOnInteraction: true, // Dừng autoplay khi user tương tác
                 pauseOnMouseEnter: true, // Tạm dừng khi hover
               }}
@@ -327,7 +327,7 @@ const BannerSection = () => {
                 width: 12px;
                 height: 12px;
                 margin: 0 6px;
-                transition: all 0.3s ease;
+                transition: all 0.5s ease;
               }
               
               .product-banner-swiper .swiper-pagination-bullet-active {
@@ -343,7 +343,7 @@ const BannerSection = () => {
                 width: 20px;
                 height: 20px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                transition: all 0.3s ease;
+                transition: all 0.5s ease;
                 margin-top: -20px;
               }
               
@@ -364,7 +364,7 @@ const BannerSection = () => {
               .banner-card {
                 height: 320px;
                 border: 1px solid rgba(0,0,0,0.08);
-                transition: all 0.3s ease;
+                transition: all 0.5s ease;
               }
               
               .banner-card:hover {
@@ -404,7 +404,7 @@ const BannerSection = () => {
               }
               
               .transition-all {
-                transition: all 0.3s ease;
+                transition: all 0.5s ease;
               }
               
               /* Responsive adjustments */
@@ -469,7 +469,7 @@ const BannerSection = () => {
               }
               
               .banner-card {
-                animation: slideUp 0.6s ease-out;
+                animation: slideUp 1s ease-out;
               }
               
               /* Ensure equal heights for all cards */

@@ -23,7 +23,7 @@ const BannerSection2 = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % banners.length);
-    }, 5000); // Chuyển slide mỗi 5 giây
+    }, 8000); // Chuyển slide mỗi 8 giây
 
     return () => clearInterval(interval);
   }, [banners.length]);

@@ -14,14 +14,16 @@ export const useBanner = () => {
 export const BannerProvider = ({ children }) => {
   const [bannerProducts, setBannerProducts] = useState([]);
   const [bannerProductIds, setBannerProductIds] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load banner products
   const loadBannerProducts = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/banner`
+        `${process.env.REACT_APP_BACKEND_URL}/banner`,
+        { timeout: 15000 } // Tăng timeout lên 15 giây
       );
 
       if (response.data.success) {
@@ -37,7 +39,8 @@ export const BannerProvider = ({ children }) => {
   const loadBannerProductIds = async () => {
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/banner/ids`
+        `${process.env.REACT_APP_BACKEND_URL}/banner/ids`,
+        { timeout: 15000 } // Tăng timeout lên 15 giây
       );
 
       if (response.data.success) {
@@ -59,6 +62,7 @@ export const BannerProvider = ({ children }) => {
         loadBannerProductIds()
       ]);
       setLastUpdate(new Date());
+      setIsInitialized(true);
     } catch (error) {
       console.error('Error refreshing banner data:', error);
     } finally {
@@ -203,15 +207,10 @@ export const BannerProvider = ({ children }) => {
 
   // Initial load
   useEffect(() => {
-    refreshBannerData();
-
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(() => {
+    if (!isInitialized) {
       refreshBannerData();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
+    }
+  }, [isInitialized]);
 
   const value = {
     bannerProducts,
