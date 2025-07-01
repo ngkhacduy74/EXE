@@ -6,6 +6,7 @@ const User = require("../Model/user.model");
 const { sendOTP, verifyOTP } = require("./otp.controller");
 
 async function getUserByEmail(params) {
+  console.log("params", params);
   const user = await User.findOne({ email: params.email });
   if (!user) {
     return { success: false };
@@ -41,10 +42,11 @@ async function Register(params) {
   }
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(params.password, salt);
-  
+
   // Set default avatar if no image provided
-  const defaultAvatar = "https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg";
-  
+  const defaultAvatar =
+    "https://res.cloudinary.com/dtdwjplew/image/upload/v1737903159/9_gnxlmk.jpg";
+
   const newUser = new User({
     id: v1(),
     fullname: params.fullname,

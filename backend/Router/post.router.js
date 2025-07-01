@@ -21,6 +21,7 @@ const {
   verifyToken,
   verifyUser,
 } = require("../Middleware/auth.middleware");
+const { getUserByEmail } = require("../Controller/auth.controller");
 
 router.get("/user-post", verifyUser, async (req, res) => {
   const result = await getPostByUserId(req.user.id);
@@ -79,32 +80,12 @@ router.post(
 
 router.put("/update-post/:id", verifyAdmin, async (req, res) => {
   const id = req.params.id;
-  const userId = req.user.id;
-  const seller = await getUserById(userId);
-  const {
-    category,
-    image,
-    video,
-    status,
-    title,
-    user_position,
-    address,
-    description,
-    condition,
-  } = req.body;
-  const result = await updatePost({
-    id,
-    category,
-    image,
-    video,
-    status,
-    title,
-    user_position,
-    address,
-    description,
-    seller,
-    condition,
-  });
+  console.log("post id ", id);
+  const userEmail = req.user.id;
+  console.log("userId", req.user.user.email);
+  const seller = await getUserByEmail(req.user.user.email);
+  console.log("918723129uy3", seller);
+  const result = await updatePost(req.body, seller);
   if (result.success === false) {
     return res.status(500).json(result);
   }

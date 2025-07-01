@@ -125,29 +125,32 @@ const deletePost = async (id) => {
     message: "delete successful",
   };
 };
-const updatePost = async (params) => {
-  const updatedPost = await Post.findByIdAndUpdate(
-    params.id,
+const updatePost = async (body, seller) => {
+  console.log("seller", seller);
+  console.log("params111111", body);
+  const updatedPost = await Post.findOneAndUpdate(
+    { id: body.id },
     {
-      category: params.category,
-      image: params.image,
-      video: params.video,
-      status: params.status,
-      title: params.title,
-      user_position: params.user_position,
-      address: params.address,
-      description: params.description,
-      content: params.content,
-      condition: params.condition,
+      category: body.category,
+      image: body.image,
+      video: body.video,
+      status: body.status,
+      title: body.title,
+      user_position: body.user_position,
+      address: body.address,
+      description: body.description,
+      content: body.content,
+      condition: body.condition,
       seller: {
-        id: params.seller?.id,
-        fullname: params.seller?.fullname,
-        phone: params.seller?.phone,
-        email: params.seller?.email,
+        id: seller?.id,
+        fullname: seller?.fullname,
+        phone: seller?.phone,
+        email: seller?.email,
       },
     },
     { new: true }
   );
+  console.log("updatedPost", updatedPost);
 
   return { success: true, data: updatedPost };
 };
