@@ -17,12 +17,10 @@ const UserProductManager = () => {
       setError("");
       try {
         const token = localStorage.getItem("token");
-        console.log("[UserProductManager] Token gửi lên backend:", token);
         const res = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/product/user/products`,
           {
             headers: {
-              token: token || "",
               Authorization: token ? `Bearer ${token}` : "",
             },
           }
@@ -76,7 +74,9 @@ const UserProductManager = () => {
                     <td>{p.name}</td>
                     <td>{p.brand}</td>
                     <td>{p.price?.toLocaleString()} VND</td>
-                    <td>{p.status === "SecondHand" ? "Đã qua sử dụng" : "Mới"}</td>
+                    <td>
+                      {p.status === "SecondHand" ? "Đã qua sử dụng" : "Mới"}
+                    </td>
                     <td>{new Date(p.createdAt).toLocaleString()}</td>
                     <td>
                       <Button
@@ -103,8 +103,8 @@ const UserProductManager = () => {
           </div>
         </Container>
       </div>
-      <ChatWidget/>
-      <Footer/>
+      <ChatWidget />
+      <Footer />
     </div>
   );
 };
