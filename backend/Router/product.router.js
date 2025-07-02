@@ -64,6 +64,18 @@ router.get("/status/:status", verifyToken, async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
+  if (
+    req.query.search ||
+    req.query.category ||
+    req.query.brand ||
+    req.query.minPrice ||
+    req.query.maxPrice ||
+    req.query.status
+  ) {
+    // Nếu có bất kỳ filter nào, gọi searchProducts
+    return searchProducts(req, res);
+  }
+  // Nếu không có filter, trả về tất cả sản phẩm
   const result = await loadAllProduct();
   if (result.success === false) {
     return res.status(500).json(result);

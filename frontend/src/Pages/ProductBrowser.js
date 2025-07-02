@@ -42,7 +42,6 @@ const ProductBrowser = () => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({});
@@ -173,7 +172,6 @@ const ProductBrowser = () => {
         : [];
 
       setProducts(productData);
-      setFilteredProducts(productData);
 
       // Extract unique categories and brands
       const uniqueCategories = [
@@ -189,16 +187,25 @@ const ProductBrowser = () => {
       console.error("Fetch Error:", err);
       setError("Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.");
       setProducts([]);
-      setFilteredProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Initial fetch and when filters change
+  // Remove filteredProducts and FE filtering
+  // Always fetch products from BE when searchParams change
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    const newFilters = {
+      search: searchParams.get("search") || "",
+      category: searchParams.get("category") || "",
+      brand: searchParams.get("brand") || "",
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
+      status: searchParams.get("status") || "",
+    };
+    setFilters(newFilters);
+    fetchProducts(newFilters);
+  }, [searchParams]);
 
   // Handle search from SearchWithAutocomplete
   const handleSearch = (searchQuery) => {
@@ -222,116 +229,14 @@ const ProductBrowser = () => {
     fetchProducts(newFilters);
   };
 
-  // Apply filters and search
-  useEffect(() => {
-    let filtered = [...products];
-
-    // Search filter
-    if (filters.search.trim()) {
-      const searchKeywords = filters.search
-        .toLowerCase()
-        .split(/\s+/)
-        .filter((word) => word.length > 0);
-
-      filtered = filtered.filter((product) => {
-        const productName = product.name?.toLowerCase() || "";
-        const productBrand = product.brand?.toLowerCase() || "";
-        const productCategory = product.category?.toLowerCase() || "";
-        const productDescription = product.description?.toLowerCase() || "";
-
-        // Kiểm tra từ khóa đầy đủ
-        const fullSearch = filters.search.toLowerCase();
-        if (
-          productName.includes(fullSearch) ||
-          productBrand.includes(fullSearch) ||
-          productCategory.includes(fullSearch) ||
-          productDescription.includes(fullSearch)
-        ) {
-          return true;
-        }
-
-        // Kiểm tra từng từ khóa riêng lẻ
-        return searchKeywords.some(
-          (keyword) =>
-            keyword.length > 1 &&
-            (productName.includes(keyword) ||
-              productBrand.includes(keyword) ||
-              productCategory.includes(keyword) ||
-              productDescription.includes(keyword))
-        );
-      });
-    }
-
-    // Category filter
-    if (filters.category) {
-      filtered = filtered.filter(
-        (product) => product.category === filters.category
-      );
-    }
-
-    // Brand filter
-    if (filters.brand) {
-      filtered = filtered.filter((product) => product.brand === filters.brand);
-    }
-
-    // Price range filter
-    if (filters.minPrice !== "" || filters.maxPrice !== "") {
-      filtered = filtered.filter((product) => {
-        const price = parseFloat(product.price) || 0;
-        const min = filters.minPrice !== "" ? parseFloat(filters.minPrice) : 0;
-        const max =
-          filters.maxPrice !== "" ? parseFloat(filters.maxPrice) : Infinity;
-        return price >= min && price <= max;
-      });
-    }
-
-    // Status filter
-    if (filters.status) {
-      filtered = filtered.filter(
-        (product) => product.status === filters.status
-      );
-    }
-
-    // Sort products
-    filtered.sort((a, b) => {
-      let aValue = a[sortBy];
-      let bValue = b[sortBy];
-
-      if (sortBy === "price") {
-        aValue = parseFloat(aValue) || 0;
-        bValue = parseFloat(bValue) || 0;
-      } else if (typeof aValue === "string") {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-
-      if (sortOrder === "asc") {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-
-    setFilteredProducts(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
-  }, [
-    products,
-    filters.search,
-    filters.category,
-    filters.brand,
-    filters.minPrice,
-    filters.maxPrice,
-    filters.status,
-  ]);
-
-  // Pagination
+  // When rendering, use products directly for pagination
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(
+  const currentProducts = products.slice(
     indexOfFirstProduct,
     indexOfLastProduct
   );
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  const totalPages = Math.ceil(products.length / productsPerPage);
 
   // Clear all filters
   const clearFilters = () => {
@@ -597,7 +502,7 @@ const ProductBrowser = () => {
                     <div>
                       <h4>Duyệt Sản Phẩm</h4>
                       <p className="text-muted mb-0">
-                        Hiển thị {filteredProducts.length} sản phẩm
+                        Hiển thị {products.length} sản phẩm
                       </p>
                     </div>
                     <div className="d-flex align-items-center gap-2">
@@ -639,8 +544,7 @@ const ProductBrowser = () => {
                             )}
                           </h5>
                           <small className="text-muted">
-                            {pagination.totalItems || filteredProducts.length}{" "}
-                            sản phẩm
+                            {pagination.totalItems || products.length} sản phẩm
                           </small>
                         </div>
                         {pagination.totalPages > 1 && (
@@ -663,7 +567,7 @@ const ProductBrowser = () => {
                   )}
 
                   {/* Products Grid/List */}
-                  {filteredProducts.length === 0 ? (
+                  {products.length === 0 ? (
                     <div className="text-center py-5">
                       <h5>Không tìm thấy sản phẩm</h5>
                       <p className="text-muted">
