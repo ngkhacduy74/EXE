@@ -94,7 +94,7 @@ const BlogCarousel = () => {
         </div>
         <div className="post-header">
           <h3 className="post-title">
-            <a href={`/post/${postId}`} className="text-decoration-none">
+            <a href={`/postView/${postId}`} className="text-decoration-none">
               {title}
             </a>
           </h3>

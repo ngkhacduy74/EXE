@@ -98,7 +98,7 @@ router.delete("/deletePost/:id", async (req, res) => {
   }
   res.status(200).json(result);
 });
-router.get("/:id", verifyToken, async (req, res) => {
+router.get("/:id", async (req, res) => {
   const result = await getPostById(req.params.id);
   if (result.success === false) {
     return res.status(500).json(result);
