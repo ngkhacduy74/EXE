@@ -30,6 +30,7 @@
     "react-router-dom": "^7.1.5",
     "react-scripts": "5.0.1",
     "react-simple-maps": "^3.0.0",
+    "react-toastify": "^11.0.5",
     "redux-saga": "^0.16.2",
     "swiper": "^11.2.8",
     "use-smooth-scroll": "^1.1.1",

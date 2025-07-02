@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Import Bootstrap JavaScript
 import * as bootstrap from "bootstrap";
@@ -115,6 +117,7 @@ const App = () => {
             {/* 404 Error Page */}
           </Routes>
           <PhoneFixed />
+          <ToastContainer position="top-right" autoClose={2000} />
         </div>
       </Router>
     </BannerProvider>
