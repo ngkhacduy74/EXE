@@ -204,15 +204,11 @@ const searchProducts = async (req, res) => {
         // Tìm kiếm theo thương hiệu với từ khóa đầy đủ
         searchConditions.push({ brand: { $regex: search, $options: "i" } });
         
-        // Tìm kiếm theo mô tả với từ khóa đầy đủ
-        searchConditions.push({ description: { $regex: search, $options: "i" } });
-        
         // Tìm kiếm theo từng từ khóa riêng lẻ
         keywords.forEach(keyword => {
           if (keyword.length > 1) { // Chỉ tìm kiếm từ có độ dài > 1
             searchConditions.push({ name: { $regex: keyword, $options: "i" } });
             searchConditions.push({ brand: { $regex: keyword, $options: "i" } });
-            searchConditions.push({ description: { $regex: keyword, $options: "i" } });
           }
         });
         
