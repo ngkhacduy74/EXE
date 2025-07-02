@@ -55,7 +55,7 @@ async function verifyOTP(req, res) {
         type: "access",
       },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: "30d" }
+      { expiresIn: "1h" }
     );
     // Ghi đè currentToken, đảm bảo chỉ 1 nơi đăng nhập
     await User.findByIdAndUpdate(user._id, { currentToken: token });

@@ -115,7 +115,22 @@ const isAuthenticated = () => {
 // Function to get current user data
 const getCurrentUser = () => {
   try {
-    const userData = localStorage.getItem("user");
+    let userData = localStorage.getItem("user");
+    if (!userData) {
+      // Nếu chưa có user trong localStorage, thử lấy từ token
+      const token = localStorage.getItem("token");
+      if (token) {
+        // Giải mã payload của JWT (không kiểm tra chữ ký)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload && payload.user) {
+          userData = JSON.stringify(payload.user);
+          localStorage.setItem("user", userData);
+        } else if (payload && payload.email) {
+          userData = JSON.stringify(payload);
+          localStorage.setItem("user", userData);
+        }
+      }
+    }
     return userData ? JSON.parse(userData) : null;
   } catch (error) {
     console.error("Error parsing user data:", error);
