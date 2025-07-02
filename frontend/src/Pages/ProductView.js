@@ -708,15 +708,63 @@ const ProductView = () => {
 
                   <div className="d-grid gap-3">
                     <div className="d-flex gap-2">
-                      <Button
-                        variant="primary"
-                        size="lg"
-                        onClick={handleContactUs}
-                        className="py-3 fw-medium flex-fill"
-                      >
-                        <i className="fas fa-phone me-2"></i>
-                        Liên hệ
-                      </Button>
+                      {product.business_phone ? (
+                        <>
+                          <style>
+                            {`
+                              @keyframes phone-shake {
+                                0% { transform: rotate(0deg); }
+                                20% { transform: rotate(-20deg); }
+                                40% { transform: rotate(15deg); }
+                                60% { transform: rotate(-10deg); }
+                                80% { transform: rotate(5deg); }
+                                100% { transform: rotate(0deg); }
+                              }
+                              .phone-animated {
+                                animation: phone-shake 1s infinite linear;
+                                display: inline-block;
+                              }
+                            `}
+                          </style>
+                          <Button
+                            variant="primary"
+                            size="lg"
+                            className="py-3 fw-bold flex-fill d-flex align-items-center justify-content-center phone-contact-btn"
+                            style={{
+                              fontSize: '1.6rem',
+                              letterSpacing: '2px',
+                              borderRadius: '18px',
+                              background: 'linear-gradient(90deg, #4facfe 0%, #00f2fe 100%)',
+                              boxShadow: '0 4px 24px rgba(0, 153, 255, 0.18)',
+                              border: 'none',
+                              color: '#fff',
+                              cursor: 'pointer',
+                              userSelect: 'all',
+                              transition: 'background 0.3s',
+                            }}
+                            onClick={() => {
+                              navigator.clipboard.writeText(product.business_phone);
+                            }}
+                            title="Bấm để copy số điện thoại"
+                          >
+                            <i className="fas fa-phone-alt me-3 phone-animated" style={{ fontSize: '2rem' }}></i>
+                            {product.business_phone}
+                            <span className="ms-3" style={{ fontSize: '1.2rem' }}>
+                              <i className="fas fa-copy"></i>
+                            </span>
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          size="lg"
+                          onClick={handleContactUs}
+                          className="py-3 fw-medium flex-fill"
+                        >
+                          <i className="fas fa-phone me-2"></i>
+                          Liên hệ
+                        </Button>
+                      )}
                     </div>
                     {!isFavorite && product && (
                       <Button
