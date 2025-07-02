@@ -15,24 +15,29 @@ function ManaAccount() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalUsers, setTotalUsers] = useState(0);
 
   // Fetch user data
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
       try {
+        const skip = (currentPage - 1) * pageSize;
         const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/user/allUser`
+          `${process.env.REACT_APP_BACKEND_URL}/user/allUser`,
+          { params: { skip, limit: pageSize } }
         );
         let userData = [];
-
         if (response.data.success && Array.isArray(response.data.data)) {
           userData = response.data.data;
         } else if (response.data.success && response.data.data) {
           userData = [response.data.data];
         }
-
         setUsers(userData);
         setFilteredUsers(userData);
+        setTotalUsers(response.data.total || 0);
         setLoading(false);
       } catch (err) {
         console.error("Fetch Error:", err);
@@ -41,7 +46,7 @@ function ManaAccount() {
       }
     };
     fetchUsers();
-  }, []);
+  }, [currentPage, pageSize]);
 
   // Apply filters
   useEffect(() => {
@@ -81,6 +86,12 @@ function ManaAccount() {
   const handleToggleActive = async (userId, currentStatus) => {
     // Placeholder logic
     console.log("Toggle active:", userId, "Current:", currentStatus);
+  };
+
+  // Pagination UI
+  const totalPages = Math.ceil(totalUsers / pageSize);
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
   if (loading) {
@@ -190,6 +201,33 @@ function ManaAccount() {
                   ))}
                 </tbody>
               </Table>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="d-flex justify-content-center align-items-center my-3">
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  className="me-2"
+                >
+                  Previous
+                </Button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  disabled={currentPage === totalPages}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  className="ms-2"
+                >
+                  Next
+                </Button>
+              </div>
             )}
           </div>
         </Col>

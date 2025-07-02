@@ -8,7 +8,8 @@ const { getUserByEmail } = require("../Controller/auth.controller");
 const router = express.Router();
 
 router.get("/allUser", async (req, res) => {
-  const result = await getAllUser();
+  const { skip = 0, limit = 10 } = req.query;
+  const result = await getAllUser({ skip, limit });
   if (result.success === false) {
     return res.status(500).json(result);
   }

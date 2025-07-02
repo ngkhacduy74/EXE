@@ -1,6 +1,6 @@
 const User = require("../Model/user.model");
 const { v1 } = require("uuid");
-const getAllUser = async () => {
+const getAllUser = async ({ skip = 0, limit = 10 } = {}) => {
   const pipeline = [];
   pipeline.push({ $match: {} });
   pipeline.push({
@@ -22,19 +22,17 @@ const getAllUser = async () => {
   pipeline.push({
     $sort: { createdAt: -1 },
   });
-  const skip = 0;
-  const limit = 10;
-  pipeline.push({ $skip: skip });
-  pipeline.push({ $limit: limit });
+  pipeline.push({ $skip: Number(skip) });
+  pipeline.push({ $limit: Number(limit) });
   const data = await User.aggregate(pipeline);
-  console.log("jasdads", data);
+  const total = await User.countDocuments();
   if (!data) {
     return {
       success: false,
       message: "Không lấy được tất cả user",
     };
   }
-  return { success: true, data };
+  return { success: true, data, total };
 };
 
 const getUserById = async (idUser) => {
