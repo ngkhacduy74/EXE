@@ -358,24 +358,18 @@ const CreateProduct = () => {
     }
 
     // Kiểm tra kích thước
-    if (!formData.size.trim()) {
-      newErrors.size = "Kích thước là bắt buộc";
-    } else if (!/^\d+(\s*x\s*\d+)*$/.test(formData.size.replace(/\s/g, ""))) {
+    if (formData.size.trim() && !/^\d+(\s*x\s*\d+)*$/.test(formData.size.replace(/\s/g, ""))) {
       newErrors.size =
         "Kích thước phải theo định dạng: số x số x số (VD: 60x55x85)";
     }
 
     // Kiểm tra trọng lượng
-    if (!formData.weight || parseFloat(formData.weight) <= 0) {
-      newErrors.weight = "Trọng lượng phải lớn hơn 0";
-    } else if (parseFloat(formData.weight) > 1000) {
+    if (formData.weight && parseFloat(formData.weight) > 1000) {
       newErrors.weight = "Trọng lượng không được vượt quá 1000kg";
     }
 
     // Kiểm tra điện áp
-    if (!formData.voltage.trim()) {
-      newErrors.voltage = "Điện áp là bắt buộc";
-    } else if (!/^\d+(\s*V)?$/.test(formData.voltage.replace(/\s/g, ""))) {
+    if (formData.voltage.trim() && !/^\d+(\s*V)?$/.test(formData.voltage.replace(/\s/g, ""))) {
       newErrors.voltage = "Điện áp phải là số (VD: 220 hoặc 220V)";
     }
 

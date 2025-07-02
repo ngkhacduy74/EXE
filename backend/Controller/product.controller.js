@@ -40,13 +40,14 @@ const createProduct = async (data, user) => {
     voltage: voltage,
     features: features,
     creator: {
-      id: user.id,
-      fullname: user.fullname,
-      phone: user.phone,
-      email: user.email,
+      // id: user.id,
+      // fullname: user.fullname,
+      // phone: user.phone,
+      email: user.user.email,
     },
     quantity: quantity,
   });
+  console.log("newProduct111111", newProduct);
   try {
     await newProduct.save();
     return {
