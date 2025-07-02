@@ -1,5 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import {
+  useNavigate,
+  Link,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
 import { Search, Star, X, Plus, Menu, ChevronDown, Heart } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { authApiClient } from "../Services/auth.service";
@@ -12,6 +17,11 @@ function Header() {
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [searchCategory, setSearchCategory] = useState("");
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [headerSearch, setHeaderSearch] = useState(
+    searchParams.get("search") || ""
+  );
 
   // Danh sách các danh mục sản phẩm
   const categories = [
@@ -33,8 +43,14 @@ function Header() {
   const mobileSearchRef = useRef(null);
   const navigate = useNavigate();
 
-  // Handle search from autocomplete
+  // Sync headerSearch with URL
+  useEffect(() => {
+    setHeaderSearch(searchParams.get("search") || "");
+  }, [location.search]);
+
+  // Handle search from header
   const handleSearch = (searchQuery) => {
+    setHeaderSearch(searchQuery);
     navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
   };
 
@@ -43,12 +59,16 @@ function Header() {
     const fetchBrands = async () => {
       try {
         // Check if brands are cached
-        const cachedBrands = localStorage.getItem('cachedBrands');
-        const cacheTime = localStorage.getItem('cachedBrandsTime');
+        const cachedBrands = localStorage.getItem("cachedBrands");
+        const cacheTime = localStorage.getItem("cachedBrandsTime");
         const now = Date.now();
-        
+
         // Use cache if it's less than 5 minutes old
-        if (cachedBrands && cacheTime && (now - parseInt(cacheTime)) < 5 * 60 * 1000) {
+        if (
+          cachedBrands &&
+          cacheTime &&
+          now - parseInt(cacheTime) < 5 * 60 * 1000
+        ) {
           setBrands(JSON.parse(cachedBrands));
           return;
         }
@@ -61,11 +81,11 @@ function Header() {
           ...new Set(products.map((product) => product.brand).filter(Boolean)),
         ];
         const limitedBrands = uniqueBrands.slice(0, 10);
-        
+
         // Cache the brands
-        localStorage.setItem('cachedBrands', JSON.stringify(limitedBrands));
-        localStorage.setItem('cachedBrandsTime', now.toString());
-        
+        localStorage.setItem("cachedBrands", JSON.stringify(limitedBrands));
+        localStorage.setItem("cachedBrandsTime", now.toString());
+
         setBrands(limitedBrands);
       } catch (error) {
         console.error("Error fetching brands:", error);
@@ -100,18 +120,20 @@ function Header() {
   function normalizeText(text) {
     return text
       .toLowerCase()
-      .normalize('NFD')
-      .replace(/\p{Diacritic}/gu, '')
-      .replace(/[^a-z0-9\s]/gi, '')
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^a-z0-9\s]/gi, "")
       .trim();
   }
 
   // Hàm lọc danh mục giống search
   const filteredCategories = searchCategory
     ? categories.filter((cat) => {
-        const filterWords = normalizeText(searchCategory).split(/\s+/).filter(Boolean);
+        const filterWords = normalizeText(searchCategory)
+          .split(/\s+/)
+          .filter(Boolean);
         const normalizedCat = normalizeText(cat);
-        return filterWords.every(word => normalizedCat.includes(word));
+        return filterWords.every((word) => normalizedCat.includes(word));
       })
     : categories;
 
@@ -587,7 +609,12 @@ function Header() {
 
           {/* Enhanced Search Bar - Desktop */}
           <div className="col-lg-6 d-none d-lg-block position-relative">
-            <SearchWithAutocomplete onSearch={handleSearch} />
+            <SearchWithAutocomplete
+              value={headerSearch}
+              onChangeValue={setHeaderSearch}
+              onSearch={handleSearch}
+              placeholder="Tìm kiếm sản phẩm..."
+            />
           </div>
 
           {/* User Actions - Right Side */}
@@ -851,13 +878,15 @@ function Header() {
                       className="form-control"
                       placeholder="Tìm danh mục..."
                       value={searchCategory}
-                      onChange={e => setSearchCategory(e.target.value)}
+                      onChange={(e) => setSearchCategory(e.target.value)}
                       style={{ fontSize: 14 }}
                     />
                   </div>
                   <div className="row g-0 px-3">
                     {filteredCategories.length === 0 && (
-                      <div className="col-12 text-muted py-2">Không tìm thấy danh mục</div>
+                      <div className="col-12 text-muted py-2">
+                        Không tìm thấy danh mục
+                      </div>
                     )}
                     {filteredCategories.map((category) => (
                       <div key={category} className="col-6">
@@ -978,8 +1007,9 @@ function Header() {
         </div>
         <div className="offcanvas-body">
           <SearchWithAutocomplete
+            value={headerSearch}
+            onChangeValue={setHeaderSearch}
             onSearch={handleSearch}
-            size="lg"
             placeholder="Tìm kiếm hơn 20,000 sản phẩm..."
           />
         </div>
@@ -1037,7 +1067,7 @@ function Header() {
                 className="form-control"
                 placeholder="Tìm danh mục..."
                 value={searchCategory}
-                onChange={e => setSearchCategory(e.target.value)}
+                onChange={(e) => setSearchCategory(e.target.value)}
                 style={{ fontSize: 14 }}
               />
             </li>

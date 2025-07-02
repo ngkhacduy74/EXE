@@ -42,8 +42,11 @@ const SearchWithAutocomplete = ({
   onSearch,
   className = "",
   size = "lg",
+  initialValue = "",
+  value,
+  onChangeValue,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialValue);
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -51,6 +54,13 @@ const SearchWithAutocomplete = ({
   const searchRef = useRef(null);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  // Controlled mode: update searchQuery if value prop changes
+  useEffect(() => {
+    if (typeof value === "string" && value !== searchQuery) {
+      setSearchQuery(value);
+    }
+  }, [value]);
 
   // Load suggestions khi component mount hoặc searchQuery thay đổi
   useEffect(() => {
@@ -73,6 +83,7 @@ const SearchWithAutocomplete = ({
   // Handle input change
   const handleInputChange = (e) => {
     setSearchQuery(e.target.value);
+    if (onChangeValue) onChangeValue(e.target.value);
     setSelectedIndex(-1);
   };
 
@@ -199,26 +210,8 @@ const SearchWithAutocomplete = ({
           width: 40px;
           height: 40px;
           object-fit: cover;
-          border-radius: 6px;
           margin-right: 12px;
-        }
-        .product-info {
-          flex: 1;
-        }
-        .product-price {
-          color: #16a34a;
-          font-weight: 600;
-          font-size: 15px;
-        }
-        .clear-history-btn {
-          display: block;
-          width: 100%;
-          text-align: center;
-          padding: 8px 0;
-          color: #dc3545;
-          background: none;
-          border: none;
-          cursor: pointer;
+          border-radius: 4px;
         }
       `}</style>
       <InputGroup size={size}>
@@ -228,71 +221,75 @@ const SearchWithAutocomplete = ({
           value={searchQuery}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => {
-            setShowDropdown(true);
-            setSuggestions(getSearchHistory(searchQuery).slice(0, 5));
-          }}
+          onFocus={() => setShowDropdown(true)}
+          className="border-end-0"
         />
         <InputGroup.Text
-          as="button"
-          type="button"
+          className="bg-white cursor-pointer"
           onClick={handleSearch}
           style={{ cursor: "pointer" }}
         >
-          <Search size={18} />
+          <Search size={20} />
         </InputGroup.Text>
       </InputGroup>
+
       {showDropdown &&
         (suggestions.length > 0 || productSuggestions.length > 0) && (
           <div className="search-dropdown" ref={dropdownRef}>
-            {/* Gợi ý sản phẩm thực tế */}
-            {productSuggestions.map((product, index) => (
-              <div
-                key={product.id || index}
-                className="product-suggestion-item"
-                onClick={() => handleProductClick(product)}
-              >
-                <img
-                  src={
-                    Array.isArray(product.image)
-                      ? product.image[0]
-                      : product.image || "/images/frigde.png"
-                  }
-                  alt={product.name}
-                  className="product-thumb"
-                  onError={(e) => (e.target.src = "/images/frigde.png")}
-                />
-                <div className="product-info">
-                  <div>{product.name}</div>
-                  <div className="product-price">
-                    {product.price
-                      ? `${parseFloat(product.price).toLocaleString(
-                          "vi-VN"
-                        )} VND`
-                      : "Chưa có giá"}
-                  </div>
-                </div>
-              </div>
-            ))}
-            {/* Gợi ý lịch sử tìm kiếm */}
-            {suggestions.map((item, index) => (
-              <div
-                key={item + index}
-                className={`suggestion-item${
-                  selectedIndex === index ? " selected" : ""
-                }`}
-                onClick={() => handleSuggestionClick(item)}
-              >
-                {item}
-              </div>
-            ))}
             {suggestions.length > 0 && (
-              <button
-                className="clear-history-btn"
-                onClick={handleClearHistory}
-              >
-                Xóa lịch sử tìm kiếm
-              </button>
+              <>
+                <div className="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                  <small className="text-muted">Lịch sử tìm kiếm</small>
+                  <button
+                    className="btn btn-link btn-sm p-0 text-decoration-none"
+                    onClick={handleClearHistory}
+                  >
+                    Xóa lịch sử
+                  </button>
+                </div>
+                {suggestions.map((suggestion, index) => (
+                  <div
+                    key={suggestion}
+                    className={`suggestion-item ${
+                      index === selectedIndex ? "selected" : ""
+                    }`}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                  >
+                    <Search size={16} className="me-2 text-muted" />
+                    {suggestion}
+                  </div>
+                ))}
+              </>
+            )}
+
+            {productSuggestions.length > 0 && (
+              <>
+                <div className="px-3 py-2 border-bottom">
+                  <small className="text-muted">Sản phẩm gợi ý</small>
+                </div>
+                {productSuggestions.map((product) => (
+                  <div
+                    key={product._id || product.id}
+                    className="product-suggestion-item"
+                    onClick={() => handleProductClick(product)}
+                  >
+                    <img
+                      src={product.image?.[0] || "/images/placeholder.png"}
+                      alt={product.name}
+                      className="product-thumb"
+                      onError={(e) => {
+                        e.target.src = "/images/placeholder.png";
+                      }}
+                    />
+                    <div>
+                      <div className="fw-semibold">{product.name}</div>
+                      <small className="text-muted">
+                        {product.brand || "Không có thương hiệu"}
+                      </small>
+                    </div>
+                  </div>
+                ))}
+              </>
             )}
           </div>
         )}
