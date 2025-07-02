@@ -42,6 +42,7 @@ import UserProductManager from "./Pages/UserProductManager";
 import UpdateProduct from "./Admin/UpdateProduct";
 import Favorites from "./Pages/Favorites";
 import EditPost from "./Admin/EditPost";
+import Guide from "./Pages/Guide";
 
 const App = () => {
   const [message, setMessage] = useState("");
@@ -114,6 +115,7 @@ const App = () => {
             <Route path="/update-product/:id" element={<UpdateProduct />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/admin/edit-post/:postId" element={<EditPost />} />
+            <Route path="/guide" element={<Guide />} />
             {/* 404 Error Page */}
           </Routes>
           <PhoneFixed />

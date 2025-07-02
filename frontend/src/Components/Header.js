@@ -5,7 +5,7 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
-import { Search, Star, X, Plus, Menu, ChevronDown, Heart } from "lucide-react";
+import { Search, Star, X, Plus, Menu, ChevronDown, Heart, BadgeHelp } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { authApiClient } from "../Services/auth.service";
 import SearchWithAutocomplete from "./SearchWithAutocomplete";
@@ -803,6 +803,17 @@ function Header() {
                   </div>
                 </>
               )}
+
+              {/* Nút hướng dẫn - Đưa ra ngoài cùng bên phải */}
+              <a
+                className="btn btn-light rounded-circle p-2 header-user-button d-none d-lg-flex align-items-center ms-2"
+                href="/guide"
+                title="Hướng dẫn sử dụng"
+                style={{ gap: 4 }}
+              >
+                <BadgeHelp size={18} style={{ color: "#0d6efd" }} />
+                <span className="d-none d-xl-inline ms-1 fw-medium">Hướng dẫn</span>
+              </a>
 
               {/* Mobile Menu Toggle */}
               <button
