@@ -3,6 +3,7 @@ const {
   getAllUser,
   getUserById,
   updateUser,
+  deleteUser,
 } = require("../Controller/user.controller");
 const { getUserByEmail } = require("../Controller/auth.controller");
 const router = express.Router();
@@ -44,6 +45,13 @@ router.post("/:id", async (req, res) => {
   const result = await updateUser(data);
   if (result.success === false) {
     return res.status(500).json(result);
+  }
+  res.status(200).json(result);
+});
+router.delete("/:id", async (req, res) => {
+  const result = await deleteUser(req.params.id);
+  if (result.success === false) {
+    return res.status(404).json(result);
   }
   res.status(200).json(result);
 });

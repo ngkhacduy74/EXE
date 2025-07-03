@@ -229,8 +229,8 @@ const BestSellingCarousel = () => {
             {product.brand || "N/A"}
           </p>
           <div className="d-flex align-items-center mb-2">
-            <span className="text-warning me-1 fs-7">★★★★☆</span>
-            <small className="text-muted">(4.0)</small>
+            <span className="text-warning me-1 fs-7">★★★★★</span>
+            <small className="text-muted">(5.0)</small>
           </div>
           <div className="h6 text-success fw-bold mb-3">
             {product.price

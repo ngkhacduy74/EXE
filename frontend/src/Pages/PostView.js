@@ -522,15 +522,6 @@ const PostView = () => {
                   <div>{post.content}</div>
                 </div>
               )}
-              {post.description && (
-                <div style={styles.description}>
-                  <strong>Mô tả:</strong>
-                  <div>{post.description}</div>
-                </div>
-              )}
-              {!(post.content || post.description) && (
-                <div style={styles.description}>Không có nội dung</div>
-              )}
             </div>
 
             {/* Images and Likes */}

@@ -62,6 +62,15 @@ export default function UserDetails() {
         );
 
         // Handle different response structures
+        if (
+          response.data?.success === false ||
+          response.data?.message === "Route not found"
+        ) {
+          setUser(null);
+          setError(null);
+          setLoading(false);
+          return;
+        }
         const userData =
           response.data?.user?.[0] || response.data?.user || response.data;
         setUser(userData);
@@ -122,7 +131,7 @@ export default function UserDetails() {
     );
   }
 
-  if (!user) {
+  if (!user || (Array.isArray(user) && user.length === 0)) {
     return (
       <Container
         fluid

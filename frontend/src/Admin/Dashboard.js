@@ -1097,76 +1097,7 @@ function AdminDashboard() {
             </Alert>
           )}
 
-          {/* Charts Section */}
-          <div className="mb-5">
-            <h3 className="mb-4">📈 Biểu Đồ Thống Kê</h3>
-            
-            {/* Year Selection */}
-            <div className="mb-3">
-              <label className="form-label">Chọn năm:</label>
-              <select 
-                className="form-select w-auto" 
-                value={selectedYear} 
-                onChange={(e) => handleYearChange(parseInt(e.target.value))}
-              >
-                {availableYears.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            </div>
-
-            <Row className="g-4">
-              {/* Posts by Month Chart */}
-              <Col lg={6}>
-                <Card className="shadow-sm" style={{ borderRadius: "15px" }}>
-                  <Card.Body>
-                    <h5 className="card-title">📊 Bài Viết Theo Tháng ({selectedYear})</h5>
-                    <div style={{ height: "300px" }}>
-                      <Bar data={chartData} options={chartOptions} />
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              {/* User Growth Chart */}
-              <Col lg={6}>
-                <Card className="shadow-sm" style={{ borderRadius: "15px" }}>
-                  <Card.Body>
-                    <h5 className="card-title">📈 Tăng Trưởng Người Dùng</h5>
-                    <div style={{ height: "300px" }}>
-                      <Line data={userGrowthData} options={chartOptions} />
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-
-            <Row className="g-4 mt-3">
-              {/* Device Usage Chart */}
-              <Col lg={6}>
-                <Card className="shadow-sm" style={{ borderRadius: "15px" }}>
-                  <Card.Body>
-                    <h5 className="card-title">📱 Thiết Bị Sử Dụng</h5>
-                    <div style={{ height: "300px" }}>
-                      <Doughnut data={deviceData} options={chartOptions} />
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              {/* Regional Distribution Chart */}
-              <Col lg={6}>
-                <Card className="shadow-sm" style={{ borderRadius: "15px" }}>
-                  <Card.Body>
-                    <h5 className="card-title">🌍 Phân Bố Theo Khu Vực</h5>
-                    <div style={{ height: "300px" }}>
-                      <Pie data={countryData} options={chartOptions} />
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-          </div>
+          
 
           {/* Top Pages Table */}
           {analyticsData.topPages && analyticsData.topPages.length > 0 && (

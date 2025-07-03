@@ -13,8 +13,7 @@ const BannerSection = () => {
   const navigate = useNavigate();
   const {
     bannerProducts: savedProducts,
-    loading,
-    clearBannerData
+    loading
   } = useBanner();
   const [visibleSlides, setVisibleSlides] = useState([]);
   const [animationComplete, setAnimationComplete] = useState(false);
@@ -75,17 +74,6 @@ const BannerSection = () => {
       };
     }
   }, [savedProducts.length, isCustomProducts]); // Chỉ trigger khi length thay đổi
-
-  const resetToDefault = async () => {
-    try {
-      const result = await clearBannerData();
-      if (result.success) {
-        // Reset logic if needed
-      }
-    } catch (error) {
-      console.error("Error resetting banner:", error);
-    }
-  };
 
   // Loading state
   if (loading) {
@@ -189,14 +177,6 @@ const BannerSection = () => {
                     Sản phẩm được quan tâm
                   </h3>
                 </div>
-                <button
-                  onClick={resetToDefault}
-                  className="btn btn-outline-secondary btn-sm"
-                  title="Reset to default products"
-                >
-                  <i className="fas fa-undo me-1"></i>
-                  Reset
-                </button>
               </div>
             </div>
 

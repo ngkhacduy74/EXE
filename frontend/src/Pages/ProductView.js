@@ -27,6 +27,12 @@ import {
 } from "../utils/recentlyViewed";
 import { useFavorite } from "../hooks/useFavorite";
 
+function stripHtml(html) {
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+}
+
 const ProductView = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -929,20 +935,18 @@ const ProductView = () => {
               <i className="fas fa-info-circle text-primary me-2"></i>Mô tả sản
               phẩm
             </h2>
-            {product.description && (
-              <div
-                className="lead mb-0"
-                style={{
-                  margin: "0 auto",
-                  lineHeight: 1.7,
-                  whiteSpace: "pre-wrap",
-                  textAlign: "left",
-                  maxWidth: "800px",
-                }}
-              >
-                {product.description}
-              </div>
-            )}
+            <div
+              className="lead mb-0"
+              style={{
+                margin: "0 auto",
+                lineHeight: 1.7,
+                whiteSpace: "pre-wrap",
+                textAlign: "left",
+                maxWidth: "800px",
+              }}
+            >
+              {stripHtml(product.description)}
+            </div>
           </div>
 
           {/* Product Videos - HIỂN THỊ TO Ở DƯỚI CÙNG */}

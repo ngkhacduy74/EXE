@@ -13,8 +13,15 @@ const PhoneFixed = () => {
       }, 300);
     }
     
-    // Mở cuộc gọi điện thoại
-    window.open('tel:0909123456');
+    // Kiểm tra thiết bị di động
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      // Mở cuộc gọi điện thoại
+      window.open('tel:0903242748');
+    } else {
+      // Mở Zalo trên desktop
+      window.open('https://zalo.me/0903242748', '_blank');
+    }
   };
 
   return (

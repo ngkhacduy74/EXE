@@ -74,4 +74,28 @@ const updateUser = async (params) => {
     };
   }
 };
-module.exports = { getAllUser, getUserById, updateUser };
+
+const deleteUser = async (id) => {
+  try {
+    const deletedUser = await User.findOneAndDelete({ id });
+    if (!deletedUser) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+    return {
+      success: true,
+      message: "User deleted successfully",
+      data: deletedUser,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: "Error deleting user",
+      error: err.message,
+    };
+  }
+};
+
+module.exports = { getAllUser, getUserById, updateUser, deleteUser };

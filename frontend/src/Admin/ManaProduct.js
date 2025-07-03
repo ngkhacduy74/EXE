@@ -624,7 +624,7 @@ const ManageProduct = () => {
                             : "N/A"}
                         </td>
                         <td>
-                          {product.quantity ? `${product.quantity} kg` : "N/A"}
+                          {product.quantity}
                         </td>
                         <td>
                           {product.business_phone ? product.business_phone : "N/A"}

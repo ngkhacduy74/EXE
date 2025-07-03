@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Table, Button, Form, Badge } from "react-bootstrap";
+import { Container, Row, Col, Table, Button, Form, Badge, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "../Components/Sidebar";
@@ -13,11 +13,15 @@ function ManaAccount() {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [roleFilter, setRoleFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Fetch user data
   useEffect(() => {
@@ -63,8 +67,12 @@ function ManaAccount() {
       result = result.filter((user) => user.is_active === isActive);
     }
 
+    if (roleFilter !== "All") {
+      result = result.filter((user) => user.role === roleFilter);
+    }
+
     setFilteredUsers(result);
-  }, [searchTerm, statusFilter, users]);
+  }, [searchTerm, statusFilter, roleFilter, users]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -74,9 +82,14 @@ function ManaAccount() {
     setStatusFilter(e.target.value);
   };
 
+  const handleRoleChange = (e) => {
+    setRoleFilter(e.target.value);
+  };
+
   const handleClearFilters = () => {
     setSearchTerm("");
     setStatusFilter("All");
+    setRoleFilter("All");
   };
 
   const handleViewDetails = (userId) => {
@@ -86,6 +99,31 @@ function ManaAccount() {
   const handleToggleActive = async (userId, currentStatus) => {
     // Placeholder logic
     console.log("Toggle active:", userId, "Current:", currentStatus);
+  };
+
+  const handleDeleteUser = (user) => {
+    setUserToDelete(user);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    setDeleteLoading(true);
+    try {
+      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/user/${userToDelete.id}`);
+      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+      setFilteredUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+    } catch (err) {
+      alert("Failed to delete user.");
+    }
+    setDeleteLoading(false);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setUserToDelete(null);
   };
 
   // Pagination UI
@@ -137,6 +175,13 @@ function ManaAccount() {
                   <option value="Inactive">Inactive</option>
                 </Form.Select>
               </Col>
+              <Col md={3}>
+                <Form.Select value={roleFilter} onChange={handleRoleChange}>
+                  <option value="All">All Roles</option>
+                  <option value="Admin">Admin</option>
+                  <option value="User">User</option>
+                </Form.Select>
+              </Col>
               <Col md={2}>
                 <Button variant="secondary" onClick={handleClearFilters}>
                   Clear Filters
@@ -159,6 +204,8 @@ function ManaAccount() {
                     <th>#</th>
                     <th>Full Name</th>
                     <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
                     <th>Role</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -170,6 +217,8 @@ function ManaAccount() {
                       <td>{index + 1}</td>
                       <td>{user.fullname}</td>
                       <td>{user.email}</td>
+                      <td>{user.phone}</td>
+                      <td>{user.address}</td>
                       <td>{user.role}</td>
                       <td>
                         {user.is_active === "true" ? "Active" : "Inactive"}
@@ -195,6 +244,14 @@ function ManaAccount() {
                           {user.is_active === "true"
                             ? "Deactivate"
                             : "Activate"}
+                        </Button>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          className="ms-2"
+                          onClick={() => handleDeleteUser(user)}
+                        >
+                          Delete
                         </Button>
                       </td>
                     </tr>
@@ -232,6 +289,29 @@ function ManaAccount() {
           </div>
         </Col>
       </Row>
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={cancelDelete} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Delete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {userToDelete && (
+            <>
+              <p>Are you sure you want to delete this user?</p>
+              <strong>{userToDelete.fullname}</strong>
+              <div>Email: {userToDelete.email}</div>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={cancelDelete} disabled={deleteLoading}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmDeleteUser} disabled={deleteLoading}>
+            {deleteLoading ? "Deleting..." : "Delete"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }
