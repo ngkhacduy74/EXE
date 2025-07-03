@@ -66,12 +66,13 @@ const App = () => {
     }
   }, []);
 
-  useEffect(() => {
-    fetch("/api/test")
-      .then((response) => response.json())
-      .then((data) => setMessage(data.message))
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
+  // XÓA hoặc comment đoạn code fetch('/api/test') để không gọi API test nữa
+  // useEffect(() => {
+  //   fetch("/api/test")
+  //     .then((response) => response.json())
+  //     .then((data) => setMessage(data.message))
+  //     .catch((error) => console.error("Error fetching data:", error));
+  // }, []);
 
   return (
     <BannerProvider>

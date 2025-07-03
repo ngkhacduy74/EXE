@@ -27,10 +27,6 @@ export const useAuth = () => {
         
         // Then validate token in background
         const { isValid, user: validatedUser } = await validateToken();
-        console.log("useAuth - validateToken result:", {
-          isValid,
-          validatedUser,
-        });
         
         if (isValid && validatedUser) {
           setUser(validatedUser);
