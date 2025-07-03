@@ -612,7 +612,7 @@ const ProductBrowser = () => {
                                   }`}
                                   alt={product.name}
                                   style={{
-                                    width: "250px",
+                                    width: "210px",
                                     height: "250px",
                                     objectFit: "contain",
                                     backgroundColor: "#f9f9f9",

@@ -35,7 +35,7 @@ const RecommendTagCarousel = () => {
     ];
 
     const handleCategoryClick = (category) => {
-        navigate(`/product-browser?category=${encodeURIComponent(category)}`);
+        navigate(`/product-browser?product=${encodeURIComponent(category)}`);
     };
 
     return (
