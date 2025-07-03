@@ -47,46 +47,63 @@ Ví dụ sử dụng AI:
    - "Thống kê sản phẩm bán chạy"
    - "Tìm kiếm sản phẩm phù hợp cho quán cà phê"
 
-Bạn có thể hỏi AI bất cứ điều gì liên quan đến sản phẩm, dịch vụ, bài viết hoặc thông tin về Vinsaky Shop!`
+Bạn có thể hỏi AI bất cứ điều gì liên quan đến sản phẩm, dịch vụ, bài viết hoặc thông tin về Vinsaky Shop!`,
+  videoGuide: `VIDEO HƯỚNG DẪN SỬ DỤNG VINSAKY
+
+Dưới đây là video hướng dẫn chi tiết về cách sử dụng các tính năng chính của nền tảng Vinsaky:
+
+📹 Video hướng dẫn tổng quan:
+- Cách đăng ký và đăng nhập tài khoản
+- Hướng dẫn tìm kiếm và lọc sản phẩm
+- Cách quản lý tài khoản và sản phẩm
+- Sử dụng trợ lý AI để được hỗ trợ
+- Các tính năng nâng cao khác
+
+🎯 Lưu ý khi xem video:
+- Video có thể được tạm dừng và tua lại để xem chi tiết
+- Có thể xem ở chế độ toàn màn hình để dễ theo dõi
+- Nếu có thắc mắc, hãy sử dụng trợ lý AI hoặc liên hệ hỗ trợ
+
+💡 Mẹo: Bạn có thể xem video này nhiều lần để nắm vững các thao tác cơ bản trước khi sử dụng nền tảng.`
 };
 
 const guideTopics = [
   { 
     id: 1, 
     title: 'Giới thiệu', 
-    content: guideContents.introduction,
-    video: require('../Assests/video/video.mp4') 
+    content: guideContents.introduction
   },
   { 
     id: 2, 
     title: 'Cách đăng ký', 
-    content: guideContents.registration,
-    video: require('../Assests/video/video.mp4') 
+    content: guideContents.registration
   },
   { 
     id: 3, 
     title: 'Cách đăng nhập', 
-    content: guideContents.login,
-    video: require('../Assests/video/video.mp4') 
+    content: guideContents.login
   },
   { 
     id: 4, 
     title: 'Tìm kiếm sản phẩm', 
-    content: guideContents.search,
-    video: require('../Assests/video/video.mp4') 
+    content: guideContents.search
   },
   { 
     id: 5, 
     title: 'Quản lý tài khoản', 
-    content: guideContents.product,
-    video: require('../Assests/video/video.mp4') 
+    content: guideContents.product
   },
   {
     id: 6,
     title: 'Hướng dẫn sử dụng AI',
-    content: guideContents.aiGuide,
-    video: require('../Assests/video/video.mp4')
+    content: guideContents.aiGuide
   },
+  {
+    id: 7,
+    title: 'Video hướng dẫn',
+    content: guideContents.videoGuide,
+    isVideo: true
+  }
 ];
 
 function Guide() {
@@ -112,16 +129,30 @@ function Guide() {
             </ul>
           </div>
           <div className="guide-content">
-            <div className="guide-video">
-              <video width="100%" height="320" controls>
-                <source src={selectedTopic.video} type="video/mp4" />
-                Trình duyệt của bạn không hỗ trợ video.
-              </video>
-            </div>
-            <div className="guide-text">
-              <h5>{selectedTopic.title}</h5>
-              <p className="multiline-text">{selectedTopic.content}</p>
-            </div>
+            {selectedTopic.isVideo ? (
+              <div className="guide-video-section">
+                <div className="guide-video">
+                  <iframe
+                    width="100%"
+                    height="400"
+                    src="https://www.youtube.com/embed/XdrshjmF6mU"
+                    title="Video hướng dẫn Vinsaky"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+                <div className="guide-text">
+                  <h5>{selectedTopic.title}</h5>
+                  <p className="multiline-text">{selectedTopic.content}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="guide-text">
+                <h5>{selectedTopic.title}</h5>
+                <p className="multiline-text">{selectedTopic.content}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
