@@ -300,29 +300,21 @@ const Product2Carousel = () => {
             <div className="bootstrap-tabs product-tabs">
               <div className="tabs-header d-flex justify-content-between border-bottom mb-4 pb-3">
                 <h3 className="fw-bold mb-0">Đồ cũ</h3>
-                <nav>
-                  <div className="nav nav-tabs border-0" id="nav-tab" role="tablist">
-                    <button
-                      className={`nav-link text-uppercase fs-6 fw-medium px-4${activeBrand === "All" ? " active" : ""}`}
-                      type="button"
-                      role="tab"
-                      onClick={() => setActiveBrand("All")}
-                    >
-                      All
-                    </button>
+                <div>
+                  <select
+                    className="form-select form-select-sm"
+                    style={{ minWidth: "160px", display: "inline-block" }}
+                    value={activeBrand}
+                    onChange={e => setActiveBrand(e.target.value)}
+                  >
+                    <option value="All">All</option>
                     {brands.map((brand) => (
-                      <button
-                        key={brand}
-                        className={`nav-link text-uppercase fs-6 fw-medium px-4${activeBrand === brand ? " active" : ""}`}
-                        type="button"
-                        role="tab"
-                        onClick={() => setActiveBrand(brand)}
-                      >
+                      <option key={brand} value={brand}>
                         {brand}
-                      </button>
+                      </option>
                     ))}
-                  </div>
-                </nav>
+                  </select>
+                </div>
               </div>
 
               <div className="tab-content" id="nav-tabContent">
