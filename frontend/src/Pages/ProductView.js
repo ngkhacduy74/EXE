@@ -749,15 +749,17 @@ const ProductView = () => {
                               transition: 'background 0.3s',
                             }}
                             onClick={() => {
-                              navigator.clipboard.writeText(product.business_phone);
+                              const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                              if (isMobile) {
+                                window.open(`tel:${product.business_phone}`);
+                              } else {
+                                window.open(`https://zalo.me/${product.business_phone}`,'_blank');
+                              }
                             }}
-                            title="Bấm để copy số điện thoại"
+                            title="Bấm để liên hệ"
                           >
                             <i className="fas fa-phone-alt me-3 phone-animated" style={{ fontSize: '2rem' }}></i>
                             {product.business_phone}
-                            <span className="ms-3" style={{ fontSize: '1.2rem' }}>
-                              <i className="fas fa-copy"></i>
-                            </span>
                           </Button>
                         </>
                       ) : (
@@ -930,25 +932,6 @@ const ProductView = () => {
             </Col>
           </Row>
 
-          <div className="mb-4 text-center">
-            <h2 className="fw-bold mb-3">
-              <i className="fas fa-info-circle text-primary me-2"></i>Mô tả sản
-              phẩm
-            </h2>
-            <div
-              className="lead mb-0"
-              style={{
-                margin: "0 auto",
-                lineHeight: 1.7,
-                whiteSpace: "pre-wrap",
-                textAlign: "left",
-                maxWidth: "800px",
-              }}
-            >
-              {stripHtml(product.description)}
-            </div>
-          </div>
-
           {/* Product Videos - HIỂN THỊ TO Ở DƯỚI CÙNG */}
           {product.video &&
             Array.isArray(product.video) &&
@@ -1042,8 +1025,7 @@ const ProductView = () => {
                                 </small>
                                 <div className="mt-3">
                                   <small className="text-muted">
-                                    Loại:{" "}
-                                    {isYouTube ? "YouTube" : "Direct Video"}
+                                    Loại: {isYouTube ? "YouTube" : "Direct Video"}
                                   </small>
                                   <br />
                                   <small className="text-muted">
@@ -1060,6 +1042,24 @@ const ProductView = () => {
                 </Container>
               </section>
             )}
+          <div className="mb-4 text-center">
+            <h2 className="fw-bold mb-3">
+              <i className="fas fa-info-circle text-primary me-2"></i>Mô tả sản
+              phẩm
+            </h2>
+            <div
+              className="lead mb-0"
+              style={{
+                margin: "0 auto",
+                lineHeight: 1.7,
+                whiteSpace: "pre-wrap",
+                textAlign: "left",
+                maxWidth: "800px",
+              }}
+            >
+              {stripHtml(product.description)}
+            </div>
+          </div>
         </Container>
 
         {/* Recently Viewed Products */}

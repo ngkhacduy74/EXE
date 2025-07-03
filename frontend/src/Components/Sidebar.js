@@ -50,12 +50,7 @@ function Sidebar() {
                     <FaCommentDots className="me-2" />Top 5 products
                 </Nav.Link>
 
-                <Nav.Link
-                    className="text-white mb-3 d-flex align-items-center"
-                    onClick={() => navigate('/report')}
-                >
-                    <FaExclamationTriangle className="me-2" /> Report
-                </Nav.Link>
+               
             </Nav>
         </div>
     );

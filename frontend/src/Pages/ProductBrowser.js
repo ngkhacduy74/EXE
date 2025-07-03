@@ -53,6 +53,7 @@ const ProductBrowser = () => {
     maxPrice: searchParams.get("maxPrice") || "",
     status: searchParams.get("status") || "",
   });
+  const [filterDraft, setFilterDraft] = useState({ ...filters });
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
   const [viewMode, setViewMode] = useState("grid"); // grid or list
@@ -64,6 +65,22 @@ const ProductBrowser = () => {
 
   // Backup image path
   const backUpImg = "/images/frigde.png";
+
+  // Danh sách các danh mục sản phẩm (copy từ Header)
+  const fixedCategories = [
+    "Máy Làm Đá",
+    "Bếp á công nghiệp",
+    "Bàn inox",
+    "Bếp âu công nghiệp",
+    "Tủ đông công nghiệp",
+    "Tủ lạnh công nghiệp",
+    "Tủ mát công nghiệp",
+    "Tủ nấu cơm",
+    "Máy Pha Cafe",
+    "Bàn Đông",
+    "Bếp Từ Công Nghiệp",
+    "Máy Làm Kem",
+  ];
 
   // Get product image (handle array format) - Same as BrandCarousel
   const getProductImage = (product) => {
@@ -156,33 +173,25 @@ const ProductBrowser = () => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
-
-      // Add all non-empty filters to query params
       Object.entries(searchFilters).forEach(([key, value]) => {
         if (value) {
           queryParams.append(key, value);
         }
       });
-
       const response = await authApiClient.get(
         `/product?${queryParams.toString()}`
       );
       const productData = Array.isArray(response.data.data)
         ? response.data.data
         : [];
-
       setProducts(productData);
-
-      // Extract unique categories and brands
-      const uniqueCategories = [
-        ...new Set(productData.map((p) => p.category).filter(Boolean)),
-      ];
+      // Danh mục cố định
+      setCategories(fixedCategories);
+      // Thương hiệu tối đa 10
       const uniqueBrands = [
         ...new Set(productData.map((p) => p.brand).filter(Boolean)),
       ];
-
-      setCategories(uniqueCategories);
-      setBrands(uniqueBrands);
+      setBrands(uniqueBrands.slice(0, 10));
     } catch (err) {
       console.error("Fetch Error:", err);
       setError("Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.");
@@ -192,8 +201,7 @@ const ProductBrowser = () => {
     }
   };
 
-  // Remove filteredProducts and FE filtering
-  // Always fetch products from BE when searchParams change
+  // Khi searchParams thay đổi, đồng bộ filters và filterDraft
   useEffect(() => {
     const newFilters = {
       search: searchParams.get("search") || "",
@@ -204,6 +212,7 @@ const ProductBrowser = () => {
       status: searchParams.get("status") || "",
     };
     setFilters(newFilters);
+    setFilterDraft(newFilters);
     fetchProducts(newFilters);
   }, [searchParams]);
 
@@ -238,9 +247,47 @@ const ProductBrowser = () => {
   );
   const totalPages = Math.ceil(products.length / productsPerPage);
 
+  // Thay đổi filterDraft khi input filter thay đổi
+  const handleFilterDraftChange = (key, value) => {
+    setFilterDraft((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Khi bấm nút Lọc, cập nhật filters, searchParams và fetch
+  const handleApplyFilters = () => {
+    setFilters(filterDraft);
+    // Update URL
+    const params = new URLSearchParams();
+    Object.entries(filterDraft).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+    setSearchParams(params);
+    // fetchProducts sẽ tự động gọi qua useEffect
+  };
+
+  // Khi search trong filter sidebar, đồng bộ lên header (update searchParams)
+  const handleSidebarSearch = (searchQuery) => {
+    handleFilterDraftChange("search", searchQuery);
+    // Update searchParams để header cũng nhận được
+    const params = new URLSearchParams(searchParams);
+    if (searchQuery) {
+      params.set("search", searchQuery);
+    } else {
+      params.delete("search");
+    }
+    setSearchParams(params);
+  };
+
   // Clear all filters
   const clearFilters = () => {
     setFilters({
+      search: "",
+      category: "",
+      brand: "",
+      minPrice: "",
+      maxPrice: "",
+      status: "",
+    });
+    setFilterDraft({
       search: "",
       category: "",
       brand: "",
@@ -305,25 +352,12 @@ const ProductBrowser = () => {
     console.log("Add to wishlist:", product);
   };
 
-  const handleFilterChange = (key, value) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-
-    const newParams = new URLSearchParams(searchParams);
-    if (value) {
-      newParams.set(key, value);
-    } else {
-      newParams.delete(key);
-    }
-    setSearchParams(newParams);
-  };
-
   if (loading) {
     return (
       <HelmetProvider>
-        <div>
+        <div className="content-wrapper">
           <Header />
-          <div className="content-wrapper">
+          <div >
             <div className="container mt-5">
               <div className="text-center">
                 <div className="spinner-border text-primary" role="status">
@@ -364,365 +398,345 @@ const ProductBrowser = () => {
           <title>Sản phẩm - Vinsaky</title>
         </Helmet>
         <Header />
-        <div className="page-content">
-          <Container>
-            <div className="toolbox">
-              <div className="toolbox-left flex-grow-1">
-                <div className="search-wrapper">
-                  <SearchWithAutocomplete
-                    initialValue={searchParams.get("search") || ""}
-                    onSearch={handleSearch}
-                    placeholder="Tìm kiếm sản phẩm..."
-                  />
+        <div className="content-wrapper" style={{ marginTop: "70px" }}>
+          <div className="page-content">
+            <Container>
+              <div className="toolbox">
+                <div className="toolbox-left flex-grow-1">
+                  <div className="search-wrapper">
+                    <SearchWithAutocomplete
+                      initialValue={searchParams.get("search") || ""}
+                      onSearch={handleSearch}
+                      placeholder="Tìm kiếm sản phẩm..."
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="container-fluid" style={{ paddingTop: "1rem" }}>
-              <div className="row">
-                {/* Filters Sidebar */}
-                <div className="col-lg-3">
-                  <div className="card">
-                    <div className="card-header d-flex justify-content-between align-items-center">
-                      <h6 className="mb-0">
-                        <Sliders size={16} className="me-2" />
-                        Bộ lọc
-                      </h6>
+              {/* Filter Bar Horizontal */}
+              <div className="card mb-3">
+                <div className="card-body">
+                  <div className="row align-items-end g-2">
+                    {/* Search */}
+                    <div className="col-md-2">
+                      <label className="form-label">Tìm kiếm</label>
+                      <SearchWithAutocomplete
+                        initialValue={filterDraft.search}
+                        onSearch={handleSidebarSearch}
+                        placeholder="Tìm sản phẩm..."
+                      />
+                    </div>
+                    {/* Category Filter */}
+                    <div className="col-md-2">
+                      <label className="form-label">Danh mục</label>
+                      <select
+                        className="form-select"
+                        value={filterDraft.category}
+                        onChange={(e) => handleFilterDraftChange("category", e.target.value)}
+                      >
+                        <option value="">Tất cả danh mục</option>
+                        {fixedCategories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {/* Brand Filter */}
+                    <div className="col-md-2">
+                      <label className="form-label">Thương hiệu</label>
+                      <select
+                        className="form-select"
+                        value={filterDraft.brand}
+                        onChange={(e) => handleFilterDraftChange("brand", e.target.value)}
+                      >
+                        <option value="">Tất cả thương hiệu</option>
+                        {brands.map((brand) => (
+                          <option key={brand} value={brand}>
+                            {brand}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {/* Price Range */}
+                    <div className="col-md-2">
+                      <label className="form-label">Khoảng giá</label>
+                      <div className="d-flex gap-1">
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="Từ"
+                          value={filterDraft.minPrice}
+                          onChange={(e) => handleFilterDraftChange("minPrice", e.target.value)}
+                        />
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="Đến"
+                          value={filterDraft.maxPrice}
+                          onChange={(e) => handleFilterDraftChange("maxPrice", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    {/* Status Filter */}
+                    <div className="col-md-2">
+                      <label className="form-label">Tình trạng</label>
+                      <select
+                        className="form-select"
+                        value={filterDraft.status}
+                        onChange={(e) => handleFilterDraftChange("status", e.target.value)}
+                      >
+                        <option value="">Tất cả</option>
+                        <option value="New">Mới</option>
+                        <option value="SecondHand">Đã qua sử dụng</option>
+                      </select>
+                    </div>
+                    {/* Nút Lọc & Xóa */}
+                    <div className="col-md-2 d-flex gap-1">
+                      <button className="btn btn-primary flex-fill" onClick={handleApplyFilters}>
+                        <Filter size={16} className="me-1" /> Lọc
+                      </button>
                       <button
-                        className="btn btn-sm btn-outline-secondary"
+                        className="btn btn-outline-secondary flex-fill"
                         onClick={clearFilters}
+                        title="Xóa bộ lọc"
                       >
                         <X size={14} />
                       </button>
                     </div>
-                    <div className="card-body">
-                      {/* Search */}
-                      <div className="mb-3">
-                        <label className="form-label">Tìm kiếm</label>
-                        <div className="input-group">
-                          <span className="input-group-text">
-                            <Search size={14} />
-                          </span>
-                          <SearchWithAutocomplete
-                            onSearch={handleSearch}
-                            placeholder="Tìm sản phẩm..."
-                          />
-                        </div>
-                      </div>
-
-                      {/* Category Filter */}
-                      <div className="mb-3">
-                        <label className="form-label">Danh mục</label>
-                        <select
-                          className="form-select"
-                          value={filters.category}
-                          onChange={(e) =>
-                            handleFilterChange("category", e.target.value)
-                          }
-                        >
-                          <option value="">Tất cả danh mục</option>
-                          {categories.map((category) => (
-                            <option key={category} value={category}>
-                              {category}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Brand Filter */}
-                      <div className="mb-3">
-                        <label className="form-label">Thương hiệu</label>
-                        <select
-                          className="form-select"
-                          value={filters.brand}
-                          onChange={(e) =>
-                            handleFilterChange("brand", e.target.value)
-                          }
-                        >
-                          <option value="">Tất cả thương hiệu</option>
-                          {brands.map((brand) => (
-                            <option key={brand} value={brand}>
-                              {brand}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Price Range */}
-                      <div className="mb-3">
-                        <label className="form-label">Khoảng giá</label>
-                        <div className="row">
-                          <div className="col-6">
-                            <input
-                              type="number"
-                              className="form-control"
-                              placeholder="Từ"
-                              value={filters.minPrice}
-                              onChange={(e) =>
-                                handleFilterChange("minPrice", e.target.value)
-                              }
-                            />
-                          </div>
-                          <div className="col-6">
-                            <input
-                              type="number"
-                              className="form-control"
-                              placeholder="Đến"
-                              value={filters.maxPrice}
-                              onChange={(e) =>
-                                handleFilterChange("maxPrice", e.target.value)
-                              }
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Status Filter */}
-                      <div className="mb-3">
-                        <label className="form-label">Tình trạng</label>
-                        <select
-                          className="form-select"
-                          value={filters.status}
-                          onChange={(e) =>
-                            handleFilterChange("status", e.target.value)
-                          }
-                        >
-                          <option value="">Tất cả</option>
-                          <option value="New">Mới</option>
-                          <option value="SecondHand">Đã qua sử dụng</option>
-                        </select>
-                      </div>
-                    </div>
                   </div>
-                </div>
-
-                {/* Products Section */}
-                <div className="col-lg-9">
-                  {/* Header */}
-                  <div className="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                      <h4>Duyệt Sản Phẩm</h4>
-                      <p className="text-muted mb-0">
-                        Hiển thị {products.length} sản phẩm
-                      </p>
-                    </div>
-                    <div className="d-flex align-items-center gap-2">
-                      <div className="btn-group" role="group">
-                        <button
-                          type="button"
-                          className={`btn btn-outline-secondary ${
-                            viewMode === "grid" ? "active" : ""
-                          }`}
-                          onClick={() => setViewMode("grid")}
-                        >
-                          <Grid size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          className={`btn btn-outline-secondary ${
-                            viewMode === "list" ? "active" : ""
-                          }`}
-                          onClick={() => setViewMode("list")}
-                        >
-                          <List size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Results Info */}
-                  <Row className="mb-3">
-                    <Col>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                          <h5 className="mb-0">
-                            Kết quả tìm kiếm
-                            {filters.search && (
-                              <span className="text-muted">
-                                {" "}
-                                cho "{filters.search}"
-                              </span>
-                            )}
-                          </h5>
-                          <small className="text-muted">
-                            {pagination.totalItems || products.length} sản phẩm
-                          </small>
-                        </div>
-                        {pagination.totalPages > 1 && (
-                          <div>
-                            <small className="text-muted">
-                              Trang {pagination.currentPage} /{" "}
-                              {pagination.totalPages}
-                            </small>
-                          </div>
-                        )}
-                      </div>
-                    </Col>
-                  </Row>
-
-                  {/* Error Message */}
-                  {error && (
-                    <Alert variant="danger" className="mb-4">
-                      {error}
-                    </Alert>
-                  )}
-
-                  {/* Products Grid/List */}
-                  {products.length === 0 ? (
-                    <div className="text-center py-5">
-                      <h5>Không tìm thấy sản phẩm</h5>
-                      <p className="text-muted">
-                        Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
-                      </p>
-                    </div>
-                  ) : (
-                    <div
-                      className={`row ${viewMode === "list" ? "g-3" : "g-4"}`}
-                    >
-                      {currentProducts.map((product) => (
-                        <div
-                          key={product.id}
-                          className={
-                            viewMode === "list"
-                              ? "col-12"
-                              : "col-md-6 col-lg-4 col-xl-3"
-                          }
-                        >
-                          <div
-                            className={`card h-100 product-browser ${
-                              viewMode === "list" ? "flex-row" : ""
-                            }`}
-                          >
-                            <div
-                              className={viewMode === "list" ? "col-md-3" : ""}
-                            >
-                              <div className="position-relative">
-                                {product.discount && (
-                                  <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1">
-                                    -{product.discount}%
-                                  </span>
-                                )}
-                                <FavoriteButton
-                                  productId={product._id}
-                                  className="position-absolute top-0 end-0 m-2 z-index-2"
-                                />
-                                <img
-                                  src={getProductImage(product)}
-                                  className={`card-img-top ${
-                                    viewMode === "list" ? "h-100" : ""
-                                  }`}
-                                  alt={product.name}
-                                  style={{
-                                    width: "210px",
-                                    height: "250px",
-                                    objectFit: "contain",
-                                    backgroundColor: "#f9f9f9",
-                                    border: "1px solid #eee",
-                                    borderRadius: "6px",
-                                  }}
-                                  onError={handleImageError}
-                                  onClick={() => handleProductClick(product.id)}
-                                />
-                              </div>
-                            </div>
-                            <div
-                              className={`card-body ${
-                                viewMode === "list" ? "col-md-9" : ""
-                              }`}
-                            >
-                              <h6
-                                className="card-title"
-                                onClick={() => handleProductClick(product.id)}
-                                style={{ cursor: "pointer" }}
-                              >
-                                {product.name}
-                              </h6>
-                              <p className="card-text text-muted small">
-                                {product.brand} • {product.category}
-                              </p>
-                              {renderStars(product.rating)}
-                              <div className="d-flex justify-content-between align-items-center mt-2">
-                                <span className="fw-bold text-primary">
-                                  {formatPrice(product.price)}
-                                </span>
-                                <span
-                                  className={`badge ${
-                                    getStockStatus(product.quantity).variant
-                                  }`}
-                                >
-                                  {getStockStatus(product.quantity).text}
-                                </span>
-                              </div>
-                              <div className="d-flex gap-2 mt-3">
-                                <button
-                                  className="btn btn-primary btn-sm flex-fill"
-                                  onClick={() => handleProductClick(product.id)}
-                                >
-                                  <Eye size={14} className="me-1" />
-                                  Xem chi tiết
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <nav className="mt-4">
-                      <ul className="pagination justify-content-center">
-                        <li
-                          className={`page-item ${
-                            currentPage === 1 ? "disabled" : ""
-                          }`}
-                        >
-                          <button
-                            className="page-link"
-                            onClick={() => setCurrentPage(currentPage - 1)}
-                            disabled={currentPage === 1}
-                          >
-                            <ChevronLeft size={16} />
-                          </button>
-                        </li>
-                        {[...Array(totalPages)].map((_, index) => {
-                          const pageNumber = index + 1;
-                          return (
-                            <li
-                              key={pageNumber}
-                              className={`page-item ${
-                                currentPage === pageNumber ? "active" : ""
-                              }`}
-                            >
-                              <button
-                                className="page-link"
-                                onClick={() => setCurrentPage(pageNumber)}
-                              >
-                                {pageNumber}
-                              </button>
-                            </li>
-                          );
-                        })}
-                        <li
-                          className={`page-item ${
-                            currentPage === totalPages ? "disabled" : ""
-                          }`}
-                        >
-                          <button
-                            className="page-link"
-                            onClick={() => setCurrentPage(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                          >
-                            <ChevronRight size={16} />
-                          </button>
-                        </li>
-                      </ul>
-                    </nav>
-                  )}
                 </div>
               </div>
-            </div>
-          </Container>
+              <div className="container-fluid" style={{ paddingTop: "1rem" }}>
+                <div className="row">
+                  {/* Products Section */}
+                  <div className="col-12">
+                    {/* Header */}
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                      <div>
+                        <h4>Duyệt Sản Phẩm</h4>
+                        <p className="text-muted mb-0">
+                          Hiển thị {products.length} sản phẩm
+                        </p>
+                      </div>
+                      <div className="d-flex align-items-center gap-2">
+                        <div className="btn-group" role="group">
+                          <button
+                            type="button"
+                            className={`btn btn-outline-secondary ${
+                              viewMode === "grid" ? "active" : ""
+                            }`}
+                            onClick={() => setViewMode("grid")}
+                          >
+                            <Grid size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className={`btn btn-outline-secondary ${
+                              viewMode === "list" ? "active" : ""
+                            }`}
+                            onClick={() => setViewMode("list")}
+                          >
+                            <List size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Results Info */}
+                    <Row className="mb-3">
+                      <Col>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div>
+                            <h5 className="mb-0">
+                              Kết quả tìm kiếm
+                              {filters.search && (
+                                <span className="text-muted">
+                                  {" "}
+                                  cho "{filters.search}"
+                                </span>
+                              )}
+                            </h5>
+                            <small className="text-muted">
+                              {pagination.totalItems || products.length} sản phẩm
+                            </small>
+                          </div>
+                          {pagination.totalPages > 1 && (
+                            <div>
+                              <small className="text-muted">
+                                Trang {pagination.currentPage} /{" "}
+                                {pagination.totalPages}
+                              </small>
+                            </div>
+                          )}
+                        </div>
+                      </Col>
+                    </Row>
+
+                    {/* Error Message */}
+                    {error && (
+                      <Alert variant="danger" className="mb-4">
+                        {error}
+                      </Alert>
+                    )}
+
+                    {/* Products Grid/List */}
+                    {products.length === 0 ? (
+                      <div className="text-center py-5">
+                        <h5>Không tìm thấy sản phẩm</h5>
+                        <p className="text-muted">
+                          Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
+                        </p>
+                      </div>
+                    ) : (
+                      <div
+                        className={`row ${viewMode === "list" ? "g-3" : "g-4"}`}
+                      >
+                        {currentProducts.map((product) => (
+                          <div
+                            key={product.id}
+                            className={
+                              viewMode === "list"
+                                ? "col-12"
+                                : "col-md-6 col-lg-4 col-xl-2-4"
+                            }
+                          >
+                            <div
+                              className={`card h-100 product-browser ${
+                                viewMode === "list" ? "flex-row" : ""
+                              }`}
+                            >
+                              <div
+                                className={viewMode === "list" ? "col-md-3" : ""}
+                              >
+                                <div className="position-relative">
+                                  {product.discount && (
+                                    <span className="badge bg-success position-absolute top-0 start-0 m-2 z-index-1">
+                                      -{product.discount}%
+                                    </span>
+                                  )}
+                                  <FavoriteButton
+                                    productId={product._id}
+                                    className="position-absolute top-0 end-0 m-2 z-index-2"
+                                  />
+                                  <img
+                                    src={getProductImage(product)}
+                                    className={`card-img-top ${
+                                      viewMode === "list" ? "h-100" : ""
+                                    }`}
+                                    alt={product.name}
+                                    style={{
+                                      width: "210px",
+                                      height: "250px",
+                                      objectFit: "contain",
+                                      backgroundColor: "#f9f9f9",
+                                      border: "1px solid #eee",
+                                      borderRadius: "6px",
+                                    }}
+                                    onError={handleImageError}
+                                    onClick={() => handleProductClick(product.id)}
+                                  />
+                                </div>
+                              </div>
+                              <div
+                                className={`card-body ${
+                                  viewMode === "list" ? "col-md-9" : ""
+                                }`}
+                              >
+                                <h6
+                                  className="card-title"
+                                  onClick={() => handleProductClick(product.id)}
+                                  style={{ cursor: "pointer" }}
+                                >
+                                  {product.name}
+                                </h6>
+                                <p className="card-text text-muted small">
+                                  {product.brand} • {product.category}
+                                </p>
+                                {renderStars(product.rating)}
+                                <div className="d-flex justify-content-between align-items-center mt-2">
+                                  <span className="fw-bold text-primary">
+                                    {formatPrice(product.price)}
+                                  </span>
+                                  <span
+                                    className={`badge ${
+                                      getStockStatus(product.quantity).variant
+                                    }`}
+                                  >
+                                    {getStockStatus(product.quantity).text}
+                                  </span>
+                                </div>
+                                <div className="d-flex gap-2 mt-3">
+                                  <button
+                                    className="btn btn-primary btn-sm flex-fill"
+                                    onClick={() => handleProductClick(product.id)}
+                                  >
+                                    <Eye size={14} className="me-1" />
+                                    Xem chi tiết
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                      <nav className="mt-4">
+                        <ul className="pagination justify-content-center">
+                          <li
+                            className={`page-item ${
+                              currentPage === 1 ? "disabled" : ""
+                            }`}
+                          >
+                            <button
+                              className="page-link"
+                              onClick={() => setCurrentPage(currentPage - 1)}
+                              disabled={currentPage === 1}
+                            >
+                              <ChevronLeft size={16} />
+                            </button>
+                          </li>
+                          {[...Array(totalPages)].map((_, index) => {
+                            const pageNumber = index + 1;
+                            return (
+                              <li
+                                key={pageNumber}
+                                className={`page-item ${
+                                  currentPage === pageNumber ? "active" : ""
+                                }`}
+                              >
+                                <button
+                                  className="page-link"
+                                  onClick={() => setCurrentPage(pageNumber)}
+                                >
+                                  {pageNumber}
+                                </button>
+                              </li>
+                            );
+                          })}
+                          <li
+                            className={`page-item ${
+                              currentPage === totalPages ? "disabled" : ""
+                            }`}
+                          >
+                            <button
+                              className="page-link"
+                              onClick={() => setCurrentPage(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                            >
+                              <ChevronRight size={16} />
+                            </button>
+                          </li>
+                        </ul>
+                      </nav>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </div>
         </div>
 
         <ChatWidget />
@@ -731,6 +745,13 @@ const ProductBrowser = () => {
         {/* Custom CSS for consistent image sizing and hover effects */}
         <style>
           {`
+            /* 5 columns for xl screens */
+            @media (min-width: 1200px) {
+              .col-xl-2-4 {
+                flex: 0 0 20%;
+                max-width: 20%;
+              }
+            }
             .product-browser .card-img-top {
               width: 100%;
               height: 240px;

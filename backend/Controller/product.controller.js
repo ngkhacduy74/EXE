@@ -193,28 +193,11 @@ const searchProducts = async (req, res) => {
     const query = {};
 
     if (search) {
-      // Tách từ khóa tìm kiếm dựa trên khoảng trắng
-      const keywords = search.trim().split(/\s+/).filter(word => word.length > 0);
-      
-      if (keywords.length > 0) {
-        const searchConditions = [];
-        
-        // Tìm kiếm theo tên sản phẩm với từ khóa đầy đủ
-        searchConditions.push({ name: { $regex: search, $options: "i" } });
-        
-        // Tìm kiếm theo thương hiệu với từ khóa đầy đủ
-        searchConditions.push({ brand: { $regex: search, $options: "i" } });
-        
-        // Tìm kiếm theo từng từ khóa riêng lẻ
-        keywords.forEach(keyword => {
-          if (keyword.length > 1) { // Chỉ tìm kiếm từ có độ dài > 1
-            searchConditions.push({ name: { $regex: keyword, $options: "i" } });
-            searchConditions.push({ brand: { $regex: keyword, $options: "i" } });
-          }
-        });
-        
-        query.$or = searchConditions;
-      }
+      // Chỉ tìm kiếm theo tên sản phẩm và thương hiệu
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { brand: { $regex: search, $options: "i" } }
+      ];
     }
 
     if (category) {
@@ -268,7 +251,6 @@ const searchProducts = async (req, res) => {
           },
         };
 
-        // Kiểm tra xem từ khóa này đã được tìm kiếm trước đó chưa
         let existingSearch = await SearchHistory.findOne({
           userId,
           searchQuery: search.toLowerCase(),
@@ -276,7 +258,6 @@ const searchProducts = async (req, res) => {
         });
 
         if (existingSearch) {
-          // Nếu đã tồn tại, tăng số lần tìm kiếm và cập nhật thời gian
           existingSearch.searchCount += 1;
           existingSearch.lastSearched = new Date();
           existingSearch.searchResults = searchData.searchResults;
@@ -285,7 +266,6 @@ const searchProducts = async (req, res) => {
 
           await existingSearch.save();
         } else {
-          // Nếu chưa tồn tại, tạo mới
           const newSearchHistory = new SearchHistory({
             userId,
             ...searchData,
@@ -294,7 +274,6 @@ const searchProducts = async (req, res) => {
         }
       } catch (error) {
         console.error("Error saving search history:", error);
-        // Không throw error vì đây không phải lỗi nghiêm trọng
       }
     }
 

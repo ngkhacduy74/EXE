@@ -19,36 +19,15 @@ async function searchProducts(query) {
       return await Product.find().sort({ createdAt: -1 }).limit(5);
     }
 
-    // Tách từ khóa tìm kiếm
-    const keywords = query.toLowerCase().split(/\s+/).filter(word => word.length > 1);
-    
-    if (keywords.length > 0) {
-      const searchConditions = [];
-      
-      // Tìm kiếm theo tên sản phẩm
-      searchConditions.push({ name: { $regex: query, $options: 'i' } });
-      
-      // Tìm kiếm theo thương hiệu
-      searchConditions.push({ brand: { $regex: query, $options: 'i' } });
-      
-      // Tìm kiếm theo mô tả
-      searchConditions.push({ description: { $regex: query, $options: 'i' } });
-      
-      // Tìm kiếm theo từng từ khóa riêng lẻ
-      keywords.forEach(keyword => {
-        searchConditions.push({ name: { $regex: keyword, $options: 'i' } });
-        searchConditions.push({ brand: { $regex: keyword, $options: 'i' } });
-        searchConditions.push({ description: { $regex: keyword, $options: 'i' } });
-      });
-      
-      const products = await Product.find({
-        $or: searchConditions
-      }).sort({ createdAt: -1 }).limit(5);
+    // Chỉ tìm kiếm theo tên sản phẩm và thương hiệu
+    const products = await Product.find({
+      $or: [
+        { name: { $regex: query, $options: 'i' } },
+        { brand: { $regex: query, $options: 'i' } }
+      ]
+    }).sort({ createdAt: -1 }).limit(5);
 
-      return products;
-    }
-
-    return [];
+    return products;
   } catch (error) {
     console.error("Lỗi tìm kiếm sản phẩm:", error);
     return [];

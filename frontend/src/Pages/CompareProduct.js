@@ -159,12 +159,10 @@ const CompareProduct = () => {
     setSearchLoading(true);
     const timer = setTimeout(() => {
       const filteredProducts = products
-        .filter(
-          (product) =>
-            product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.category?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        .filter((product) => {
+          const search = searchTerm.toLowerCase();
+          return product.name?.toLowerCase().includes(search);
+        })
         .filter(
           (product) => !compareProducts.some((cp) => cp.id === product.id)
         );
@@ -571,13 +569,6 @@ const CompareProduct = () => {
                                     minWidth: "180px",
                                   }}
                                 >
-                                  <button
-                                    className="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-1"
-                                    onClick={() => removeFromCompare(product.id)}
-                                    style={{ zIndex: 10 }}
-                                  >
-                                    <X size={12} />
-                                  </button>
                                   <div className="pt-3 pb-1">
                                     <small className="text-muted">
                                       Sản phẩm {index + 1}
@@ -623,13 +614,18 @@ const CompareProduct = () => {
                                   style={{ padding: "0.5rem" }}
                                 >
                                   <button
-                                    className="btn btn-sm btn-outline-primary"
-                                    onClick={() =>
-                                      navigate(`/productView/${product.id}`)
-                                    }
+                                    className="btn btn-sm btn-outline-primary me-2"
+                                    onClick={() => navigate(`/productView/${product.id}`)}
                                   >
                                     <Eye size={12} className="me-1" />
                                     Xem chi tiết
+                                  </button>
+                                  <button
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => removeFromCompare(product.id)}
+                                    style={{ zIndex: 10 }}
+                                  >
+                                    <X size={12} />
                                   </button>
                                 </td>
                               ))}

@@ -63,40 +63,13 @@ class ChatService {
   // Tìm kiếm sản phẩm linh hoạt
   async searchProducts(query) {
     try {
-      const keywords = query.toLowerCase().split(/\s+/);
-      
-      // Tìm kiếm theo nhiều tiêu chí
+      // Chỉ tìm kiếm theo tên sản phẩm và thương hiệu
       const products = await Product.find({
         $or: [
-          // Tìm theo tên sản phẩm
           { name: { $regex: query, $options: 'i' } },
-          // Tìm theo từng từ khóa trong tên
-          { name: { $regex: keywords.join('|'), $options: 'i' } },
-          // Tìm theo thương hiệu
-          { brand: { $regex: query, $options: 'i' } },
-          // Tìm theo danh mục
-          { category: { $regex: query, $options: 'i' } },
-          // Tìm theo mô tả
-          { description: { $regex: query, $options: 'i' } }
+          { brand: { $regex: query, $options: 'i' } }
         ]
       }).limit(10);
-
-      // Nếu không tìm thấy, thử tìm kiếm linh hoạt hơn
-      if (products.length === 0) {
-        const flexibleProducts = await Product.find({
-          $or: keywords.map(keyword => ({
-            $or: [
-              { name: { $regex: keyword, $options: 'i' } },
-              { brand: { $regex: keyword, $options: 'i' } },
-              { category: { $regex: keyword, $options: 'i' } },
-              { description: { $regex: keyword, $options: 'i' } }
-            ]
-          }))
-        }).limit(10);
-
-        return flexibleProducts;
-      }
-
       return products;
     } catch (error) {
       console.error('Lỗi tìm kiếm sản phẩm:', error);
@@ -107,17 +80,14 @@ class ChatService {
   // Tìm kiếm bài viết
   async searchPosts(query) {
     try {
-      const keywords = query.toLowerCase().split(/\s+/);
-      
+      // Chỉ tìm kiếm theo nguyên chuỗi nhập vào, không tách từ
       const posts = await Post.find({
         $or: [
           { title: { $regex: query, $options: 'i' } },
-          { title: { $regex: keywords.join('|'), $options: 'i' } },
           { content: { $regex: query, $options: 'i' } },
           { category: { $regex: query, $options: 'i' } }
         ]
       }).limit(5);
-
       return posts;
     } catch (error) {
       console.error('Lỗi tìm kiếm bài viết:', error);
