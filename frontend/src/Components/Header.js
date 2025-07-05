@@ -17,6 +17,11 @@ function Header() {
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [searchCategory, setSearchCategory] = useState("");
+  const [searchBrand, setSearchBrand] = useState("");
+  const [currentBrandPage, setCurrentBrandPage] = useState(1);
+  const [currentMobileBrandPage, setCurrentMobileBrandPage] = useState(1);
+  const [brandsPerPage] = useState(12); // Hiển thị 12 thương hiệu mỗi trang (2 cột x 6 hàng)
+  const [mobileBrandsPerPage] = useState(10); // Hiển thị 10 thương hiệu mỗi trang trên mobile
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [headerSearch, setHeaderSearch] = useState(
@@ -26,15 +31,14 @@ function Header() {
   // Danh sách các danh mục sản phẩm
   const categories = [
     "Máy Làm Đá",
-    "Bếp á công nghiệp",
-    "Bàn inox",
+    "Bếp á",
+    "Bàn đông",
     "Bếp âu công nghiệp",
-    "Tủ đông công nghiệp",
-    "Tủ lạnh công nghiệp",
-    "Tủ mát công nghiệp",
+    "Tủ đông",
+    "Tủ lạnh",
+    "Tủ mát",
     "Tủ nấu cơm",
     "Máy Pha Cafe",
-    "Bàn Đông",
     "Bếp Từ Công Nghiệp",
     "Máy Làm Kem",
   ];
@@ -80,13 +84,14 @@ function Header() {
         const uniqueBrands = [
           ...new Set(products.map((product) => product.brand).filter(Boolean)),
         ];
-        const limitedBrands = uniqueBrands.slice(0, 10);
+        // Hiển thị tất cả thương hiệu thay vì giới hạn 10
+        const allBrands = uniqueBrands.sort(); // Sắp xếp theo alphabet
 
         // Cache the brands
-        localStorage.setItem("cachedBrands", JSON.stringify(limitedBrands));
+        localStorage.setItem("cachedBrands", JSON.stringify(allBrands));
         localStorage.setItem("cachedBrandsTime", now.toString());
 
-        setBrands(limitedBrands);
+        setBrands(allBrands);
       } catch (error) {
         console.error("Error fetching brands:", error);
         setBrands([]);
@@ -105,7 +110,7 @@ function Header() {
   };
 
   const handleCategoryClick = (category) => {
-    navigate(`/products?product=${encodeURIComponent(category)}`);
+    navigate(`/products?search=${encodeURIComponent(category)}`);
   };
 
   // Mobile search handlers
@@ -136,6 +141,45 @@ function Header() {
         return filterWords.every((word) => normalizedCat.includes(word));
       })
     : categories;
+
+  // Hàm lọc thương hiệu giống search
+  const filteredBrands = searchBrand
+    ? brands.filter((brand) => {
+        const filterWords = normalizeText(searchBrand)
+          .split(/\s+/)
+          .filter(Boolean);
+        const normalizedBrand = normalizeText(brand);
+        return filterWords.every((word) => normalizedBrand.includes(word));
+      })
+    : brands;
+
+  // Tính toán phân trang cho thương hiệu (Desktop)
+  const totalBrandPages = Math.ceil(filteredBrands.length / brandsPerPage);
+  const startBrandIndex = (currentBrandPage - 1) * brandsPerPage;
+  const endBrandIndex = startBrandIndex + brandsPerPage;
+  const currentBrands = filteredBrands.slice(startBrandIndex, endBrandIndex);
+
+  // Tính toán phân trang cho thương hiệu (Mobile)
+  const totalMobileBrandPages = Math.ceil(filteredBrands.length / mobileBrandsPerPage);
+  const startMobileBrandIndex = (currentMobileBrandPage - 1) * mobileBrandsPerPage;
+  const endMobileBrandIndex = startMobileBrandIndex + mobileBrandsPerPage;
+  const currentMobileBrands = filteredBrands.slice(startMobileBrandIndex, endMobileBrandIndex);
+
+  // Reset về trang 1 khi tìm kiếm
+  useEffect(() => {
+    setCurrentBrandPage(1);
+    setCurrentMobileBrandPage(1);
+  }, [searchBrand]);
+
+  // Hàm chuyển trang thương hiệu
+  const handleBrandPageChange = (page) => {
+    setCurrentBrandPage(page);
+  };
+
+  // Hàm chuyển trang thương hiệu mobile
+  const handleMobileBrandPageChange = (page) => {
+    setCurrentMobileBrandPage(page);
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -957,10 +1001,25 @@ function Header() {
                     onMouseLeave={() => setShowBrandsDropdown(false)}
                   >
                     <h6 className="dropdown-header text-primary fw-bold">
-                      Thương hiệu nổi bật
+                      Tất cả thương hiệu ({filteredBrands.length})
                     </h6>
+                    <div className="px-3 pb-2">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Tìm thương hiệu..."
+                        value={searchBrand}
+                        onChange={(e) => setSearchBrand(e.target.value)}
+                        style={{ fontSize: 14 }}
+                      />
+                    </div>
                     <div className="row g-0 px-3">
-                      {brands.map((brand) => (
+                      {filteredBrands.length === 0 && (
+                        <div className="col-12 text-muted py-2">
+                          Không tìm thấy thương hiệu
+                        </div>
+                      )}
+                      {currentBrands.map((brand) => (
                         <div key={brand} className="col-6">
                           <a
                             className="dropdown-item py-3 px-3 rounded text-truncate"
@@ -990,6 +1049,62 @@ function Header() {
                         </div>
                       ))}
                     </div>
+                    
+                    {/* Phân trang cho thương hiệu */}
+                    {totalBrandPages > 1 && (
+                      <div className="px-3 py-2 border-top">
+                        <div className="d-flex justify-content-between align-items-center">
+                          <small className="text-muted">
+                            Trang {currentBrandPage}/{totalBrandPages} 
+                            ({startBrandIndex + 1}-{Math.min(endBrandIndex, filteredBrands.length)}/{filteredBrands.length})
+                          </small>
+                          <div className="btn-group btn-group-sm">
+                            <button
+                              type="button"
+                              className="btn btn-outline-primary"
+                              onClick={() => handleBrandPageChange(currentBrandPage - 1)}
+                              disabled={currentBrandPage === 1}
+                              style={{ fontSize: "12px", padding: "4px 8px" }}
+                            >
+                              ‹
+                            </button>
+                            {Array.from({ length: Math.min(5, totalBrandPages) }, (_, i) => {
+                              let pageNum;
+                              if (totalBrandPages <= 5) {
+                                pageNum = i + 1;
+                              } else if (currentBrandPage <= 3) {
+                                pageNum = i + 1;
+                              } else if (currentBrandPage >= totalBrandPages - 2) {
+                                pageNum = totalBrandPages - 4 + i;
+                              } else {
+                                pageNum = currentBrandPage - 2 + i;
+                              }
+                              
+                              return (
+                                <button
+                                  key={pageNum}
+                                  type="button"
+                                  className={`btn ${currentBrandPage === pageNum ? 'btn-primary' : 'btn-outline-primary'}`}
+                                  onClick={() => handleBrandPageChange(pageNum)}
+                                  style={{ fontSize: "12px", padding: "4px 8px", minWidth: "32px" }}
+                                >
+                                  {pageNum}
+                                </button>
+                              );
+                            })}
+                            <button
+                              type="button"
+                              className="btn btn-outline-primary"
+                              onClick={() => handleBrandPageChange(currentBrandPage + 1)}
+                              disabled={currentBrandPage === totalBrandPages}
+                              style={{ fontSize: "12px", padding: "4px 8px" }}
+                            >
+                              ›
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </li>
               )}
@@ -1116,10 +1231,20 @@ function Header() {
               <>
                 <li className="nav-item">
                   <h6 className="nav-link text-primary fw-bold mt-3 mb-2 mobile-nav-header">
-                    Thương hiệu
+                    Thương hiệu ({filteredBrands.length})
                   </h6>
                 </li>
-                {brands.slice(0, 10).map((brand) => (
+                <li className="nav-item px-3 pb-2">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Tìm thương hiệu..."
+                    value={searchBrand}
+                    onChange={(e) => setSearchBrand(e.target.value)}
+                    style={{ fontSize: 14 }}
+                  />
+                </li>
+                {currentMobileBrands.map((brand) => (
                   <li className="nav-item" key={brand}>
                     <a
                       className="nav-link ps-3 py-2 border-bottom mobile-nav-brand"
@@ -1133,15 +1258,45 @@ function Header() {
                     </a>
                   </li>
                 ))}
-                {brands.length > 10 && (
-                  <li className="nav-item">
-                    <a
-                      className="nav-link ps-3 text-primary mobile-nav-brand"
-                      href="/brands"
-                    >
-                      Xem tất cả thương hiệu...
-                    </a>
-                  </li>
+                
+                {/* Phân trang mobile cho thương hiệu */}
+                {totalMobileBrandPages > 1 && (
+                  <>
+                    <li className="nav-item">
+                      <div className="d-flex justify-content-center align-items-center py-2 px-3">
+                        <div className="btn-group btn-group-sm">
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() => handleMobileBrandPageChange(currentMobileBrandPage - 1)}
+                            disabled={currentMobileBrandPage === 1}
+                            style={{ fontSize: "12px", padding: "4px 8px" }}
+                          >
+                            ‹
+                          </button>
+                          <span className="btn btn-outline-secondary btn-sm disabled" style={{ fontSize: "12px", padding: "4px 8px" }}>
+                            {currentMobileBrandPage}/{totalMobileBrandPages}
+                          </span>
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() => handleMobileBrandPageChange(currentMobileBrandPage + 1)}
+                            disabled={currentMobileBrandPage === totalMobileBrandPages}
+                            style={{ fontSize: "12px", padding: "4px 8px" }}
+                          >
+                            ›
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                    <li className="nav-item">
+                      <div className="text-center py-1">
+                        <small className="text-muted">
+                          {startMobileBrandIndex + 1}-{Math.min(endMobileBrandIndex, filteredBrands.length)}/{filteredBrands.length} thương hiệu
+                        </small>
+                      </div>
+                    </li>
+                  </>
                 )}
               </>
             )}
