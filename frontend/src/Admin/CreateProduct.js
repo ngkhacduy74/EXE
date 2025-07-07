@@ -1115,7 +1115,7 @@ const CreateProduct = () => {
                     ))}
 
                     <Form.Text className="text-muted">
-                      Tối đa 3 URL hình ảnh. Hỗ trợ: JPG, PNG, GIF, WebP
+                      Tối đa 5 URL hình ảnh. Hỗ trợ: JPG, PNG, GIF, WebP
                     </Form.Text>
                     {errors.images && (
                       <Form.Text className="text-danger d-block">

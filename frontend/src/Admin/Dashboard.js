@@ -301,14 +301,6 @@ function AdminDashboard() {
               <Col md={2}>
                 <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
                   <Card.Body>
-                    <div className="display-6 text-info">{realData.summary?.todayNewProducts || 0}</div>
-                    <div className="text-muted">Số lượng SP mới (hôm nay)</div>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={2}>
-                <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
-                  <Card.Body>
                     <div className="display-6 text-warning">{dashboardData.totalProducts - (realData.summary?.todayNewProducts || 0)}</div>
                     <div className="text-muted">Số lượng SP cũ</div>
                   </Card.Body>
@@ -319,14 +311,6 @@ function AdminDashboard() {
                   <Card.Body>
                     <div className="display-6 text-primary">{dashboardData.totalPosts}</div>
                     <div className="text-muted">Tổng số bài post</div>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={2}>
-                <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
-                  <Card.Body>
-                    <div className="display-6 text-danger">{realData.summary?.todayNewPosts || 0}</div>
-                    <div className="text-muted">Bài post mới (hôm nay)</div>
                   </Card.Body>
                 </Card>
               </Col>
