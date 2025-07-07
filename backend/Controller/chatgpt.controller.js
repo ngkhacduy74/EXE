@@ -75,22 +75,44 @@ const askQuestion = async (req, res) => {
     }
 
     // 2) Chuẩn bị messages cho AI
-    const historyMessages = chatServiceInstance.getHistoryMessages(20);
+    // Lấy toàn bộ lịch sử, nếu dài sẽ tóm tắt để tiết kiệm token
+    const fullHistory = chatServiceInstance.getHistoryMessages(100);
+    let summaryMessage = null;
+    let recentMessages = fullHistory;
+    if (fullHistory.length > 20) {
+      const older = fullHistory.slice(0, -10); // tóm tắt phần cũ
+      let summaryText = older.map(m => (m.role === 'user' ? `Khách: ${m.content}` : `AI: ${m.content}`)).join(' ');
+      if (summaryText.length > 400) {
+        summaryText = summaryText.slice(-400); // giữ 400 ký tự cuối cùng để vẫn gần ngữ cảnh hiện tại
+      }
+      summaryMessage = { role: 'system', content: `TÓM TẮT CUỘC TRÒ CHUYỆN TRƯỚC: ${summaryText}` };
+      recentMessages = fullHistory.slice(-10);
+    }
+    const historyMessages = recentMessages;
     const systemMessage = {
       role: 'system',
       content: process.env.BUSINESS_KNOWLEDGE || 'Bạn là trợ lý AI của Vinsaky'
     };
 
-    let messages = [systemMessage, ...historyMessages];
+    let messages = [systemMessage];
+    if (summaryMessage) messages.push(summaryMessage);
+    messages = [...messages, ...historyMessages];
     if (serviceResp && Array.isArray(serviceResp.products) && serviceResp.products.length) {
-      messages.push({ role: 'system', content: `PRODUCT_LIST_JSON:\n${JSON.stringify(serviceResp.products)}` });
+      const slimProducts = serviceResp.products.map(p => ({ id: p.id, name: p.name, price: p.price, brand: p.brand }));
+      messages.push({ role: 'system', content: `PRODUCT_LIST_JSON:\n${JSON.stringify(slimProducts)}` });
     }
+    // Luôn thêm prompt cuối cùng của người dùng (đã chèn intro nếu có) để model trả lời đúng ngữ cảnh
+    messages.push({ role: 'user', content: finalPrompt });
 
     // 3) Gọi Groq AI
     const aiAnswer = await callGroqAI(messages);
     chatServiceInstance.addToHistory('assistant', aiAnswer);
 
-    return res.status(200).json({ success: true, answer: aiAnswer, raw: aiAnswer });
+    const responsePayload = { success: true, answer: aiAnswer, raw: aiAnswer };
+    if (serviceResp && Array.isArray(serviceResp.products) && serviceResp.products.length) {
+      responsePayload.products = serviceResp.products;
+    }
+    return res.status(200).json(responsePayload);
   } catch (error) {
     return res.status(500).json({
       success: false,

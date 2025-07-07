@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Send, User, Bot, MessageCircle, X, LogIn, Search, BarChart3, Package, FileText, Sparkles, Scale } from "lucide-react";
 import { authApiClient } from "../Services/auth.service";
 import "./WidgetChat.css";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const styles = {
   container: {
@@ -405,7 +407,11 @@ export default function ChatWidget() {
           text,
           sender: "bot",
         };
-        setMessages((prevMessages) => [...prevMessages, botResponse]);
+        // Nếu backend kèm sản phẩm, gắn vào botResponse để hiển thị chung 1 bubble
+        if (data.products && Array.isArray(data.products) && data.products.length) {
+          botResponse.products = data.products;
+        }
+        setMessages((prev) => [...prev, botResponse]);
       } else {
         throw new Error("Invalid response format");
       }
@@ -455,33 +461,55 @@ export default function ChatWidget() {
   };
 
   const renderMessage = (message) => {
-    const isUser = message.sender === "user";
-    const Icon = isUser ? User : Bot;
-
-    return (
-      <div
-        key={message.id}
-        style={{
-          ...styles.messageRow,
-          ...(isUser ? styles.userRow : styles.botRow),
-        }}
-      >
-        <div
-          style={{
-            ...styles.messageBubble,
-            ...(isUser ? styles.userBubble : styles.botBubble),
-          }}
-        >
-          {!isUser && (
+    // User message
+    if (message.sender === "user") {
+      const Icon = User;
+      return (
+        <div key={message.id} style={{ ...styles.messageRow, ...styles.userRow }}>
+          <div style={{ ...styles.messageBubble, ...styles.userBubble }}>
             <div style={styles.iconContainer}>
               <Icon size={16} />
             </div>
-          )}
-          <div style={{ whiteSpace: "pre-wrap" }}>{message.text}</div>
+            <div style={{ whiteSpace: "pre-wrap" }}>{message.text}</div>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    // Bot text message (markdown)
+    if (message.sender === "bot") {
+      return (
+        <div key={message.id} style={{ ...styles.messageRow, ...styles.botRow }}>
+          <div style={{ ...styles.messageBubble, ...styles.botBubble }}>
+            <div style={styles.iconContainer}>
+              <Bot size={16} />
+            </div>
+            <div style={{ flex: 1, whiteSpace: "pre-line", wordBreak: "break-word" }}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+              strong: ({node, ...props}) => <strong style={{ color: "#2563eb" }} {...props} />,
+            }}>
+              {message.text}
+            </ReactMarkdown>
+            {Array.isArray(message.products) && message.products.length > 0 && (
+              <div style={{ marginTop: "8px", width:"100%" }}>
+                {message.products.map((p) => (
+                  <div key={p.id} style={styles.productCard} onClick={() => handleProductClick(p)}>
+                    <strong>{p.name}</strong>
+                    <div>💰 {p.price ? Number(p.price).toLocaleString("vi-VN") + " VND" : "Chưa có giá"}</div>
+                    <div>🏷️ {p.brand}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
   };
+
 
   const renderQuickActions = () => {
     if (!showQuickActions || !isLoggedIn) return null;
@@ -619,3 +647,4 @@ export default function ChatWidget() {
     </div>
   );
 }
+

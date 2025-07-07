@@ -25,6 +25,7 @@
     "react-dom": "^18.3.1",
     "react-helmet-async": "^2.0.5",
     "react-icons": "^5.5.0",
+    "react-markdown": "^10.1.0",
     "react-quill": "^2.0.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
@@ -32,6 +33,7 @@
     "react-simple-maps": "^3.0.0",
     "react-toastify": "^11.0.5",
     "redux-saga": "^0.16.2",
+    "remark-gfm": "^4.0.1",
     "swiper": "^11.2.8",
     "use-smooth-scroll": "^1.1.1",
     "web-vitals": "^4.2.4"

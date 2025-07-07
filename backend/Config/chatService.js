@@ -361,7 +361,18 @@ Bạn muốn so sánh sản phẩm nào cụ thể không? Tôi có thể gợi 
         return reviewResponse;
       }
 
-      // Câu hỏi tiếp nối sử dụng "sản phẩm này" / "thiết bị này"...
+        // Câu hỏi tiếp nối: yêu cầu xem thêm vài sản phẩm nếu đã gợi ý trước
+        if (/(cho\s+tôi\s*(xem|coi)(\s+đi)?|xem\s+đi|xem\s+thêm|xem\s+tiếp|(xem|cho\s+tôi).*?((một|1|vài|nhiều)\s+)?(sản\s+phẩm|thiết\s+bị))/i.test(userQuestion)) {
+          if (this.lastProductSuggestions.length) {
+            return {
+              answer: '',
+              type: 'general_help',
+              products: this.lastProductSuggestions.slice(0, 6) // trả tối đa 6
+            };
+          }
+        }
+
+        // Câu hỏi tiếp nối sử dụng "sản phẩm này" / "thiết bị này"...
       if (this.lastProductSuggestions.length && /(sản phẩm|thiết bị|máy|tủ)\s+này/i.test(userQuestion)) {
         const p = this.lastProductSuggestions[0];
         return {
@@ -399,8 +410,9 @@ Bạn muốn so sánh sản phẩm nào cụ thể không? Tôi có thể gợi 
             `• ${product.name} - ${product.brand} - ${product.price ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND` : 'Chưa có giá'}`
           ).join('\n');
 
+          // Trả về danh sách sản phẩm để AI tư vấn sâu hơn, không hiển thị kết quả tìm kiếm thô
           return {
-            answer: `🔍 **Kết quả tìm kiếm sản phẩm:**\n\n${productList}\n\n💡 **Gợi ý:** Nhập \"xem chi tiết\" để xem thông tin sản phẩm đầu tiên hoặc nêu tên sản phẩm cụ thể để xem chi tiết.`,
+            answer: '', // Để trống để Controller tiếp tục gọi AI
             type: 'general_help',
             products: products
           };
