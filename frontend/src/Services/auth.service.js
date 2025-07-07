@@ -6,6 +6,23 @@ const API_BASE_URL = process.env.NODE_ENV === 'development'
   ? '' // Use proxy in development
   : (process.env.REACT_APP_BACKEND_URL || 'http://localhost:4000');
 
+// ---- Auto refresh access token if missing but refreshToken is present ----
+(async () => {
+  const storedToken = localStorage.getItem("token");
+  const storedRefresh = localStorage.getItem("refreshToken");
+  if (!storedToken && storedRefresh) {
+    try {
+      const res = await axios.post(`${API_BASE_URL}/auth/refresh-token`, { refresh_token: storedRefresh });
+      if (res.data && res.data.success) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("refreshToken", res.data.refresh_token);
+      }
+    } catch (err) {
+      console.warn("Auto refresh on load failed", err);
+    }
+  }
+})();
+
 // Create axios instance with default config
 const authApiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -156,6 +173,18 @@ const logout = () => {
 
 // Function to validate token and get user info
 const validateToken = async () => {
+  // Nếu không có accessToken nhưng có refreshToken → thử refresh trước
+  if (!localStorage.getItem("token") && localStorage.getItem("refreshToken")) {
+    try {
+      const refreshRes = await axios.post(`${API_BASE_URL}/auth/refresh-token`, { refresh_token: localStorage.getItem("refreshToken") });
+      if (refreshRes.data.success) {
+        localStorage.setItem("token", refreshRes.data.token);
+        localStorage.setItem("refreshToken", refreshRes.data.refresh_token);
+      }
+    } catch (e) {
+      console.error("Refresh in validateToken failed", e);
+    }
+  }
   try {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");

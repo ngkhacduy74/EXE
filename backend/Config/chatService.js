@@ -6,21 +6,26 @@ class ChatService {
   constructor() {
     this.context = {};
     this.userPreferences = {};
-    this.conversationHistory = [];
+    this.histories = new Map(); // { userId: [ {role,content} ] }
     this.lastProductSuggestions = [];
   }
 
-  // Lưu 1 message vào lịch sử (tối đa 40 entry ~ 20 lượt)
-  addToHistory(role, content) {
-    this.conversationHistory.push({ role, content });
-    if (this.conversationHistory.length > 40) {
-      this.conversationHistory = this.conversationHistory.slice(-40);
+  // Lưu 1 message vào lịch sử người dùng (tối đa 20 message ~ 10 lượt)
+  addToHistory(userId, role, content) {
+    if (!userId) return; // khách ẩn danh: không lưu
+    if (!this.histories.has(userId)) this.histories.set(userId, []);
+    const arr = this.histories.get(userId);
+    arr.push({ role, content });
+    if (arr.length > 20) {
+      arr.splice(0, arr.length - 20);
     }
   }
 
   // Lấy tối đa 'limit' message gần nhất theo định dạng OpenAI
-  getHistoryMessages(limit = 20) {
-    const slice = this.conversationHistory.slice(-limit);
+  getHistoryMessages(userId, limit = 20) {
+    if (!userId || !this.histories.has(userId)) return [];
+    const arr = this.histories.get(userId);
+    const slice = arr.slice(-limit);
     return slice.map(m => ({ role: m.role, content: m.content }));
   }
 

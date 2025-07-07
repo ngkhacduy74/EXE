@@ -1,9 +1,16 @@
 import { useState, useEffect, useRef } from "react";
+import { getCurrentUser } from "../Services/auth.service";
+
 import { Send, User, Bot, MessageCircle, X, LogIn, Search, BarChart3, Package, FileText, Sparkles, Scale } from "lucide-react";
 import { authApiClient } from "../Services/auth.service";
 import "./WidgetChat.css";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+const token = localStorage.getItem("token");
+const currentUser = getCurrentUser();
+const displayName = currentUser ? (currentUser.fullName || currentUser.name || currentUser.username || 'bạn') : 'bạn';
+const isLoggedIn = !!token;
 
 const styles = {
   container: {
@@ -376,18 +383,18 @@ export default function ChatWidget() {
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isBotTyping) return;
 
-    if (!isLoggedIn || !token) {
-      redirectToLogin();
-      return;
-    }
-
     const userMessage = {
       id: Date.now(),
       text: inputValue.trim(),
       sender: "user",
     };
 
-    const updatedMessages = [...messages, userMessage];
+    // Nếu lần đầu gửi tin và chưa có greeting thì thêm greeting
+    let msgs = messages;
+    if (!messages.length && currentUser) {
+      msgs = [{ id: 'intro', sender: 'bot', text: `Xin chào ${displayName}! Mình là trợ lý AI của Vinsaky, sẵn sàng hỗ trợ bạn 24/7.` }];
+    }
+    const updatedMessages = [...msgs, userMessage];
     setMessages(updatedMessages);
     setInputValue("");
     setIsBotTyping(true);
@@ -396,6 +403,7 @@ export default function ChatWidget() {
     try {
       const response = await authApiClient.post("/chat/ask/", {
         prompt: userMessage.text,
+          userId: currentUser ? currentUser._id || currentUser.id : undefined,
       });
 
       const { data } = response;
@@ -417,7 +425,10 @@ export default function ChatWidget() {
       }
     } catch (error) {
       if (error.response?.status === 401) {
-        handleTokenExpired();
+        // Nếu sau khi interceptor refresh mà vẫn 401 => token không hợp lệ, logout
+        if (error.config && error.config._retry) {
+          handleTokenExpired();
+        }
         return;
       }
 
@@ -454,10 +465,6 @@ export default function ChatWidget() {
         inputRef.current?.focus();
       }, 100);
     }
-  };
-
-  const redirectToLogin = () => {
-    window.location.href = "/login";
   };
 
   const renderMessage = (message) => {
@@ -511,8 +518,15 @@ export default function ChatWidget() {
   };
 
 
+  // Khi mở chat, hiển thị greeting nếu có user
+  useEffect(() => {
+    if (isOpen && currentUser && messages.length === 0) {
+      setMessages([{ id: 'intro', sender: 'bot', text: `Xin chào ${displayName}! Mình là trợ lý AI của Vinsaky, sẵn sàng hỗ trợ bạn 24/7.` }]);
+    }
+  }, [isOpen]);
+
   const renderQuickActions = () => {
-    if (!showQuickActions || !isLoggedIn) return null;
+    if (!showQuickActions) return null;
 
     return (
       <div style={styles.quickActions}>
@@ -534,22 +548,6 @@ export default function ChatWidget() {
     );
   };
 
-  const renderLoginMessage = () => (
-    <div style={styles.loginMessage}>
-      <MessageCircle size={48} color="#6b7280" />
-      <h3 style={{ marginTop: "16px", color: "#1f2937", fontSize: "18px", fontWeight: "600" }}>
-        Chào mừng đến với Vinsaky Shop
-      </h3>
-      <p style={{ color: "#6b7280", margin: "8px 0", fontSize: "14px", lineHeight: "1.5" }}>
-        Đăng nhập để trò chuyện với trợ lý AI và nhận hỗ trợ tốt nhất
-      </p>
-      <button style={styles.loginButton} onClick={redirectToLogin}>
-        <LogIn size={16} />
-        Đăng nhập
-      </button>
-    </div>
-  );
-
   return (
     <div style={styles.container} className="chat-widget-container">
       {/* Chat Icon */}
@@ -567,7 +565,7 @@ export default function ChatWidget() {
           {/* Header */}
           <div style={styles.header} className="chat-header">
             <h3 style={styles.headerTitle} className="chat-header-title">
-              {isLoggedIn ? `Chào ${username}` : "Vinsaky Shop AI"}
+              {`Vinsaky Shop AI`}
             </h3>
             <div style={{ display: "flex", alignItems: "center" }}>
               {isLoggedIn && (
@@ -591,10 +589,7 @@ export default function ChatWidget() {
 
           {/* Messages Container */}
           <div style={styles.messagesContainer} className="chat-messages-container">
-            {!isLoggedIn ? (
-              renderLoginMessage()
-            ) : (
-              <>
+            <>
                 {messages.map(renderMessage)}
                 {isBotTyping && (
                   <div style={styles.messageRow}>
@@ -610,12 +605,10 @@ export default function ChatWidget() {
                 )}
                 <div ref={messagesEndRef} />
               </>
-            )}
           </div>
 
           {/* Input Area */}
-          {isLoggedIn && (
-            <div style={styles.inputArea} className="chat-input-area">
+          <div style={styles.inputArea} className="chat-input-area">
               {renderQuickActions()}
               <div style={styles.inputContainer} className="chat-input-container">
                 <input
@@ -641,7 +634,6 @@ export default function ChatWidget() {
                 </button>
               </div>
             </div>
-          )}
         </div>
       )}
     </div>

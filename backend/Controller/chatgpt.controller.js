@@ -55,15 +55,18 @@ const askQuestion = async (req, res) => {
       });
     }
 
-    // Lưu user prompt vào history
-    chatServiceInstance.addToHistory('user', prompt);
+    // Xác định userId (JWT middleware hoặc từ body)
+    const userId = (req.user && (req.user.id || req.user._id)) || req.body.userId || null;
+
+    // Lưu user prompt vào lịch sử user
+    chatServiceInstance.addToHistory(userId, 'user', prompt);
 
     // 1) Xử lý nội bộ bằng ChatService
     const serviceResp = await chatServiceInstance.processQuestion(prompt);
 
     // Nếu ChatService trả về đáp án chuyên biệt (không phải general_help)
     if (serviceResp && serviceResp.type && serviceResp.type !== "general_help") {
-      chatServiceInstance.addToHistory('assistant', serviceResp.answer);
+      chatServiceInstance.addToHistory(userId, 'assistant', serviceResp.answer);
       return res.status(200).json({ success: true, ...serviceResp });
     }
 
@@ -76,7 +79,7 @@ const askQuestion = async (req, res) => {
 
     // 2) Chuẩn bị messages cho AI
     // Lấy toàn bộ lịch sử, nếu dài sẽ tóm tắt để tiết kiệm token
-    const fullHistory = chatServiceInstance.getHistoryMessages(100);
+    const fullHistory = chatServiceInstance.getHistoryMessages(userId, 100);
     let summaryMessage = null;
     let recentMessages = fullHistory;
     if (fullHistory.length > 20) {
@@ -106,7 +109,7 @@ const askQuestion = async (req, res) => {
 
     // 3) Gọi Groq AI
     const aiAnswer = await callGroqAI(messages);
-    chatServiceInstance.addToHistory('assistant', aiAnswer);
+    chatServiceInstance.addToHistory(userId, 'assistant', aiAnswer);
 
     const responsePayload = { success: true, answer: aiAnswer, raw: aiAnswer };
     if (serviceResp && Array.isArray(serviceResp.products) && serviceResp.products.length) {
