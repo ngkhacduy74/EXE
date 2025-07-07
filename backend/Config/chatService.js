@@ -7,72 +7,204 @@ class ChatService {
     this.context = {};
     this.userPreferences = {};
     this.conversationHistory = [];
+    this.lastProductSuggestions = [];
   }
 
-  // Phân tích ngữ cảnh câu hỏi
+  // Lưu 1 message vào lịch sử (tối đa 40 entry ~ 20 lượt)
+  addToHistory(role, content) {
+    this.conversationHistory.push({ role, content });
+    if (this.conversationHistory.length > 40) {
+      this.conversationHistory = this.conversationHistory.slice(-40);
+    }
+  }
+
+  // Lấy tối đa 'limit' message gần nhất theo định dạng OpenAI
+  getHistoryMessages(limit = 20) {
+    const slice = this.conversationHistory.slice(-limit);
+    return slice.map(m => ({ role: m.role, content: m.content }));
+  }
+
+
   analyzeContext(userQuestion) {
     const question = userQuestion.toLowerCase();
-    
-    // Từ khóa so sánh sản phẩm
+  
     const compareKeywords = [
       'so sánh', 'compare', 'đối chiếu', 'khác biệt', 'giống nhau',
       'tốt hơn', 'xấu hơn', 'rẻ hơn', 'đắt hơn', 'chất lượng',
       'tính năng', 'ưu điểm', 'nhược điểm', 'lựa chọn'
     ];
-
-    // Kiểm tra xem có phải câu hỏi về so sánh không
-    const isCompareQuestion = compareKeywords.some(keyword => 
-      question.includes(keyword)
-    );
-
-    // Từ khóa tìm kiếm sản phẩm
+  
     const productKeywords = [
       'sản phẩm', 'product', 'máy', 'tủ', 'đồ', 'hàng', 'item',
-      'mua', 'bán', 'giá', 'price', 'thương hiệu', 'brand'
+      'mua', 'bán', 'giá', 'price', 'thương hiệu', 'brand', 'kg', 'cân'
     ];
-
-    // Từ khóa tìm kiếm bài viết
+  
     const postKeywords = [
       'bài viết', 'post', 'article', 'tin tức', 'news', 'blog',
       'hướng dẫn', 'guide', 'tutorial', 'review', 'đánh giá'
     ];
-
-    // Từ khóa thống kê
+  
     const statsKeywords = [
       'thống kê', 'statistics', 'số liệu', 'data', 'tổng quan',
       'overview', 'báo cáo', 'report', 'tình hình', 'situation'
     ];
-
-    // Từ khóa đánh giá sản phẩm
+  
     const reviewKeywords = [
       'ngon', 'tốt', 'xấu', 'chất lượng', 'quality', 'đánh giá',
       'review', 'feedback', 'ý kiến', 'opinion', 'có ngon không',
       'có tốt không', 'có xấu không'
     ];
-
+  
+    const newProductKeywords = ['sản phẩm mới', 'hàng mới', 'mới 100%', 'mới nhất', 'new product', 'new items'];
+    const usedProductKeywords = ['đã qua sử dụng', 'hàng cũ', 'đã dùng', 'second hand', 'used product'];
+  
+    // Tự động nhận dạng câu hỏi tìm sản phẩm dựa trên trọng lượng hoặc mã sản phẩm
+    const isLikelyProductSearch = /\d+\s*(kg|cân|fsm|fsm\d*)/i.test(question);  
+    // Regex sẽ bắt tất cả:
+    // - "50 kg", "50kg", "50 cân", "fsm30", "fsm 30"
+  
     return {
-      isCompareQuestion,
-      isProductQuestion: productKeywords.some(keyword => question.includes(keyword)),
+      isCompareQuestion: compareKeywords.some(keyword => question.includes(keyword)),
+      isProductQuestion: productKeywords.some(keyword => question.includes(keyword)) || isLikelyProductSearch,
       isPostQuestion: postKeywords.some(keyword => question.includes(keyword)),
       isStatsQuestion: statsKeywords.some(keyword => question.includes(keyword)),
       isReviewQuestion: reviewKeywords.some(keyword => question.includes(keyword)),
+      isNewProductQuestion: newProductKeywords.some(keyword => question.includes(keyword)),
+      isUsedProductQuestion: usedProductKeywords.some(keyword => question.includes(keyword)),
       question
     };
   }
+  
 
-  // Tìm kiếm sản phẩm linh hoạt
+  // Utility xoá dấu tiếng Việt
+  removeVietnameseTones(str) {
+    return str
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/[đĐ]/g, match => (match === 'đ' ? 'd' : 'D'))
+      .replace(/[^\p{Letter}\p{Number}\s]/gu, '')
+      .toLowerCase();
+  }
+  formatProductDetails(product) {
+    return `📦 **${product.name}**
+    
+  💰 **Giá:** ${product.price ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND` : 'Chưa có giá'}
+  🏷️ **Thương hiệu:** ${product.brand || 'Không có thông tin'}
+  📝 **Mô tả:** ${product.description || 'Không có mô tả'}
+  ⭐ **Đánh giá:** ${product.rating || 'Chưa có đánh giá'}
+  🔧 **Bảo hành:** ${product.warranty || 'Chưa có thông tin'}
+  🏪 **Tình trạng:** ${product.quantity > 0 ? 'Còn hàng' : 'Hết hàng'}`;
+  }
+  
+  
   async searchProducts(query) {
     try {
-      // Chỉ tìm kiếm theo tên sản phẩm và thương hiệu
-      const products = await Product.find({
-        $or: [
-          { name: { $regex: query, $options: 'i' } },
-          { brand: { $regex: query, $options: 'i' } }
-        ]
-      }).limit(10);
+      const normalizeText = (text) => {
+        return text
+          .normalize('NFD')
+          .replace(/\p{Diacritic}/gu, '')
+          .replace(/[đĐ]/g, match => (match === 'đ' ? 'd' : 'D'))
+          .replace(/\s+/g, '')
+          .replace(/[^\w]/g, '')
+          .toLowerCase();
+      };
+  
+      const normalizedQuery = normalizeText(query);
+      const tokens = query.toLowerCase().split(/\s+/).filter(t => t.length > 1);
+  
+      const looseQuery = {
+        $or: tokens.map(token => ({
+          $or: [
+            { name: { $regex: token, $options: "i" } },
+            { brand: { $regex: token, $options: "i" } }
+          ]
+        }))
+      };
+  
+      let products = await Product.find(looseQuery).collation({ locale: 'vi', strength: 1 }).limit(20);
+  
+      if (products.length > 0) {
+        const scoredProducts = products.map(product => {
+          const text = normalizeText(`${product.name} ${product.brand}`);
+          const score = tokens.filter(token => text.includes(normalizeText(token))).length;
+          const exactMatch = text.includes(normalizedQuery);
+          return { product, score, exactMatch };
+        });
+  
+        scoredProducts.sort((a, b) => {
+          if (a.exactMatch && !b.exactMatch) return -1;
+          if (!a.exactMatch && b.exactMatch) return 1;
+          return b.score - a.score;
+        });
+  
+        products = scoredProducts.map(item => item.product).slice(0, 5); // lấy top 5
+  
+        // ✅ Lọc trọng lượng nếu có yêu cầu
+        const weightMatch = query.match(/(\d+)\s*(kg|cân)/i);
+        if (weightMatch) {
+          const targetWeight = weightMatch[1];
+          const filteredProducts = products.filter(product => {
+            const text = `${product.name} ${product.brand}`.toLowerCase();
+            return text.includes(`${targetWeight}kg`) || text.includes(`${targetWeight} kg`) || text.includes(`${targetWeight}cân`) || text.includes(`${targetWeight} cân`);
+          });
+  
+          if (filteredProducts.length > 0) {
+            products = filteredProducts;
+          }
+        }
+  
+        // ✅ Lọc theo giá với từ khóa mở rộng đầy đủ
+        let minPrice = null;
+        let maxPrice = null;
+  
+        // Giá tối đa
+        const underPrice = query.match(/(dưới|<=|<|ít hơn|không quá|tối đa|nhiều nhất)\s*(\d+)\s*(tr|triệu)/i);
+        if (underPrice) {
+          maxPrice = parseInt(underPrice[2]) * 1000000;
+        }
+  
+        // Giá tối thiểu
+        const overPrice = query.match(/(trên|>=|>|nhiều hơn|tối thiểu|ít nhất)\s*(\d+)\s*(tr|triệu)/i);
+        if (overPrice) {
+          minPrice = parseInt(overPrice[2]) * 1000000;
+        }
+  
+        if (minPrice !== null || maxPrice !== null) {
+          products = products.filter(product => {
+            const price = Number(product.price);
+            if (isNaN(price)) return false;
+            if (minPrice !== null && price < minPrice) return false;
+            if (maxPrice !== null && price > maxPrice) return false;
+            return true;
+          });
+        }
+      }
+  
       return products;
     } catch (error) {
-      console.error('Lỗi tìm kiếm sản phẩm:', error);
+      console.error("Lỗi tìm kiếm sản phẩm nâng cao:", error);
+      return [];
+    }
+  }
+  
+  
+  
+  // Lấy danh sách sản phẩm mới
+  async getNewProducts(limit = 10) {
+    try {
+      return await Product.find().sort({ createdAt: -1 }).limit(limit);
+    } catch (err) {
+      console.error('Lỗi lấy sản phẩm mới:', err);
+      return [];
+    }
+  }
+
+  // Lấy danh sách sản phẩm đã qua sử dụng
+  async getUsedProducts(limit = 10) {
+    try {
+      return await Product.find({ condition: /used|cũ/i }).sort({ createdAt: -1 }).limit(limit);
+    } catch (err) {
+      console.error('Lỗi lấy sản phẩm cũ:', err);
       return [];
     }
   }
@@ -229,18 +361,47 @@ Bạn muốn so sánh sản phẩm nào cụ thể không? Tôi có thể gợi 
         return reviewResponse;
       }
 
+      // Câu hỏi tiếp nối sử dụng "sản phẩm này" / "thiết bị này"...
+      if (this.lastProductSuggestions.length && /(sản phẩm|thiết bị|máy|tủ)\s+này/i.test(userQuestion)) {
+        const p = this.lastProductSuggestions[0];
+        return {
+          answer: '',
+          type: 'general_help',
+          products: [p]
+        };
+      }
+
       // Xử lý câu hỏi tìm kiếm sản phẩm
       if (context.isProductQuestion) {
         const products = await this.searchProducts(userQuestion);
         
         if (products.length > 0) {
+          this.lastProductSuggestions = products; // lưu lại
+          if (products.length === 1) {
+            const p = products[0];
+            const detailIntent = /(xem\s+chi\s+t(i|í)ết|chi\s+t(i|í)ết|spec|thông\s+số)/i;
+            if (detailIntent.test(userQuestion)) {
+              return {
+                answer: this.formatProductDetails(p),
+                type: 'product_detail',
+                product: p
+              };
+            }
+            // Không phải yêu cầu chi tiết → để AI tư vấn sâu hơn
+            return {
+              answer: '',
+              type: 'general_help',
+              products: [p]
+            };
+          }
+
           const productList = products.map(product => 
             `• ${product.name} - ${product.brand} - ${product.price ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND` : 'Chưa có giá'}`
           ).join('\n');
 
           return {
-            answer: `🔍 **Kết quả tìm kiếm sản phẩm:**\n\n${productList}\n\n💡 **Gợi ý:** Bạn có thể:\n• Xem chi tiết sản phẩm\n• So sánh các sản phẩm với nhau\n• Tìm kiếm sản phẩm khác`,
-            type: 'product_search',
+            answer: `🔍 **Kết quả tìm kiếm sản phẩm:**\n\n${productList}\n\n💡 **Gợi ý:** Nhập \"xem chi tiết\" để xem thông tin sản phẩm đầu tiên hoặc nêu tên sản phẩm cụ thể để xem chi tiết.`,
+            type: 'general_help',
             products: products
           };
         } else {
@@ -263,6 +424,16 @@ ${suggestions}
             type: 'no_product_found'
           };
         }
+      }
+
+            // Khi người dùng yêu cầu xem chi tiết nếu trước đó có sản phẩm gợi ý
+      if (/xem\s+chi\s+t(i|í)ết/i.test(userQuestion) && this.lastProductSuggestions.length === 1) {
+        const p = this.lastProductSuggestions[0];
+        return {
+          answer: this.formatProductDetails(p),
+          type: 'product_detail',
+          product: p
+        };
       }
 
       // Xử lý câu hỏi tìm kiếm bài viết
@@ -310,6 +481,27 @@ ${categoryList}
 🏭 **Thương hiệu phổ biến:**
 ${brandList}`,
             type: 'statistics'
+          };
+        }
+      }
+      if (context.isNewProductQuestion) {
+        const newProducts = await this.getNewProducts();
+        if (newProducts.length) {
+          return {
+            answer: '📦 Dưới đây là một số sản phẩm mới nhất của Vinsaky:',
+            products: newProducts,
+            type: 'new_products'
+          };
+        }
+      }
+
+      if (context.isUsedProductQuestion) {
+        const usedProducts = await this.getUsedProducts();
+        if (usedProducts.length) {
+          return {
+            answer: '♻️ Đây là các sản phẩm đã qua sử dụng hiện có:',
+            products: usedProducts,
+            type: 'used_products'
           };
         }
       }
