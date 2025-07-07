@@ -80,8 +80,11 @@ router.post(
 
 router.put("/update-post/:id", verifyAdmin, async (req, res) => {
   const id = req.params.id;
+  console.log("post id ", id);
   const userEmail = req.user.id;
+  console.log("userId", req.user.user.email);
   const seller = await getUserByEmail(req.user.user.email);
+  console.log("918723129uy3", seller);
   const result = await updatePost(req.body, seller);
   if (result.success === false) {
     return res.status(500).json(result);

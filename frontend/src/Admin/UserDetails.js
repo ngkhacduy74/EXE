@@ -90,6 +90,7 @@ export default function UserDetails() {
     const file = event.target.files[0];
     if (file) {
       // Handle file upload logic here
+      console.log("Selected file:", file);
     }
   };
 

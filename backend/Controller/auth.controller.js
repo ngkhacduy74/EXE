@@ -6,6 +6,7 @@ const User = require("../Model/user.model");
 const { sendOTP, verifyOTP } = require("./otp.controller");
 
 async function getUserByEmail(params) {
+  console.log("params", params);
   const user = await User.findOne({ email: params.email });
   if (!user) {
     return { success: false };
@@ -25,6 +26,7 @@ async function Login(params) {
   // Khi đăng nhập thành công, gửi OTP và KHÔNG sinh token ở đây (token sinh ở verifyOTP)
   const sendotp = await sendOTP(params.email);
   if (sendotp) {
+    console.log("OTP send successful");
   } else {
     throw new Error("không thể gửi OTP. Vui lòng thử lại sau.");
   }

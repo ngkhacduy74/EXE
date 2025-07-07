@@ -33,6 +33,7 @@ router.post(
   verifyToken,
   productMiddleware.productMiddleware,
   async (req, res) => {
+    console.log("req.body", req.user);
     const result = await createProduct(req.body, req.user);
     if (result.success === false) {
       return res.status(500).json(result);
@@ -83,6 +84,7 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/user/products", verifyUser, async (req, res) => {
+  console.log("req.user", req.user);
   const result = await loadProductByUser(req.user.user.email);
   if (result.success === false) {
     return res.status(500).json(result);

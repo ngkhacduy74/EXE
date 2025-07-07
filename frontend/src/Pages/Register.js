@@ -238,6 +238,7 @@ Email: privacy@vinsaky.com
         registerData.ava_img_url = ava_img_url;
       }
 
+      console.log("Registering with data:", registerData);
 
       // Call register API
       const response = await registerApi(registerData);

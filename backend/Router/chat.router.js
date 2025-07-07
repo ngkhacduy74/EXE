@@ -16,8 +16,10 @@ let chatHistory = [];
 router.post("/ask", async (req, res) => {
   const { prompt } = req.body;
 
+  console.log("[CHAT] Nhận prompt:", prompt);
 
   if (!prompt) {
+    console.log("[CHAT] Thiếu prompt đầu vào");
     return res.status(400).json({
       success: false,
       error: "Thiếu prompt đầu vào",
@@ -29,6 +31,7 @@ router.post("/ask", async (req, res) => {
     const result = await askQuestion(req, res);
     
     if (result) {
+      console.log("[CHAT] ChatService trả lời:", result.answer);
       return result; // askQuestion đã gửi response
     }
   } catch (err) {
@@ -44,6 +47,7 @@ router.post("/ask", async (req, res) => {
 // Endpoint để lấy thống kê
 router.get("/statistics", async (req, res) => {
   try {
+    console.log("[CHAT] Yêu cầu lấy thống kê");
     const result = await getChatStatistics();
     
     if (result.success) {
@@ -71,6 +75,7 @@ router.get("/statistics", async (req, res) => {
 router.post("/search-products", async (req, res) => {
   const { query, filters } = req.body;
 
+  console.log("[CHAT] Tìm kiếm sản phẩm:", { query, filters });
 
   if (!query) {
     return res.status(400).json({
@@ -107,6 +112,7 @@ router.post("/search-products", async (req, res) => {
 router.post("/search-posts", async (req, res) => {
   const { query, filters } = req.body;
 
+  console.log("[CHAT] Tìm kiếm bài viết:", { query, filters });
 
   if (!query) {
     return res.status(400).json({
@@ -143,6 +149,7 @@ router.post("/search-posts", async (req, res) => {
 router.get("/product/:productId", async (req, res) => {
   const { productId } = req.params;
 
+  console.log("[CHAT] Lấy chi tiết sản phẩm:", productId);
 
   if (!productId) {
     return res.status(400).json({
@@ -179,6 +186,7 @@ router.get("/product/:productId", async (req, res) => {
 router.get("/post/:postId", async (req, res) => {
   const { postId } = req.params;
 
+  console.log("[CHAT] Lấy chi tiết bài viết:", postId);
 
   if (!postId) {
     return res.status(400).json({
@@ -215,6 +223,7 @@ router.get("/post/:postId", async (req, res) => {
 router.delete("/clear-history", (req, res) => {
   try {
     chatHistory = [];
+    console.log("[CHAT] Đã xóa lịch sử chat");
     res.json({
       success: true,
       message: "Đã xóa lịch sử chat"

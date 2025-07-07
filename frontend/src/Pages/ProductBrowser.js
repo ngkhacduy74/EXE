@@ -343,11 +343,13 @@ const ProductBrowser = () => {
   // Handle add to cart
   const handleAddToCart = (product) => {
     // Implement add to cart functionality
+    console.log("Add to cart:", product);
   };
 
   // Handle add to wishlist
   const handleAddToWishlist = (product) => {
     // Implement add to wishlist functionality
+    console.log("Add to wishlist:", product);
   };
 
   if (loading) {

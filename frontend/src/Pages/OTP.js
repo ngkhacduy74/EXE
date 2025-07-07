@@ -141,6 +141,7 @@ const App = () => {
               },
             });
           } else {
+            console.log("❌ Invalid user data received:", userRes.data);
             throw new Error("Invalid user data received");
           }
 
@@ -158,6 +159,7 @@ const App = () => {
           });
 
           // Still navigate to home page with tokens
+          console.log("🚀 Navigating to home page with tokens only");
           navigate("/", {
             state: {
               token,

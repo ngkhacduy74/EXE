@@ -8,7 +8,6 @@ import "swiper/css/navigation";
 import "swiper/css/grid";
 import { Container, Spinner } from "react-bootstrap";
 import FavoriteButton from "./FavoriteButton";
-import { formatVND } from "../utils/currencyFormatter";
 const backUpImg = "/images/frigde.png";
 const Product2Carousel = () => {
   const [products, setProducts] = useState([]);
@@ -80,6 +79,7 @@ const Product2Carousel = () => {
   const handleAddToCart = (productId) => {
     const quantity = quantities[productId] || 1;
     const product = products.find((p) => p.id === productId);
+    console.log(`Xem chi tiết: ${product?.name} - Quantity: ${quantity}`);
     // Implement your cart logic here
   };
 
@@ -199,11 +199,12 @@ const Product2Carousel = () => {
             <small className="text-muted">(5.0)</small>
           </div>
           <div className="h6 text-success fw-bold mb-3">
-            {product.price === 0 ? (
-              <span className="text-primary">Liên hệ</span>
-            ) : (
-              formatVND(product.price)
-            )}
+            {product.price
+              ? new Intl.NumberFormat("vi-VN", {
+                  style: "currency",
+                  currency: "VND",
+                }).format(product.price)
+              : "Liên hệ"}
           </div>
         </div>
 

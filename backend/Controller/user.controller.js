@@ -46,6 +46,7 @@ const getUserById = async (idUser) => {
   return { success: true, user };
 };
 const updateUser = async (params) => {
+  console.log("params", params);
   const { id, fullname, phone, email, address, gender, ava_img_url } = params;
   try {
     const updateUser = await User.findOneAndUpdate(

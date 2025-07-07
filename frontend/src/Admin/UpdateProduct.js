@@ -96,6 +96,7 @@ const UpdateProduct = () => {
         
         // Lấy dữ liệu từ res.data.product thay vì res.data
         const data = res.data.product || res.data;
+        console.log("Product data:", data); // Debug log
         
         setFormData({
           ...formData,

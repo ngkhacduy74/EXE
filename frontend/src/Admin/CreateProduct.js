@@ -467,6 +467,7 @@ const CreateProduct = () => {
       // Clean and prepare data to send
       const dataToSend = cleanDataBeforeSubmit(formData);
 
+      console.log("Sending data:", dataToSend);
 
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/product/createProduct`,
@@ -506,6 +507,9 @@ const CreateProduct = () => {
   };
 
   const handlePreview = () => {
+    console.log("Xem trước sản phẩm:", formData);
+    console.log("Image URLs:", imageUrls);
+    console.log("Video URL:", videoUrl);
   };
 
   // Thêm hàm upload file ảnh

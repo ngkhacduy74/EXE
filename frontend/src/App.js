@@ -14,7 +14,6 @@ import {
   Navigate,
 } from "react-router-dom";
 import { BannerProvider } from "./context/BannerContext";
-import { ProductProvider } from "./context/ProductContext";
 import AdminPage from "./Admin/Dashboard";
 import Login from "./Pages/Login";
 import Home from "./Pages/Home";
@@ -77,55 +76,53 @@ const App = () => {
 
   return (
     <BannerProvider>
-      <ProductProvider>
-        <Router>
-          <div>
-            <Routes>
-              {/* UI USER */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/otp" element={<OTP />} />
+      <Router>
+        <div>
+          <Routes>
+            {/* UI USER */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/otp" element={<OTP />} />
 
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/productView/:productId" element={<ProductView />} />
-              <Route path="/postView/:postId" element={<PostView />} />
-              {/* UI ADMIN */}
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="/manaAccount" element={<ManaAccount />} />
-              <Route path="/user/:userId" element={<UserDetails />} />
-              <Route path="/user/:userId" element={<UserDetails />} />
-              <Route path="/manaProduct" element={<ManaProduct />} />
-              <Route path="/manaPost" element={<ManaPost />} />
-              <Route
-                path="/multiProductViewer"
-                element={<MultiProductViewer />}
-              />
-              <Route path="/post/:postId" element={<PostDetails />} />
-              {/* Error Page */}
-              <Route path="/product/:productId" element={<ProductDetails />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/productView/:productId" element={<ProductView />} />
+            <Route path="/postView/:postId" element={<PostView />} />
+            {/* UI ADMIN */}
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/manaAccount" element={<ManaAccount />} />
+            <Route path="/user/:userId" element={<UserDetails />} />
+            <Route path="/user/:userId" element={<UserDetails />} />
+            <Route path="/manaProduct" element={<ManaProduct />} />
+            <Route path="/manaPost" element={<ManaPost />} />
+            <Route
+              path="/multiProductViewer"
+              element={<MultiProductViewer />}
+            />
+            <Route path="/post/:postId" element={<PostDetails />} />
+            {/* Error Page */}
+            <Route path="/product/:productId" element={<ProductDetails />} />
 
-              <Route path="/create-product" element={<CreateProduct />} />
-              <Route
-                path="/user-create-product"
-                element={<UserCreateProduct />}
-              />
-              <Route path="/create-post" element={<CreatePost />} />
-              <Route path="/product-browser" element={<ProductBrowser />} />
-              <Route path="/products" element={<ProductBrowser />} />
-              <Route path="/compare-product" element={<CompareProduct />} />
-              <Route path="/user-products" element={<UserProductManager />} />
-              <Route path="/update-product/:id" element={<UpdateProduct />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/admin/edit-post/:postId" element={<EditPost />} />
-              <Route path="/guide" element={<Guide />} />
-              {/* 404 Error Page */}
-            </Routes>
-            <PhoneFixed />
-            <ToastContainer position="top-right" autoClose={2000} />
-          </div>
-        </Router>
-      </ProductProvider>
+            <Route path="/create-product" element={<CreateProduct />} />
+            <Route
+              path="/user-create-product"
+              element={<UserCreateProduct />}
+            />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/product-browser" element={<ProductBrowser />} />
+            <Route path="/products" element={<ProductBrowser />} />
+            <Route path="/compare-product" element={<CompareProduct />} />
+            <Route path="/user-products" element={<UserProductManager />} />
+            <Route path="/update-product/:id" element={<UpdateProduct />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/admin/edit-post/:postId" element={<EditPost />} />
+            <Route path="/guide" element={<Guide />} />
+            {/* 404 Error Page */}
+          </Routes>
+          <PhoneFixed />
+          <ToastContainer position="top-right" autoClose={2000} />
+        </div>
+      </Router>
     </BannerProvider>
   );
 };

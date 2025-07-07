@@ -130,6 +130,7 @@ const CompareProduct = () => {
       try {
         setLoading(true);
         const response = await authApiClient.get("/product/");
+        console.log("API Response:", response.data);
 
         const productData = Array.isArray(response.data.data)
           ? response.data.data

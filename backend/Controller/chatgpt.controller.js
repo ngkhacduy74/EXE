@@ -28,10 +28,12 @@ const askQuestion = async (req, res) => {
       });
     }
 
+    console.log("Received question:", prompt);
 
     // Sử dụng ChatService để xử lý câu hỏi
     const response = await chatService.processQuestion(prompt);
     
+    console.log("ChatService response:", response);
 
     return res.status(200).json({
       success: true,
