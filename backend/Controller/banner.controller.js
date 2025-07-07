@@ -184,25 +184,19 @@ const updateBannerProductIdsOrder = async (req, res) => {
 // Save banner products (Admin only)
 const saveBannerProducts = async (req, res) => {
   try {
-    console.log('Banner controller: Received request');
-    console.log('User from middleware:', req.user);
-    console.log('Request body:', req.body);
     
     const { products } = req.body;
     
     if (!Array.isArray(products)) {
-      console.log('Invalid products data:', products);
       return res.status(400).json({
         success: false,
         message: "Dữ liệu sản phẩm không hợp lệ",
       });
     }
 
-    console.log('Products to save:', products);
 
     // Clear existing banner products
     await BannerProduct.deleteMany({});
-    console.log('Cleared existing banner products');
 
     // Save new banner products
     const bannerProducts = products.map((product, index) => ({
@@ -219,7 +213,6 @@ const saveBannerProducts = async (req, res) => {
     }));
 
     const savedProducts = await BannerProduct.insertMany(bannerProducts);
-    console.log('Saved banner products:', savedProducts);
 
     // Also update BannerProductIds collection
     const productIds = products.map(product => product.id);
@@ -236,7 +229,6 @@ const saveBannerProducts = async (req, res) => {
       await bannerIds.save();
     }
     
-    console.log('Updated banner product IDs:', bannerIds);
 
     res.status(200).json({
       success: true,

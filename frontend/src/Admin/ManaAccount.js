@@ -98,7 +98,6 @@ function ManaAccount() {
 
   const handleToggleActive = async (userId, currentStatus) => {
     // Placeholder logic
-    console.log("Toggle active:", userId, "Current:", currentStatus);
   };
 
   const handleDeleteUser = (user) => {

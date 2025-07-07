@@ -8,7 +8,6 @@ class DashboardController {
   // Get dashboard overview statistics
   async getDashboardStats(req, res) {
     try {
-      console.log("📊 Dashboard stats requested by user:", req.user?.user?.email);
       
       // Get total counts - đọc trực tiếp từ database
       const totalUsers = await User.countDocuments();
@@ -16,7 +15,6 @@ class DashboardController {
       const totalProducts = await Product.countDocuments();
       const totalBanners = await BannerProduct.countDocuments();
 
-      console.log("📈 Counts:", { totalUsers, totalPosts, totalProducts, totalBanners });
 
       // Get today's new users - tính chính xác
       const today = new Date();
@@ -45,7 +43,6 @@ class DashboardController {
       // Get today's page views (approximate - using new users as proxy)
       const todayPageViews = todayNewUsers * 3; // Giả sử mỗi user mới xem 3 trang
 
-      console.log("👥 User stats:", { activeUsers, todayNewUsers, todayNewPosts, todayNewProducts });
 
       // Get posts by month for current year
       const currentYear = new Date().getFullYear();
@@ -199,7 +196,6 @@ class DashboardController {
         topCategories
       };
 
-      console.log("✅ Dashboard stats calculated successfully");
       res.json({
         success: true,
         data: responseData

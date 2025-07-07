@@ -56,7 +56,6 @@ export default function UserProfile() {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      console.log("Tệp được chọn:", file);
       // Xử lý upload ảnh đại diện ở đây
     }
   };
@@ -83,7 +82,6 @@ export default function UserProfile() {
       setProfileUser(profileUser);
 
       setIsEditing(false);
-      console.log("Đã lưu hồ sơ thành công");
 
       // Hiển thị thông báo thành công
       alert("Cập nhật hồ sơ thành công!");

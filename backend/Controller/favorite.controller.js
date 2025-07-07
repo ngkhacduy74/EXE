@@ -7,7 +7,6 @@ const addToFavorites = async (req, res) => {
     const { productId } = req.body;
 
     // Debug: Log cấu trúc req.user
-    console.log("req.user:", JSON.stringify(req.user, null, 2));
 
     // Lấy userId với nhiều cách khác nhau để đảm bảo
     let userId =
@@ -16,7 +15,6 @@ const addToFavorites = async (req, res) => {
       req.user?.id ||
       req.user?._id;
 
-    console.log("Extracted userId:", userId);
 
     if (!userId) {
       return res.status(401).json({

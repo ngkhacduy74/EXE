@@ -22,7 +22,6 @@ const createProduct = async (data, user) => {
     features,
     quantity,
   } = data;
-  console.log("ưehreh", user);
   const newProduct = new Product({
     id: v1(),
     image: image,
@@ -47,7 +46,6 @@ const createProduct = async (data, user) => {
     },
     quantity: quantity,
   });
-  console.log("newProduct111111", newProduct);
   try {
     await newProduct.save();
     return {
@@ -64,7 +62,6 @@ const createProduct = async (data, user) => {
   }
 };
 const loadProductByUser = async (userEmail) => {
-  console.log("userEmail", userEmail);
   const pipeline = [];
   pipeline.push({ $match: { "creator.email": userEmail } });
   pipeline.push({ $sort: { createdAt: -1 } });

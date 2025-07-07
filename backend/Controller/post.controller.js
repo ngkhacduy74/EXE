@@ -126,8 +126,6 @@ const deletePost = async (id) => {
   };
 };
 const updatePost = async (body, seller) => {
-  console.log("seller", seller);
-  console.log("params111111", body);
   const updatedPost = await Post.findOneAndUpdate(
     { id: body.id },
     {
@@ -150,13 +148,11 @@ const updatePost = async (body, seller) => {
     },
     { new: true }
   );
-  console.log("updatedPost", updatedPost);
 
   return { success: true, data: updatedPost };
 };
 const changePostCondition = async (condition, id, token) => {
   try {
-    console.log("Attempting to change condition for post:", { id, condition });
 
     const change = await Post.findByIdAndUpdate(
       id,
@@ -167,7 +163,6 @@ const changePostCondition = async (condition, id, token) => {
     );
 
     if (!change) {
-      console.log("Post not found with id:", id);
       return {
         success: false,
         message: "Can't change the condition of this post - Post not found",
@@ -175,7 +170,6 @@ const changePostCondition = async (condition, id, token) => {
       };
     }
 
-    console.log("Successfully updated post:", change);
     return {
       success: true,
       message: "Change this post successfully",

@@ -9,9 +9,7 @@ const {
 
 router.post("/login", async (req, res) => {
   try {
-    console.log("Login request body:", req.body);
     const result = await Login(req.body);
-    console.log("Login result:", result);
     
     if (result.success) {
       res.status(200).json(result);

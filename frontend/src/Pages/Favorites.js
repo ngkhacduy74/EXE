@@ -19,7 +19,6 @@ import { useAuth } from "../hooks/useAuth";
 const Favorites = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  console.log("Favorites page - user from useAuth:", user);
   const [favorites, setFavorites] = useState([]);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -46,7 +45,6 @@ const Favorites = () => {
     try {
       setError(null);
       const response = await favoriteService.getFavorites(currentPage, 12);
-      console.log("Favorites page - API response:", response);
       if (response.success) {
         setFavorites(response.data);
         setTotalPages(response.totalPages);
@@ -59,7 +57,6 @@ const Favorites = () => {
   };
 
   const handleProductClick = (productId) => {
-    console.log("[Favorites] handleProductClick - productId:", productId);
     navigate(`/productView/${productId}`);
   };
 

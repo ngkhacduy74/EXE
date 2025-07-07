@@ -46,7 +46,6 @@ const verifyOTPApi = (email, otp) => {
     email: email,
     otp: otp,
   };
-  console.log("Verifying OTP:", data);
   return apiClient.get("/otp/verifyOTP", { params: data });
 };
 

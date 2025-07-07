@@ -205,7 +205,6 @@ function AdminDashboard() {
           // Set available years (just current year for now)
           // setAvailableYears([new Date().getFullYear()]);
         } else {
-          console.log("⚠️ Không có dữ liệu thực - hiển thị dashboard trống");
           // Set empty data when no real data is available
           setDashboardData({
             totalUsers: 0,

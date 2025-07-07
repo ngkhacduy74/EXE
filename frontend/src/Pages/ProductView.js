@@ -56,7 +56,6 @@ const ProductView = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      console.log("🔒 No token found - Redirecting to login");
       navigate("/login", {
         state: {
           message: "Vui lòng đăng nhập để xem sản phẩm",
@@ -76,7 +75,6 @@ const ProductView = () => {
       // Check if user is authenticated before making API call
       const token = localStorage.getItem("token");
       if (!token) {
-        console.log("🔒 No token found in fetchProduct - Redirecting to login");
         navigate("/login", {
           state: {
             message: "Vui lòng đăng nhập để xem sản phẩm",
@@ -101,7 +99,6 @@ const ProductView = () => {
       if (err.response) {
         switch (err.response.status) {
           case 401:
-            console.log("🔒 401 Unauthorized - Không redirect để debug");
             setError(
               "Bạn không có quyền truy cập sản phẩm này (401). Vui lòng kiểm tra token hoặc đăng nhập lại."
             );

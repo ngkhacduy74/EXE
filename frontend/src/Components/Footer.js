@@ -6,7 +6,6 @@ const Footer = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Placeholder for form submission logic
-    console.log('Đăng ký nhận bản tin:', email);
     setEmail('');
   };
 

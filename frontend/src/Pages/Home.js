@@ -2,9 +2,6 @@ import React from "react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import "./styles/style.css"; // Adjust path if needed
 import "./styles/vendor.css"; // Adjust path if needed
-import BrandCarousel from "../Components/BrandCarousel";
-import ProductsCarousel from "../Components/ProductCarousel";
-import BestSellingCarousel from "../Components/BestSellingCarousel";
 import BlogCarousel from "../Components/BlogCarousel";
 import RecommendTagCarousel from "../Components/RecommendTagCarousel";
 import Footer from "../Components/Footer";
@@ -13,6 +10,9 @@ import ChatWidget from "../Components/WidgetChat";
 import Header from "../Components/Header";
 import BannerSection from "../Components/BannerSection";
 import BannerSection2 from "../Components/BannerSection2";
+import PaginatedProductGrid from "../Components/PaginatedProductGrid";
+import BrandProductSection from "../Components/BrandProductSection";
+import BestSellingSection from "../Components/BestSellingSection";
 
 const Home = () => {
   return (
@@ -76,9 +76,39 @@ const Home = () => {
             <BannerSection2 />
             <BannerSection />
 
-            <BrandCarousel />
-            <ProductsCarousel />
-            <BestSellingCarousel />
+            {/* Sản phẩm bán chạy */}
+            <BestSellingSection />
+
+            {/* Sản phẩm theo thương hiệu */}
+            <BrandProductSection />
+
+            {/* Sản phẩm mới với phân trang */}
+            <PaginatedProductGrid 
+              title="Sản phẩm mới" 
+              filterCriteria={{ status: "New" }}
+              itemsPerPage={8}
+              showFilters={false}
+              showPagination={true}
+            />
+
+            {/* Sản phẩm đã qua sử dụng với phân trang */}
+            <PaginatedProductGrid 
+              title="Sản phẩm đã qua sử dụng" 
+              filterCriteria={{ status: "SecondHand" }}
+              itemsPerPage={8}
+              showFilters={false}
+              showPagination={true}
+            />
+
+            {/* Tất cả sản phẩm với bộ lọc và phân trang */}
+            <PaginatedProductGrid 
+              title="Tất cả sản phẩm" 
+              filterCriteria={{}}
+              itemsPerPage={12}
+              showFilters={true}
+              showPagination={true}
+            />
+
             <BlogCarousel />
             <RecommendTagCarousel />
             <ChatWidget />

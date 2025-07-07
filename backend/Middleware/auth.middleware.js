@@ -112,7 +112,6 @@ const verifyAdmin = async (req, res, next) => {
 };
 
 const verifyUser = async (req, res, next) => {
-  console.log("jaasd", req.headers.token);
   if (req.method === "OPTIONS") {
     return next();
   }
@@ -138,7 +137,6 @@ const verifyUser = async (req, res, next) => {
         error: err.message,
       });
     }
-    console.log("oi2uqew", decoded);
     if (!decoded || decoded.user.role !== "User") {
       return res
         .status(403)
