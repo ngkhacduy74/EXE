@@ -158,6 +158,10 @@ class DashboardController {
         return dayData ? dayData.count : 0;
       });
 
+      // Đếm số lượng sản phẩm theo status
+      const newProductCount = await Product.countDocuments({ status: "New" });
+      const secondHandProductCount = await Product.countDocuments({ status: "SecondHand" });
+
       // Get device distribution (mock data for now - would need user agent tracking)
       const deviceDistribution = [
         { device: 'Desktop', percentage: 45 },
@@ -184,7 +188,9 @@ class DashboardController {
           todayNewUsers,
           todayNewPosts,
           todayNewProducts,
-          todayPageViews
+          todayPageViews,
+          newProductCount, // Số lượng sản phẩm mới
+          secondHandProductCount // Số lượng sản phẩm cũ
         },
         charts: {
           postsByMonth: monthlyPosts,

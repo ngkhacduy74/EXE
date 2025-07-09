@@ -33,13 +33,13 @@ function Header() {
     "Máy Làm Đá",
     "Bếp á",
     "Bàn đông",
-    "Bếp âu công nghiệp",
+    "Bếp âu",
     "Tủ đông",
     "Tủ lạnh",
     "Tủ mát",
     "Tủ nấu cơm",
-    "Máy Pha Cafe",
-    "Bếp Từ Công Nghiệp",
+    "Máy Pha cà phê",
+    "Bếp Từ ",
     "Máy Làm Kem",
   ];
 

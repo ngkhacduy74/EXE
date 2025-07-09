@@ -18,6 +18,7 @@ import {
   Legend,
   Filler
 } from "chart.js";
+import axios from "axios";
 
 ChartJS.register(
   CategoryScale, 
@@ -176,6 +177,27 @@ function AdminDashboard() {
     }
   };
 
+  // Fetch product stats giống Manage Product
+  const fetchProductStats = async () => {
+    try {
+      // Sử dụng proxy URL nếu ở dev, hoặc backend URL nếu production
+      const apiUrl = process.env.NODE_ENV === 'development'
+        ? '/api/product/'
+        : `${process.env.REACT_APP_BACKEND_URL}/api/product/`;
+      const response = await axios.get(apiUrl);
+      const products = Array.isArray(response.data.data) ? response.data.data : [];
+      const newCount = products.filter(p => p.status === "New").length;
+      const oldCount = products.filter(p => p.status === "SecondHand").length;
+      // setProductStats({
+      //   total: products.length,
+      //   newCount,
+      //   oldCount,
+      // });
+    } catch (error) {
+      // setProductStats({ total: 0, newCount: 0, oldCount: 0 });
+    }
+  };
+
   // Existing dashboard data fetch
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -195,6 +217,8 @@ function AdminDashboard() {
             totalPosts: realData.summary.totalPosts || 0,           // Tổng số bài post
             activeUsers: realData.summary.activeUsers || 0,         // User đang truy cập
             todayPageViews: realData.summary.todayPageViews || 0,   // Lượt xem hôm nay
+            newProductCount: realData.summary.newProductCount || 0, // Số lượng SP mới
+            secondHandProductCount: realData.summary.secondHandProductCount || 0 // Số lượng SP cũ
           });
           
           // Update charts data
@@ -238,6 +262,10 @@ function AdminDashboard() {
 
     fetchDashboardData();
   }, [selectedYear, tokens.accessToken, tokens]);
+
+  useEffect(() => {
+    fetchProductStats();
+  }, []);
 
   if (isLoading) return <div className="d-flex justify-content-center p-5"><div className="spinner-border" role="status"><span className="visually-hidden">Đang tải...</span></div></div>;
 
@@ -301,8 +329,16 @@ function AdminDashboard() {
               <Col md={2}>
                 <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
                   <Card.Body>
-                    <div className="display-6 text-warning">{dashboardData.totalProducts - (realData.summary?.todayNewProducts || 0)}</div>
-                    <div className="text-muted">Số lượng SP cũ</div>
+                    <div className="display-6 text-warning">{dashboardData.secondHandProductCount}</div>
+                    <div className="text-muted">Số lượng SP cũ (SecondHand)</div>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={2}>
+                <Card className="text-center shadow-sm h-100" style={{ borderRadius: "15px" }}>
+                  <Card.Body>
+                    <div className="display-6 text-info">{dashboardData.newProductCount}</div>
+                    <div className="text-muted">Số lượng SP mới (New)</div>
                   </Card.Body>
                 </Card>
               </Col>
