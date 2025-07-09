@@ -395,7 +395,8 @@ Bạn muốn so sánh sản phẩm nào cụ thể không? Tôi có thể gợi 
           this.lastProductSuggestions = products; // lưu lại
           if (products.length === 1) {
             const p = products[0];
-            const detailIntent = /(xem\s+chi\s+t(i|í)ết|chi\s+t(i|í)ết|spec|thông\s+số)/i;
+            // Mở rộng regex nhận diện ý định xem chi tiết sản phẩm
+            const detailIntent = /(xem\s+chi\s+t(i|í)ết|chi\s+t(i|í)ết|spec|thông\s+số|cho\s+xem|tham\s+khảo|xem\s+sản\s+phẩm|chi\s+tiết\s+sản\s+phẩm|xem|xem\s+sp|thông\s+tin)/i;
             if (detailIntent.test(userQuestion)) {
               return {
                 answer: this.formatProductDetails(p),
@@ -423,6 +424,65 @@ Bạn muốn so sánh sản phẩm nào cụ thể không? Tôi có thể gợi 
           };
         } else {
           // Tìm sản phẩm tương tự
+          // Thử tìm theo brand nếu không tìm thấy theo tên
+          // === Bổ sung: chuẩn hóa brand để không phân biệt hoa thường, không dấu, hỗ trợ tìm gần đúng ===
+          const extractBrand = (text) => {
+            // Loại bỏ các từ không cần thiết
+            return text.replace(/cho tôi xem|sản phẩm|hãng|thương hiệu|hãy|xin|vui lòng|tìm|xem|giới thiệu|gợi ý|của|hãng|hãng sản xuất|hãng sản phẩm|hãng máy|hãng tủ|hãng thiết bị/gi, '').trim();
+          };
+          const normalizeText = (text) => {
+            return text
+              .normalize('NFD')
+              .replace(/\p{Diacritic}/gu, '')
+              .replace(/[đĐ]/g, match => (match === 'đ' ? 'd' : 'D'))
+              .replace(/\s+/g, '')
+              .replace(/[^\w]/g, '')
+              .toLowerCase();
+          };
+          const brandQuery = extractBrand(userQuestion);
+          const allBrandProducts = await Product.find().limit(200); // lấy nhiều để lọc
+          const allBrands = [...new Set(allBrandProducts.map(p => p.brand || ''))];
+          const normalizedQuery = normalizeText(brandQuery);
+          // 1. Tìm brand khớp hoàn toàn
+          let matchedBrand = allBrands.find(b => normalizeText(b) === normalizedQuery);
+          // 2. Nếu không có, tìm brand chứa từ khóa
+          if (!matchedBrand) {
+            matchedBrand = allBrands.find(b => normalizeText(b).includes(normalizedQuery));
+          }
+          // 3. Nếu vẫn không có, tìm brand gần đúng nhất (dựa trên số ký tự chung liên tiếp)
+          function getSimilarity(a, b) {
+            let matches = 0;
+            for (let i = 0; i < Math.min(a.length, b.length); i++) {
+              if (a[i] === b[i]) matches++;
+            }
+            return matches;
+          }
+          if (!matchedBrand) {
+            let maxSim = 0;
+            for (const b of allBrands) {
+              const sim = getSimilarity(normalizeText(b), normalizedQuery);
+              if (sim > maxSim && sim >= 3) { // chỉ lấy nếu có ít nhất 3 ký tự chung
+                maxSim = sim;
+                matchedBrand = b;
+              }
+            }
+          }
+          if (matchedBrand) {
+            const brandProducts = allBrandProducts.filter(product =>
+              normalizeText(product.brand || '') === normalizeText(matchedBrand)
+            );
+            if (brandProducts.length > 0) {
+              const productList = brandProducts.map(product => 
+                `• ${product.name} - ${product.brand} - ${product.price ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND` : 'Chưa có giá'}`
+              ).join('\n');
+              return {
+                answer: `🔍 **Các sản phẩm thuộc thương hiệu gần đúng "${matchedBrand}":**\n${productList}`,
+                type: 'brand_products',
+                products: brandProducts
+              };
+            }
+          }
+          // Nếu vẫn không có thì trả về gợi ý sản phẩm khác
           const allProducts = await Product.find().limit(5);
           const suggestions = allProducts.map(product => 
             `• ${product.name} - ${product.brand}`
@@ -444,7 +504,7 @@ ${suggestions}
       }
 
             // Khi người dùng yêu cầu xem chi tiết nếu trước đó có sản phẩm gợi ý
-      if (/xem\s+chi\s+t(i|í)ết/i.test(userQuestion) && this.lastProductSuggestions.length === 1) {
+      if (/(xem\s+chi\s+t(i|í)ết|chi\s+t(i|í)ết|spec|thông\s+số|cho\s+xem|tham\s+khảo|xem\s+sản\s+phẩm|chi\s+tiết\s+sản\s+phẩm|xem|xem\s+sp|thông\s+tin)/i.test(userQuestion) && this.lastProductSuggestions.length === 1) {
         const p = this.lastProductSuggestions[0];
         return {
           answer: this.formatProductDetails(p),
@@ -544,6 +604,54 @@ ${brandList}`,
         };
       }
 
+      // ===== XỬ LÝ TÌM KIẾM SẢN PHẨM THEO GIÁ (MỞ RỘNG) =====
+      const priceRegex = /(dưới|<=|<|ít hơn|không quá|tối đa|nhiều nhất|trên|>=|>|nhiều hơn|tối thiểu|ít nhất|=|bằng|từ|đổ xuống|trở xuống|tới|đến|max|cao nhất|không vượt quá|không lớn hơn)\s*(\d{1,3}(?:[.,]\d{3})*|\d+)(?:\s*đ|\s*vnđ|\s*tr|\s*triệu)?(?:\s*(đến|tới|đổ xuống|trở xuống|-)\s*(\d{1,3}(?:[.,]\d{3})*|\d+)(?:\s*đ|\s*vnđ|\s*tr|\s*triệu)?)?/i;
+      const match = userQuestion.match(priceRegex);
+      if (match) {
+        let minPrice = null, maxPrice = null;
+        const isMillion = /tr|triệu/i.test(userQuestion);
+        const parsePrice = (str) => parseInt(str.replace(/[.,]/g, '')) * (isMillion ? 1000000 : 1);
+        if (/dưới|<=|<|ít hơn|không quá|tối đa|nhiều nhất|đổ xuống|trở xuống|tới|đến|max|cao nhất|không vượt quá|không lớn hơn/i.test(match[1])) {
+          maxPrice = parsePrice(match[2]);
+        } else if (/trên|>=|>|nhiều hơn|tối thiểu|ít nhất/i.test(match[1])) {
+          minPrice = parsePrice(match[2]);
+        } else if (/=|bằng/i.test(match[1])) {
+          minPrice = maxPrice = parsePrice(match[2]);
+        } else if (/từ/i.test(match[1]) && match[4]) {
+          minPrice = parsePrice(match[2]);
+          maxPrice = parsePrice(match[4]);
+        } else if (/từ/i.test(match[1]) && !match[4] && (userQuestion.includes('đổ xuống') || userQuestion.includes('trở xuống'))) {
+          // Trường hợp: 'từ 13 triệu đổ xuống' => maxPrice = 13 triệu
+          maxPrice = parsePrice(match[2]);
+        }
+        // Tìm sản phẩm theo minPrice, maxPrice
+        const priceQuery = {};
+        if (minPrice !== null) priceQuery.$gte = minPrice;
+        if (maxPrice !== null) priceQuery.$lte = maxPrice;
+        const products = await Product.find({ price: priceQuery }).limit(10);
+        if (products.length > 0) {
+          const productList = products.map(product => 
+            `• ${product.name} - ${product.brand} - ${product.price ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND` : 'Chưa có giá'}`
+          ).join('\n');
+          return {
+            answer: `🔍 **Các sản phẩm phù hợp với mức giá bạn yêu cầu:**\n${productList}`,
+            type: 'price_products',
+            products: products
+          };
+        } else {
+          return {
+            answer: `❌ Không tìm thấy sản phẩm phù hợp với mức giá bạn yêu cầu.`,
+            type: 'no_price_product'
+          };
+        }
+      } else if (userQuestion.toLowerCase().includes('giá')) {
+        // Nếu có từ 'giá' mà không bắt được số, trả về hướng dẫn
+        return {
+          answer: `Vui lòng nhập số tiền hợp lệ, ví dụ:\n- 'dưới 20 triệu'\n- '>= 15 triệu'\n- 'từ 10 đến 30 triệu'\n- 'từ 13 triệu đổ xuống'\n- '< 5 triệu'`,
+          type: 'invalid_price'
+        };
+      }
+
       // Trả lời mặc định
       return {
         answer: `Xin chào! Tôi là trợ lý AI của Vinsaky Shop. Tôi có thể giúp bạn:
@@ -618,5 +726,34 @@ Bạn cần hỗ trợ gì?`,
     }
   }
 }
+
+// ====== GỢI Ý SẢN PHẨM ĐỘNG BẰNG AI ======
+// Hàm này nhận yêu cầu text, sinh từ khóa bằng AI, tìm sản phẩm phù hợp nhất
+async function suggestProductsByAI(userQuery) {
+  try {
+    // 1. Sinh từ khóa bằng AI (bạn cần có hàm generateKeywordsWithAI hoặc tương đương)
+    const { generateKeywordsWithGroq } = require('../utils/keywordGenerator');
+    const keywords = await generateKeywordsWithGroq(userQuery, '', 10);
+    if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
+      return { success: false, message: 'Không sinh được từ khóa phù hợp từ AI.' };
+    }
+    // 2. Tìm sản phẩm theo các từ khóa này
+    const orQuery = keywords.flatMap(kw => ([
+      { name: { $regex: kw, $options: 'i' } },
+      { brand: { $regex: kw, $options: 'i' } },
+      { description: { $regex: kw, $options: 'i' } },
+      { 'features.title': { $regex: kw, $options: 'i' } }
+    ]));
+    let products = await Product.find({ $or: orQuery }).limit(20);
+    if (products && products.length > 0) {
+      return { success: true, keywords, products };
+    }
+    // 3. Nếu không có sản phẩm, trả về thông báo rõ ràng
+    return { success: false, message: 'Hiện tại chưa có sản phẩm phù hợp với nhu cầu của bạn. Vui lòng liên hệ để được tư vấn thêm.' };
+  } catch (err) {
+    return { success: false, message: 'Lỗi khi gợi ý sản phẩm bằng AI', detail: err.message };
+  }
+}
+ChatService.prototype.suggestProductsByAI = suggestProductsByAI;
 
 module.exports = ChatService; 
