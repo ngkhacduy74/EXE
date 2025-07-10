@@ -316,6 +316,25 @@ const getProductByObjectId = async (objectId) => {
     product,
   };
 };
+const findProductsByDeviceNames = async (deviceNames = []) => {
+  if (!Array.isArray(deviceNames) || deviceNames.length === 0) {
+    return { success: true, data: [] };
+  }
+
+  try {
+    // Tạo một mảng các biểu thức chính quy cho mỗi tên thiết bị
+    const regexQueries = deviceNames.map(name => ({
+      name: { $regex: name, $options: "i" }
+    }));
+
+    const products = await Product.find({ $or: regexQueries }).limit(10);
+    return { success: true, data: products };
+  } catch (error) {
+    console.error("Error finding products by device names:", error);
+    return { success: false, message: "Lỗi khi tìm sản phẩm theo tên thiết bị.", error };
+  }
+};
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -327,4 +346,5 @@ module.exports = {
   loadProductByUser,
   searchProducts,
   loadAllBrands,
+  findProductsByDeviceNames,
 };

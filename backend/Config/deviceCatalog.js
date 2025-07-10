@@ -16,7 +16,7 @@ module.exports = [
   {
     name: "Máy làm đá",
     keywords: [
-      "đá", "làm đá", "nước đá", "đá viên", "đá uống", "đá lạnh", "ice", "ice maker", "máy đá"
+      "đá", "làm đá", "nước đá", "đá viên", "đá uống", "đá lạnh", "ice", "ice maker", "máy đá", "cafe", "quán cafe", "quán cà phê"
     ],
     description: "Tạo đá viên cho đồ uống, quán nước, quán chè, quán cà phê, nhà hàng. Không liên quan đến kinh doanh bánh mì, cơm tấm."
   },
