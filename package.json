@@ -25,6 +25,7 @@
     "recharts": "^2.15.3",
     "redux-create-reducer": "^2.0.1",
     "redux-persist": "^6.0.0",
+    "string-similarity": "^4.0.4",
     "swiper": "^11.2.6"
   },
   "devDependencies": {

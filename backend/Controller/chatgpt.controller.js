@@ -1,5 +1,7 @@
 const axios = require("axios");
 const ChatService = require("../Config/chatService");
+const { suggestDevicesByIntent, suggestDevicesByLlama3, suggestDevicesByKeyword } = require("../Config/suggestion.service");
+const { loadAllProduct } = require("./product.controller");
 
 async function callGroqAI(messages) {
   try {
@@ -72,10 +74,19 @@ const askQuestion = async (req, res) => {
 
     // Nếu ChatService gợi ý danh sách sản phẩm → đưa vào ngữ cảnh
     let finalPrompt = prompt;
-    if (serviceResp && Array.isArray(serviceResp.products) && serviceResp.products.length) {
+
+    const keywordDevices = suggestDevicesByKeyword(prompt);
+    if (keywordDevices.length > 0) {
+      const intro = `Dưới đây là danh sách sản phẩm (JSON). Hãy: \n1. Chọn ra 1 sản phẩm phù hợp nhất với câu hỏi của khách.\n2. Trả lời trọng tâm, chi tiết về sản phẩm đó (nhấn mạnh thông số, lợi ích, giá).\n3. Viết bằng tiếng Việt, giọng tư vấn bán hàng Vinsaky.\n\nPRODUCT_LIST_JSON:\n${JSON.stringify(keywordDevices.map(p => ({
+        name: p.name,
+        description: p.description
+      })))}`;
+      finalPrompt = `${intro}\n\nCâu hỏi của khách: ${prompt}`;
+    } else if (serviceResp && Array.isArray(serviceResp.products) && serviceResp.products.length) {
       const intro = `Dưới đây là danh sách sản phẩm (JSON). Hãy: \n1. Chọn ra 1 sản phẩm phù hợp nhất với câu hỏi của khách.\n2. Trả lời trọng tâm, chi tiết về sản phẩm đó (nhấn mạnh thông số, lợi ích, giá).\n3. Viết bằng tiếng Việt, giọng tư vấn bán hàng Vinsaky.\n\nPRODUCT_LIST_JSON:\n${JSON.stringify(serviceResp.products)}`;
       finalPrompt = `${intro}\n\nCâu hỏi của khách: ${prompt}`;
     }
+    
 
     // 2) Chuẩn bị messages cho AI
     // Lấy toàn bộ lịch sử, nếu dài sẽ tóm tắt để tiết kiệm token
@@ -100,10 +111,34 @@ const askQuestion = async (req, res) => {
     let messages = [systemMessage];
     if (summaryMessage) messages.push(summaryMessage);
     messages = [...messages, ...historyMessages];
-    if (serviceResp && Array.isArray(serviceResp.products) && serviceResp.products.length) {
-      const slimProducts = serviceResp.products.map(p => ({ id: p.id, name: p.name, price: p.price, brand: p.brand }));
-      messages.push({ role: 'system', content: `PRODUCT_LIST_JSON:\n${JSON.stringify(slimProducts)}` });
-    }
+    let slimProducts = [];
+
+// Lấy sản phẩm từ serviceResp (nếu có)
+if (serviceResp && Array.isArray(serviceResp.products) && serviceResp.products.length) {
+  slimProducts = serviceResp.products.map(p => ({
+    id: p.id,
+    name: p.name,
+    price: p.price,
+    brand: p.brand
+  }));
+}
+
+// Ưu tiên lọc sản phẩm bằng từ khóa trước khi gửi AI
+// const keywordDevices = suggestDevicesByKeyword(prompt);
+if (keywordDevices.length > 0) {
+  slimProducts = keywordDevices.map(p => ({
+    name: p.name,
+    description: p.description
+  }));
+}
+
+if (slimProducts.length > 0) {
+  messages.push({
+    role: 'system',
+    content: `PRODUCT_LIST_JSON:\n${JSON.stringify(slimProducts)}`
+  });
+}
+
     // Luôn thêm prompt cuối cùng của người dùng (đã chèn intro nếu có) để model trả lời đúng ngữ cảnh
     messages.push({ role: 'user', content: finalPrompt });
 
@@ -124,4 +159,60 @@ const askQuestion = async (req, res) => {
   }
 };
 
-module.exports = { askQuestion };
+exports.suggestDevicesByIntent = (req, res) => {
+  const { question } = req.body;
+  if (!question) {
+    return res.status(400).json({ success: false, message: "Missing question" });
+  }
+  const devices = suggestDevicesByIntent(question);
+  res.json({ success: true, devices });
+};
+
+const suggestDevicesForBusiness = async (req, res) => {
+  const { question, useAI } = req.body;
+  if (!question) {
+    return res.status(400).json({ success: false, message: "Missing question" });
+  }
+
+  // Ưu tiên lọc từ khóa trước
+  const keywordDevices = suggestDevicesByKeyword(question);
+  if (keywordDevices.length > 0) {
+    // Lấy sản phẩm theo thiết bị đầu tiên match
+    let products = [];
+    try {
+      const allProductsResult = await loadAllProduct();
+      if (allProductsResult.success && Array.isArray(allProductsResult.data)) {
+        // Chỉ lọc theo tên sản phẩm
+        const deviceName = keywordDevices[0].toLowerCase();
+        products = allProductsResult.data.filter(p =>
+          p.name && p.name.toLowerCase().includes(deviceName)
+        );
+        // In ra tên sản phẩm lấy được để debug
+        console.log('Sản phẩm lấy được cho thiết bị', deviceName, ':', products.map(p => p.name));
+      }
+    } catch (err) {
+      // Nếu lỗi vẫn trả về devices, products rỗng
+    }
+    return res.json({
+      success: true,
+      devices: keywordDevices,
+      products
+    });
+  }
+
+  // Nếu không có kết quả từ khóa, fallback sang AI hoặc similarity
+  let devices;
+  try {
+    if (useAI) {
+      devices = await suggestDevicesByLlama3(question);
+    } else {
+      devices = await suggestDevicesByIntent(question);
+    }
+    res.json({ success: true, devices });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+module.exports = { askQuestion, suggestDevicesByIntent, suggestDevicesForBusiness };

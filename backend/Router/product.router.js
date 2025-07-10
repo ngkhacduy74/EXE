@@ -11,6 +11,7 @@ const {
   loadProductByUser,
   searchProducts,
   getProductByObjectId,
+  loadAllBrands,
 } = require("../Controller/product.controller");
 const {
   verifyAdmin,
@@ -27,7 +28,17 @@ router.get("/search", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-
+router.get("/brands", async (req, res) => {
+  try {
+    const result = await loadAllBrands();
+    if (result.success === false) {
+      return res.status(500).json(result);
+    }
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 router.post(
   "/createProduct",
   verifyToken,

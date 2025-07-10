@@ -63,6 +63,13 @@ const createProduct = async (data, user) => {
     };
   }
 };
+const loadAllBrands = async () => {
+  const brands = await Product.distinct("brand");
+  return {
+    success: true,
+    data: brands,
+  };
+};
 const loadProductByUser = async (userEmail) => {
   console.log("userEmail", userEmail);
   const pipeline = [];
@@ -319,4 +326,5 @@ module.exports = {
   loadAllProduct,
   loadProductByUser,
   searchProducts,
+  loadAllBrands,
 };

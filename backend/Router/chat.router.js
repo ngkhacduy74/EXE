@@ -6,7 +6,8 @@ const {
   searchPostsForChat,
   getProductDetailsForChat,
   getPostDetailsForChat,
-  askQuestion
+  askQuestion,
+  suggestDevicesForBusiness
 } = require("../Controller/chatgpt.controller");
 const router = express.Router();
 
@@ -254,5 +255,8 @@ router.get("/history", (req, res) => {
     });
   }
 });
+
+// Gợi ý thiết bị phù hợp theo ý định người dùng
+router.post("/suggest-devices", suggestDevicesForBusiness);
 
 module.exports = router;
