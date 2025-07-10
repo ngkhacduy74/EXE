@@ -1,6 +1,6 @@
 const axios = require("axios");
 const ChatService = require("../Config/chatService");
-const { suggestDevicesByIntent, suggestDevicesByLlama3, suggestDevicesByKeyword } = require("../Config/suggestion.service");
+const { suggestDeviceByAIIntent } = require("../Config/suggestion.service");
 const { loadAllProduct, findProductsByDeviceNames } = require("./product.controller");
 
 async function callGroqAI(messages) {
@@ -56,11 +56,11 @@ const askQuestion = async (req, res) => {
     const userId = (req.user && (req.user.id || req.user._id)) || req.body.userId || null;
     chatServiceInstance.addToHistory(userId, 'user', prompt);
 
-    // --- PATH A: Keyword-based suggestion ---
-    const keywordDevices = suggestDevicesByKeyword(prompt);
-    if (keywordDevices.length > 0) {
-      // Lấy thiết bị đầu tiên, quan trọng nhất và chỉ tìm sản phẩm cho nó
-      const primaryDevice = keywordDevices[0];
+    // --- PATH A: AI-based Intent Recognition ---
+    const primaryDevice = await suggestDeviceByAIIntent(prompt);
+
+    if (primaryDevice) {
+      // Nếu AI nhận diện được ý định, xử lý theo thiết bị đó
       const deviceNames = [primaryDevice.name];
       const productResult = await findProductsByDeviceNames(deviceNames);
       const foundProducts = productResult.success ? productResult.data : [];
@@ -134,60 +134,4 @@ ${JSON.stringify(slimProducts)}`;
   }
 };
 
-exports.suggestDevicesByIntent = (req, res) => {
-  const { question } = req.body;
-  if (!question) {
-    return res.status(400).json({ success: false, message: "Missing question" });
-  }
-  const devices = suggestDevicesByIntent(question);
-  res.json({ success: true, devices });
-};
-
-const suggestDevicesForBusiness = async (req, res) => {
-  const { question, useAI } = req.body;
-  if (!question) {
-    return res.status(400).json({ success: false, message: "Missing question" });
-  }
-
-  // Ưu tiên lọc từ khóa trước
-  const keywordDevices = suggestDevicesByKeyword(question);
-  if (keywordDevices.length > 0) {
-    // Lấy sản phẩm theo thiết bị đầu tiên match
-    let products = [];
-    try {
-      const allProductsResult = await loadAllProduct();
-      if (allProductsResult.success && Array.isArray(allProductsResult.data)) {
-        // Chỉ lọc theo tên sản phẩm
-        const deviceName = keywordDevices[0].toLowerCase();
-        products = allProductsResult.data.filter(p =>
-          p.name && p.name.toLowerCase().includes(deviceName)
-        );
-        // In ra tên sản phẩm lấy được để debug
-        console.log('Sản phẩm lấy được cho thiết bị', deviceName, ':', products.map(p => p.name));
-      }
-    } catch (err) {
-      // Nếu lỗi vẫn trả về devices, products rỗng
-    }
-    return res.json({
-      success: true,
-      devices: keywordDevices,
-      products
-    });
-  }
-
-  // Nếu không có kết quả từ khóa, fallback sang AI hoặc similarity
-  let devices;
-  try {
-    if (useAI) {
-      devices = await suggestDevicesByLlama3(question);
-    } else {
-      devices = await suggestDevicesByIntent(question);
-    }
-    res.json({ success: true, devices });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-
-module.exports = { askQuestion, suggestDevicesByIntent, suggestDevicesForBusiness };
+module.exports = { askQuestion };

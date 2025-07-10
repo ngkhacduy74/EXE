@@ -73,4 +73,39 @@ async function suggestDevicesForBusinessSmart(userQuestion, useAI) {
   }
 }
 
-module.exports = { suggestDevicesByIntent, suggestDevicesByLlama3, suggestDevicesByKeyword, suggestDevicesForBusinessSmart }; 
+async function suggestDeviceByAIIntent(userQuestion) {
+  const deviceNames = deviceCatalog.map(d => d.name).join(", ");
+  const prompt = `Dựa vào câu hỏi của người dùng, hãy xác định ý định của họ và chọn MỘT loại thiết bị phù hợp nhất từ danh sách sau. Trả lời CHỈ bằng tên thiết bị đó, không thêm bất cứ thứ gì khác.\n\nDANH SÁCH THIẾT BỊ: [${deviceNames}]\n\nCâu hỏi: "${userQuestion}"\n\nThiết bị phù hợp nhất là:`;
+
+  try {
+    const response = await axios.post(
+      `${process.env.OPENAI_BASE_URL}/chat/completions`,
+      {
+        model: process.env.MODEL_NAME || "llama3-70b-8192",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0,
+        max_tokens: 50,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const aiResponse = response.data.choices?.[0]?.message?.content?.trim();
+    if (!aiResponse) return null;
+
+    // Find the device in the catalog to ensure the AI didn't hallucinate
+    const foundDevice = deviceCatalog.find(d => aiResponse.includes(d.name));
+    
+    return foundDevice || null; // Return the full device object or null
+
+  } catch (error) {
+    console.error("Error in suggestDeviceByAIIntent:", error.message);
+    return null;
+  }
+}
+
+module.exports = { suggestDevicesByIntent, suggestDevicesByLlama3, suggestDevicesByKeyword, suggestDevicesForBusinessSmart, suggestDeviceByAIIntent };

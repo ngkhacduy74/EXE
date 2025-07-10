@@ -1,49 +1,13 @@
 const express = require("express");
-const { 
-  ChatGpt, 
-  getChatStatistics, 
-  searchProductsForChat, 
-  searchPostsForChat,
-  getProductDetailsForChat,
-  getPostDetailsForChat,
+const {
   askQuestion,
-  suggestDevicesForBusiness
 } = require("../Controller/chatgpt.controller");
 const router = express.Router();
 
 let chatHistory = [];
 
 // Endpoint chính để chat - Sử dụng ChatService mới
-router.post("/ask", async (req, res) => {
-  const { prompt } = req.body;
-
-  console.log("[CHAT] Nhận prompt:", prompt);
-
-  if (!prompt) {
-    console.log("[CHAT] Thiếu prompt đầu vào");
-    return res.status(400).json({
-      success: false,
-      error: "Thiếu prompt đầu vào",
-    });
-  }
-
-  try {
-    // Sử dụng ChatService mới để xử lý câu hỏi
-    const result = await askQuestion(req, res);
-    
-    if (result) {
-      console.log("[CHAT] ChatService trả lời:", result.answer);
-      return result; // askQuestion đã gửi response
-    }
-  } catch (err) {
-    console.error("Lỗi /ask:", err);
-    res.status(500).json({
-      success: false,
-      error: "Lỗi server hoặc AI",
-      details: err.message,
-    });
-  }
-});
+router.post("/ask", askQuestion);
 
 // Endpoint để lấy thống kê
 router.get("/statistics", async (req, res) => {
@@ -255,8 +219,5 @@ router.get("/history", (req, res) => {
     });
   }
 });
-
-// Gợi ý thiết bị phù hợp theo ý định người dùng
-router.post("/suggest-devices", suggestDevicesForBusiness);
 
 module.exports = router;

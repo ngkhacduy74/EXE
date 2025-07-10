@@ -1,6 +1,7 @@
 const Product = require("../Model/product.model");
 const Post = require("../Model/post.model");
 const User = require("../Model/user.model");
+const stringSimilarity = require('string-similarity');
 
 class ChatService {
   constructor() {
@@ -395,7 +396,18 @@ Bạn muốn so sánh sản phẩm nào cụ thể không? Tôi có thể gợi 
           this.lastProductSuggestions = products; // lưu lại
           if (products.length === 1) {
             const p = products[0];
-            // Mở rộng regex nhận diện ý định xem chi tiết sản phẩm
+            const similarity = stringSimilarity.compareTwoStrings(userQuestion.toLowerCase(), p.name.toLowerCase());
+            
+            // Nếu người dùng nhập tên gần đúng với tên sản phẩm, hiển thị chi tiết luôn
+            if (similarity > 0.7) {
+               return {
+                answer: this.formatProductDetails(p),
+                type: 'product_detail',
+                product: p
+              };
+            }
+
+            // Logic cũ: nếu có từ khóa xem chi tiết
             const detailIntent = /(xem\s+chi\s+t(i|í)ết|chi\s+t(i|í)ết|spec|thông\s+số|cho\s+xem|tham\s+khảo|xem\s+sản\s+phẩm|chi\s+tiết\s+sản\s+phẩm|xem|xem\s+sp|thông\s+tin)/i;
             if (detailIntent.test(userQuestion)) {
               return {
@@ -425,62 +437,38 @@ Bạn muốn so sánh sản phẩm nào cụ thể không? Tôi có thể gợi 
         } else {
           // Tìm sản phẩm tương tự
           // Thử tìm theo brand nếu không tìm thấy theo tên
-          // === Bổ sung: chuẩn hóa brand để không phân biệt hoa thường, không dấu, hỗ trợ tìm gần đúng ===
+          // === Bổ sung: Xử lý tìm kiếm theo thương hiệu ===
           const extractBrand = (text) => {
-            // Loại bỏ các từ không cần thiết
             return text.replace(/cho tôi xem|sản phẩm|hãng|thương hiệu|hãy|xin|vui lòng|tìm|xem|giới thiệu|gợi ý|của|hãng|hãng sản xuất|hãng sản phẩm|hãng máy|hãng tủ|hãng thiết bị/gi, '').trim();
           };
-          const normalizeText = (text) => {
-            return text
-              .normalize('NFD')
-              .replace(/\p{Diacritic}/gu, '')
-              .replace(/[đĐ]/g, match => (match === 'đ' ? 'd' : 'D'))
-              .replace(/\s+/g, '')
-              .replace(/[^\w]/g, '')
-              .toLowerCase();
-          };
+          
           const brandQuery = extractBrand(userQuestion);
-          const allBrandProducts = await Product.find().limit(200); // lấy nhiều để lọc
-          const allBrands = [...new Set(allBrandProducts.map(p => p.brand || ''))];
-          const normalizedQuery = normalizeText(brandQuery);
-          // 1. Tìm brand khớp hoàn toàn
-          let matchedBrand = allBrands.find(b => normalizeText(b) === normalizedQuery);
-          // 2. Nếu không có, tìm brand chứa từ khóa
-          if (!matchedBrand) {
-            matchedBrand = allBrands.find(b => normalizeText(b).includes(normalizedQuery));
-          }
-          // 3. Nếu vẫn không có, tìm brand gần đúng nhất (dựa trên số ký tự chung liên tiếp)
-          function getSimilarity(a, b) {
-            let matches = 0;
-            for (let i = 0; i < Math.min(a.length, b.length); i++) {
-              if (a[i] === b[i]) matches++;
-            }
-            return matches;
-          }
-          if (!matchedBrand) {
-            let maxSim = 0;
-            for (const b of allBrands) {
-              const sim = getSimilarity(normalizeText(b), normalizedQuery);
-              if (sim > maxSim && sim >= 3) { // chỉ lấy nếu có ít nhất 3 ký tự chung
-                maxSim = sim;
-                matchedBrand = b;
+          if (brandQuery) { // Nếu có vẻ như người dùng đang hỏi về thương hiệu
+            const allBrands = await Product.distinct('brand');
+            const { bestMatch } = stringSimilarity.findBestMatch(brandQuery.toLowerCase(), allBrands.map(b => b.toLowerCase()));
+
+            if (bestMatch && bestMatch.rating > 0.6) { // Nếu tìm thấy brand tương đối giống
+              const matchedBrand = allBrands.find(b => b.toLowerCase() === bestMatch.target);
+              const brandProducts = await Product.find({ brand: matchedBrand }).limit(10);
+
+              if (brandProducts.length > 0) {
+                 const productList = brandProducts.map(product =>
+                  `• ${product.name} - ${product.brand} - ${product.price ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND` : 'Chưa có giá'}`
+                ).join('\n');
+                return {
+                  answer: `🔍 **Các sản phẩm của thương hiệu "${matchedBrand}":**\n${productList}`,
+                  type: 'brand_products',
+                  products: brandProducts
+                };
               }
             }
-          }
-          if (matchedBrand) {
-            const brandProducts = allBrandProducts.filter(product =>
-              normalizeText(product.brand || '') === normalizeText(matchedBrand)
-            );
-            if (brandProducts.length > 0) {
-              const productList = brandProducts.map(product => 
-                `• ${product.name} - ${product.brand} - ${product.price ? `${parseFloat(product.price).toLocaleString('vi-VN')} VND` : 'Chưa có giá'}`
-              ).join('\n');
-              return {
-                answer: `🔍 **Các sản phẩm thuộc thương hiệu gần đúng "${matchedBrand}":**\n${productList}`,
-                type: 'brand_products',
-                products: brandProducts
-              };
-            }
+            
+            // Nếu không tìm thấy brand nào phù hợp
+            return {
+              answer: `Rất tiếc, chúng tôi không kinh doanh sản phẩm nào của thương hiệu "${brandQuery}". Bạn có muốn tham khảo các sản phẩm từ thương hiệu khác không?`,
+              type: 'brand_not_found',
+              products: []
+            };
           }
           // Nếu vẫn không có thì trả về gợi ý sản phẩm khác
           const allProducts = await Product.find().limit(5);
