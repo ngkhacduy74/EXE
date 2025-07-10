@@ -734,22 +734,63 @@ async function suggestProductsByAI(userQuery) {
     // 1. Sinh từ khóa bằng AI (bạn cần có hàm generateKeywordsWithAI hoặc tương đương)
     const { generateKeywordsWithGroq } = require('../utils/keywordGenerator');
     const keywords = await generateKeywordsWithGroq(userQuery, '', 10);
+    console.log("lkajlksjadja",keywords);
     if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
       return { success: false, message: 'Không sinh được từ khóa phù hợp từ AI.' };
     }
-    // 2. Tìm sản phẩm theo các từ khóa này
-    const orQuery = keywords.flatMap(kw => ([
-      { name: { $regex: kw, $options: 'i' } },
-      { brand: { $regex: kw, $options: 'i' } },
-      { description: { $regex: kw, $options: 'i' } },
-      { 'features.title': { $regex: kw, $options: 'i' } }
-    ]));
+    
+    // Log các từ khóa được sinh ra để debug
+    console.log('=== TỪ KHÓA ĐƯỢC SINH RA TỪ AI ===');
+    console.log('Truy vấn gốc:', userQuery);
+    console.log('Các từ khóa:', keywords);
+    console.log('Từ khóa chính được sử dụng:', keywords[0]);
+    console.log('================================');
+    // 2. Chỉ lấy từ khóa đầu tiên (phù hợp nhất) để tìm sản phẩm
+    const mainKeyword = keywords[0];
+    
+    // Hàm escape ký tự đặc biệt trong regex
+    const escapeRegExp = (string) => {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+    
+    const escapedKeyword = escapeRegExp(mainKeyword);
+    console.log('Từ khóa đã escape:', escapedKeyword);
+    
+    const orQuery = [
+      { name: { $regex: escapedKeyword, $options: 'i' } },
+      { brand: { $regex: escapedKeyword, $options: 'i' } },
+      { description: { $regex: escapedKeyword, $options: 'i' } },
+      { 'features.title': { $regex: escapedKeyword, $options: 'i' } }
+    ];
+    
+    console.log('Truy vấn tìm kiếm:', JSON.stringify(orQuery, null, 2));
     let products = await Product.find({ $or: orQuery }).limit(20);
+    
+    // Tạo thông báo debug
+    const debugInfo = `
+    
+=== THÔNG TIN DEBUG ===
+Truy vấn: "${userQuery}"
+Từ khóa chính: "${mainKeyword}"
+Tất cả từ khóa: ${JSON.stringify(keywords, null, 2)}
+Số sản phẩm tìm thấy: ${products ? products.length : 0}
+====================`;
+
     if (products && products.length > 0) {
+      // Thêm thông tin debug vào sản phẩm đầu tiên
+      if (products[0].description) {
+        products[0].description += debugInfo;
+      } else {
+        products[0].description = debugInfo;
+      }
       return { success: true, keywords, products };
     }
-    // 3. Nếu không có sản phẩm, trả về thông báo rõ ràng
-    return { success: false, message: 'Hiện tại chưa có sản phẩm phù hợp với nhu cầu của bạn. Vui lòng liên hệ để được tư vấn thêm.' };
+    
+    // 3. Nếu không có sản phẩm, trả về thông báo rõ ràng kèm thông tin debug
+    return { 
+      success: false, 
+      message: `Hiện tại chưa có sản phẩm phù hợp với nhu cầu của bạn. ${debugInfo} Vui lòng liên hệ để được tư vấn thêm.` 
+    };
   } catch (err) {
     return { success: false, message: 'Lỗi khi gợi ý sản phẩm bằng AI', detail: err.message };
   }
