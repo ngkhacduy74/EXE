@@ -75,7 +75,7 @@ async function suggestDevicesForBusinessSmart(userQuestion, useAI) {
 
 async function suggestDeviceByAIIntent(userQuestion) {
   const deviceNames = deviceCatalog.map(d => d.name).join(", ");
-  const prompt = `Dựa vào câu hỏi của người dùng, hãy xác định ý định của họ và chọn MỘT loại thiết bị phù hợp nhất từ danh sách sau. Trả lời CHỈ bằng tên thiết bị đó, không thêm bất cứ thứ gì khác.\n\nDANH SÁCH THIẾT BỊ: [${deviceNames}]\n\nCâu hỏi: "${userQuestion}"\n\nThiết bị phù hợp nhất là:`;
+  const prompt = `Dựa vào câu hỏi của người dùng, hãy xác định ý định của họ và chọn MỘT loại thiết bị phù hợp nhất từ danh sách sau. Nếu không có thiết bị nào thực sự phù hợp, hãy trả lời "Không có".\n\nTrả lời CHỈ bằng tên thiết bị đó hoặc từ "Không có", không thêm bất cứ thứ gì khác.\n\nDANH SÁCH THIẾT BỊ: [${deviceNames}]\n\nCâu hỏi: "${userQuestion}"\n\nThiết bị phù hợp nhất là:`;
 
   try {
     const response = await axios.post(
@@ -95,7 +95,9 @@ async function suggestDeviceByAIIntent(userQuestion) {
     );
 
     const aiResponse = response.data.choices?.[0]?.message?.content?.trim();
-    if (!aiResponse) return null;
+    if (!aiResponse || aiResponse.toLowerCase().includes('không có')) {
+      return null;
+    }
 
     // Find the device in the catalog to ensure the AI didn't hallucinate
     const foundDevice = deviceCatalog.find(d => aiResponse.includes(d.name));

@@ -67,17 +67,13 @@ const askQuestion = async (req, res) => {
 
       const primaryDeviceName = primaryDevice.name;
       const slimProducts = foundProducts.map(p => ({
-        id: p.id, name: p.name, price: p.price, brand: p.brand, description: p.description
+        name: p.name, price: p.price, brand: p.brand
       }));
 
-      const intro = `**YÊU CẦU BẮT BUỘC:**
-1.  **Tập trung vào thiết bị chính:** Khách hàng đang hỏi về kinh doanh yêu cầu có "${primaryDeviceName}". Bạn **PHẢI** xác định đây là thiết bị quan trọng nhất và giải thích tại sao nó không thể thiếu.
-2.  **Tư vấn sản phẩm cụ thể:** Dựa vào danh sách sản phẩm dưới đây (PRODUCT_LIST_JSON), hãy chọn MỘT sản phẩm "${primaryDeviceName}" phù hợp nhất để giới thiệu chi tiết.
-3.  **Giọng văn:** Chuyên gia tư vấn của Vinsaky.
-4.  **Độ dài:** Trả lời ngắn gọn, súc tích, trong khoảng 100-150 từ.
-
-**DANH SÁCH SẢN PHẨM ĐỂ THAM KHẢO (PRODUCT_LIST_JSON):**
-${JSON.stringify(slimProducts)}`;
+      const intro = `**YÊU CẦU CỰC KỲ NGHIÊM NGẶT:**
+1.  **Nội dung:** Khách hỏi về kinh doanh "${prompt}". Thiết bị chính là "${primaryDeviceName}". Dựa vào danh sách sản phẩm sau: ${JSON.stringify(slimProducts)}, hãy chọn MỘT sản phẩm phù hợp nhất để giới thiệu.
+2.  **Độ dài:** Trả lời CỰC NGẮN, chỉ khoảng 50-80 từ.
+3.  **CẤM:** Không chào hỏi, không giới thiệu sản phẩm khác, không có câu kết. Đi thẳng vào việc giới thiệu sản phẩm.`;
       
       const finalPrompt = `${intro}\n\n**Câu hỏi của khách:** ${prompt}`;
       
@@ -87,6 +83,7 @@ ${JSON.stringify(slimProducts)}`;
 
       const aiAnswer = await callGroqAI(messages);
       chatServiceInstance.addToHistory(userId, 'assistant', aiAnswer);
+      chatServiceInstance.setLastSuggestions(foundProducts);
 
       return res.status(200).json({
         success: true,
@@ -107,9 +104,12 @@ ${JSON.stringify(slimProducts)}`;
     let finalPrompt = prompt;
 
     if (finalProducts.length > 0) {
-      const slimProducts = finalProducts.map(p => ({ id: p.id, name: p.name, price: p.price, brand: p.brand }));
-      const intro = `Dưới đây là danh sách sản phẩm (JSON). Hãy chọn 1 sản phẩm phù hợp nhất để tư vấn chi tiết.\n\nPRODUCT_LIST_JSON:\n${JSON.stringify(slimProducts)}`;
-      finalPrompt = `${intro}\n\nCâu hỏi của khách: ${prompt}`;
+      const slimProducts = finalProducts.map(p => ({ name: p.name, price: p.price, brand: p.brand }));
+      const intro = `**YÊU CẦU NGHIÊM NGẶT:**
+1.  **Nội dung:** Dựa vào danh sách sản phẩm sau: ${JSON.stringify(slimProducts)}, chọn MỘT sản phẩm phù hợp nhất để trả lời câu hỏi của khách.
+2.  **Độ dài:** Trả lời CỰC NGẮN, khoảng 50-80 từ.
+3.  **CẤM:** Không chào hỏi, không giới thiệu sản phẩm khác, không câu kết. Đi thẳng vào vấn đề.`;
+      finalPrompt = `${intro}\n\nKhách hỏi: ${prompt}`;
     }
 
     const historyMessages = chatServiceInstance.getHistoryMessages(userId, 10);
@@ -118,6 +118,9 @@ ${JSON.stringify(slimProducts)}`;
 
     const aiAnswer = await callGroqAI(messages);
     chatServiceInstance.addToHistory(userId, 'assistant', aiAnswer);
+    if (finalProducts.length > 0) {
+      chatServiceInstance.setLastSuggestions(finalProducts);
+    }
 
     return res.status(200).json({
       success: true,

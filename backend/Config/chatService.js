@@ -11,6 +11,12 @@ class ChatService {
     this.lastProductSuggestions = [];
   }
 
+  setLastSuggestions(products) {
+    if (Array.isArray(products)) {
+      this.lastProductSuggestions = products;
+    }
+  }
+
   // Lưu 1 message vào lịch sử người dùng (tối đa 20 message ~ 10 lượt)
   addToHistory(userId, role, content) {
     if (!userId) return; // khách ẩn danh: không lưu
@@ -365,6 +371,45 @@ Bạn muốn so sánh sản phẩm nào cụ thể không? Tôi có thể gợi 
       const reviewResponse = await this.handleReviewQuestion(userQuestion);
       if (reviewResponse) {
         return reviewResponse;
+      }
+
+      // ===== XỬ LÝ XEM CHI TIẾT SẢN PHẨM TRONG NGỮ CẢNH (NÂNG CAO) =====
+      if (this.lastProductSuggestions.length > 0) {
+        const detailIntentRegex = /(xem|coi|chi\s+tiết|thông\s+tin|details|về sản phẩm|cho xem)/i;
+        if (detailIntentRegex.test(userQuestion)) {
+          const potentialName = userQuestion.replace(detailIntentRegex, '').trim().toLowerCase();
+          if (potentialName) {
+            let bestMatch = null;
+            let highestRating = 0;
+
+            for (const product of this.lastProductSuggestions) {
+              const productNameNormalized = product.name.toLowerCase();
+              const rating = stringSimilarity.compareTwoStrings(potentialName, productNameNormalized);
+              
+              // Tăng điểm nếu truy vấn là một phần của tên sản phẩm (hữu ích cho các truy vấn ngắn như "LC-50")
+              const simpleProductName = productNameNormalized.split('(')[0].trim();
+              let finalRating = rating;
+              if (simpleProductName.includes(potentialName) && rating < 0.6) {
+                finalRating += 0.3; // Tăng điểm cho việc khớp chuỗi con
+              }
+
+              if (finalRating > highestRating) {
+                highestRating = finalRating;
+                bestMatch = product;
+              }
+            }
+
+            // Nếu điểm tương đồng đủ cao, trả về chi tiết sản phẩm
+            if (bestMatch && highestRating > 0.4) {
+              this.lastProductSuggestions = [bestMatch]; // Cập nhật ngữ cảnh
+              return {
+                answer: this.formatProductDetails(bestMatch),
+                type: 'product_detail',
+                product: bestMatch
+              };
+            }
+          }
+        }
       }
 
         // Câu hỏi tiếp nối: yêu cầu xem thêm vài sản phẩm nếu đã gợi ý trước
