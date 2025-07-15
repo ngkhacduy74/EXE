@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import Header from '../Components/Header';
-import Footer from '../Components/Footer';
-import '../Pages/styles/Guide.css';
+import React, { useState } from "react";
+import Header from "../Components/Header";
+import Footer from "../Components/Footer";
+import "../Pages/styles/Guide.css";
 
 const guideContents = {
   introduction: `I. THÔNG TIN TỔNG QUAN\nVINSAKY là nền tảng thương mại điện tử hàng đầu Việt Nam chuyên cung cấp thiết bị điện lạnh cho ngành Food & Beverage (F&B). Với sứ mệnh trở thành đối tác tin cậy của các doanh nghiệp trong lĩnh vực ẩm thực và đồ uống, Vinsaky đã khẳng định vị thế của mình trên thị trường thiết bị điện lạnh chuyên nghiệp.\n\nII. LĨNH VỰC HOẠT ĐỘNG\n2.1. Ngành nghề kinh doanh chính\n- Thương mại điện tử: Nền tảng trực tuyến chuyên biệt\n- Thiết bị điện lạnh F&B: Chuyên sâu về thiết bị cho ngành ẩm thực\n- Tư vấn giải pháp: Hỗ trợ khách hàng lựa chọn thiết bị phù hợp\n- Dịch vụ hậu mãi: Bảo hành và bảo trì chuyên nghiệp\n\n2.2. Đối tượng khách hàng\n- Nhà hàng cao cấp và bình dân\n- Chuỗi quán cà phê và trà sữa\n- Khách sạn và resort\n- Căng tin công ty và trường học\n- Cửa hàng thực phẩm và siêu thị\n- Các cơ sở sản xuất thực phẩm`,
-  registration: 'Để đăng ký tài khoản Vinsaky:\n1) Truy cập trang chủ\n2) Nhấn "Đăng ký"\n3) Điền thông tin cá nhân\n4) Hoàn tất đăng ký.',
-  login: 'Đăng nhập vào hệ thống:\n1) Nhập email\n2) Nhập mật khẩu\n3) Nhấn "Đăng nhập"\n4) Xác thực OTP',
+  registration:
+    'Để đăng ký tài khoản Vinsaky:\n1) Truy cập trang chủ\n2) Nhấn "Đăng ký"\n3) Điền thông tin cá nhân\n4) Hoàn tất đăng ký.',
+  login:
+    'Đăng nhập vào hệ thống:\n1) Nhập email\n2) Nhập mật khẩu\n3) Nhấn "Đăng nhập"\n4) Xác thực OTP',
   search: `Tìm kiếm sản phẩm:
 - Thông qua thanh search ở phần đầu trang
 - Search từ khóa liên quan
@@ -64,46 +66,46 @@ Dưới đây là video hướng dẫn chi tiết về cách sử dụng các t�
 - Có thể xem ở chế độ toàn màn hình để dễ theo dõi
 - Nếu có thắc mắc, hãy sử dụng trợ lý AI hoặc liên hệ hỗ trợ
 
-💡 Mẹo: Bạn có thể xem video này nhiều lần để nắm vững các thao tác cơ bản trước khi sử dụng nền tảng.`
+💡 Mẹo: Bạn có thể xem video này nhiều lần để nắm vững các thao tác cơ bản trước khi sử dụng nền tảng.`,
 };
 
 const guideTopics = [
-  { 
-    id: 1, 
-    title: 'Giới thiệu', 
-    content: guideContents.introduction
+  {
+    id: 1,
+    title: "Giới thiệu",
+    content: guideContents.introduction,
   },
-  { 
-    id: 2, 
-    title: 'Cách đăng ký', 
-    content: guideContents.registration
+  {
+    id: 2,
+    title: "Cách đăng ký",
+    content: guideContents.registration,
   },
-  { 
-    id: 3, 
-    title: 'Cách đăng nhập', 
-    content: guideContents.login
+  {
+    id: 3,
+    title: "Cách đăng nhập",
+    content: guideContents.login,
   },
-  { 
-    id: 4, 
-    title: 'Tìm kiếm sản phẩm', 
-    content: guideContents.search
+  {
+    id: 4,
+    title: "Tìm kiếm sản phẩm",
+    content: guideContents.search,
   },
-  { 
-    id: 5, 
-    title: 'Quản lý tài khoản', 
-    content: guideContents.product
+  {
+    id: 5,
+    title: "Quản lý tài khoản",
+    content: guideContents.product,
   },
   {
     id: 6,
-    title: 'Hướng dẫn sử dụng AI',
-    content: guideContents.aiGuide
+    title: "Hướng dẫn sử dụng AI",
+    content: guideContents.aiGuide,
   },
   {
     id: 7,
-    title: 'Video hướng dẫn',
+    title: "Video hướng dẫn",
     content: guideContents.videoGuide,
-    isVideo: true
-  }
+    isVideo: true,
+  },
 ];
 
 function Guide() {
@@ -120,7 +122,7 @@ function Guide() {
               {guideTopics.map((topic) => (
                 <li
                   key={topic.id}
-                  className={selectedTopic.id === topic.id ? 'active' : ''}
+                  className={selectedTopic.id === topic.id ? "active" : ""}
                   onClick={() => setSelectedTopic(topic)}
                 >
                   {topic.title}
@@ -135,7 +137,7 @@ function Guide() {
                   <iframe
                     width="100%"
                     height="400"
-                    src="https://www.youtube.com/embed/XdrshjmF6mU"
+                    src="https://www.youtube.com/watch?v=oApFAwtMCuk&t=1s"
                     title="Video hướng dẫn Vinsaky"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -161,4 +163,4 @@ function Guide() {
   );
 }
 
-export default Guide; 
+export default Guide;
