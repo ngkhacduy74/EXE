@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Table, Button, Form, Badge, Modal } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Table,
+  Button,
+  Form,
+  Badge,
+  Modal,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "../Components/Sidebar";
@@ -29,9 +38,25 @@ function ManaAccount() {
       setLoading(true);
       try {
         const skip = (currentPage - 1) * pageSize;
+        console.log("Frontend: Fetching users with params:", {
+          currentPage,
+          pageSize,
+          skip,
+          searchTerm,
+          statusFilter,
+          roleFilter,
+        });
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/user/allUser`,
-          { params: { skip, limit: pageSize } }
+          {
+            params: {
+              skip,
+              limit: pageSize,
+              searchTerm,
+              statusFilter,
+              roleFilter,
+            },
+          }
         );
         let userData = [];
         if (response.data.success && Array.isArray(response.data.data)) {
@@ -50,46 +75,35 @@ function ManaAccount() {
       }
     };
     fetchUsers();
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, searchTerm, statusFilter, roleFilter]);
 
   // Apply filters
   useEffect(() => {
-    let result = users;
-
-    if (searchTerm) {
-      result = result.filter((user) =>
-        user.fullname?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (statusFilter !== "All") {
-      const isActive = statusFilter === "Active" ? "true" : "false";
-      result = result.filter((user) => user.is_active === isActive);
-    }
-
-    if (roleFilter !== "All") {
-      result = result.filter((user) => user.role === roleFilter);
-    }
-
-    setFilteredUsers(result);
-  }, [searchTerm, statusFilter, roleFilter, users]);
+    // The filtering logic on the frontend is now redundant as it's handled by the backend.
+    // We will remove this, but keep `setFilteredUsers` call to display fetched users.
+    setFilteredUsers(users);
+  }, [users]); // Only re-run when users data changes
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on new search
   };
 
   const handleStatusChange = (e) => {
     setStatusFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page on status change
   };
 
   const handleRoleChange = (e) => {
     setRoleFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page on role change
   };
 
   const handleClearFilters = () => {
     setSearchTerm("");
     setStatusFilter("All");
     setRoleFilter("All");
+    setCurrentPage(1); // Reset to first page on clearing filters
   };
 
   const handleViewDetails = (userId) => {
@@ -110,7 +124,9 @@ function ManaAccount() {
     if (!userToDelete) return;
     setDeleteLoading(true);
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/user/${userToDelete.id}`);
+      await axios.delete(
+        `${process.env.REACT_APP_BACKEND_URL}/user/${userToDelete.id}`
+      );
       setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
       setFilteredUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
       setShowDeleteModal(false);
@@ -141,7 +157,11 @@ function ManaAccount() {
   }
 
   return (
-    <Container fluid className="bg-light admin-page" style={{ minHeight: "100vh" }}>
+    <Container
+      fluid
+      className="bg-light admin-page"
+      style={{ minHeight: "100vh" }}
+    >
       <HeaderAdmin />
       <Row>
         <Col
@@ -304,10 +324,18 @@ function ManaAccount() {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={cancelDelete} disabled={deleteLoading}>
+          <Button
+            variant="secondary"
+            onClick={cancelDelete}
+            disabled={deleteLoading}
+          >
             Cancel
           </Button>
-          <Button variant="danger" onClick={confirmDeleteUser} disabled={deleteLoading}>
+          <Button
+            variant="danger"
+            onClick={confirmDeleteUser}
+            disabled={deleteLoading}
+          >
             {deleteLoading ? "Deleting..." : "Delete"}
           </Button>
         </Modal.Footer>

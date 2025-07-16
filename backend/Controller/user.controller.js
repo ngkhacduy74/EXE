@@ -1,11 +1,38 @@
 const User = require("../Model/user.model");
 const { v1 } = require("uuid");
-const getAllUser = async ({ skip = 0, limit = 10 } = {}) => {
+const getAllUser = async ({
+  skip = 0,
+  limit = 10,
+  searchTerm,
+  statusFilter,
+  roleFilter,
+} = {}) => {
+  console.log("Backend: getAllUser received params:", {
+    skip,
+    limit,
+    searchTerm,
+    statusFilter,
+    roleFilter,
+  });
   const pipeline = [];
-  pipeline.push({ $match: {} });
+  const matchConditions = {};
+
+  if (searchTerm) {
+    matchConditions.fullname = { $regex: searchTerm, $options: "i" };
+  }
+
+  if (statusFilter !== "All" && statusFilter !== undefined) {
+    matchConditions.is_active = statusFilter === "Active" ? "true" : "false";
+  }
+
+  if (roleFilter !== "All" && roleFilter !== undefined) {
+    matchConditions.role = roleFilter;
+  }
+
+  pipeline.push({ $match: matchConditions });
   pipeline.push({
     $project: {
-      _id: 0,
+      // _id: 0, // Removed to allow _id to be used for stable sorting
       id: 1,
       fullname: 1,
       email: 1,
@@ -20,12 +47,31 @@ const getAllUser = async ({ skip = 0, limit = 10 } = {}) => {
   });
 
   pipeline.push({
-    $sort: { createdAt: -1 },
+    $sort: { createdAt: -1, _id: 1 },
   });
+
+  console.log(
+    "Backend: Pipeline before skip/limit for total count:",
+    JSON.stringify(pipeline)
+  );
+  // Count total documents before applying skip and limit for pagination
+  const totalUsers = await User.aggregate([...pipeline, { $count: "total" }]);
+  const total = totalUsers.length > 0 ? totalUsers[0].total : 0;
+  console.log("Backend: Calculated total users:", total);
+
   pipeline.push({ $skip: Number(skip) });
   pipeline.push({ $limit: Number(limit) });
+
+  console.log(
+    "Backend: Final pipeline before aggregation:",
+    JSON.stringify(pipeline)
+  );
   const data = await User.aggregate(pipeline);
-  const total = await User.countDocuments();
+  console.log(
+    "Backend: Data returned by aggregation:",
+    data.map((u) => u.fullname)
+  ); // Log full names for brevity
+
   if (!data) {
     return {
       success: false,
