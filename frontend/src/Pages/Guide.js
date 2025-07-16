@@ -137,7 +137,7 @@ function Guide() {
                   <iframe
                     width="100%"
                     height="400"
-                    src="https://www.youtube.com/watch?v=oApFAwtMCuk&t=1s"
+                    src="https://www.youtube.com/embed/oApFAwtCuk?start=1"
                     title="Video hướng dẫn Vinsaky"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
