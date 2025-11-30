@@ -11,6 +11,8 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:4000",
@@ -23,13 +25,19 @@ const allowedOrigins = [
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    // Kiểm tra xem origin có phải là một trong các allowedOrigins hoặc bắt đầu bằng một trong số đó không
+
     if (allowedOrigins.some((o) => origin === o || origin.startsWith(o))) {
-      callback(null, true);
-    } else {
-      console.log("🚫 CORS blocked origin:", origin);
-      callback(new Error("Not allowed by CORS"));
+      return callback(null, true);
     }
+
+    if (isProduction && origin.endsWith(".onrender.com")) {
+      console.log("✅ CORS allowed flexible Render origin:", origin);
+      return callback(null, true);
+    }
+
+    // 4. Bị chặn
+    console.log("🚫 CORS blocked origin:", origin);
+    callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -53,11 +61,10 @@ app.use(
   })
 );
 
-// Cấu hình Rate Limiter: Sử dụng giới hạn cao (10000) cho môi trường Development
-// và giới hạn nghiêm ngặt (100) cho môi trường Production
+// Cấu hình Rate Limiter: TĂNG GIỚI HẠN PRODUCTION từ 100 lên 500 requests/15 phút
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 phút
-  max: process.env.NODE_ENV === "production" ? 100 : 10000, // Thay đổi ở đây
+  max: isProduction ? 500 : 10000, // Đã sửa ở đây: 500 cho Production
   standardHeaders: true,
   legacyHeaders: false,
 
