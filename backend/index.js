@@ -2,13 +2,14 @@ const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
 const Router = require("./Router/index");
-const app = express();
 const configs = require("./Config/index");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const cookieParser = require("cookie-parser");
+
+const app = express();
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -22,8 +23,7 @@ const allowedOrigins = [
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-
-    if (allowedOrigins.some((o) => origin.startsWith(o))) {
+    if (allowedOrigins.some((o) => origin === o || origin.startsWith(o))) {
       callback(null, true);
     } else {
       console.log("🚫 CORS blocked origin:", origin);
@@ -31,8 +31,7 @@ const corsOptions = {
     }
   },
   credentials: true,
-  optionsSuccessStatus: 200,
-  preflightContinue: false,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
     "token",
@@ -40,35 +39,42 @@ const corsOptions = {
     "x-access-token",
     "Origin",
     "Accept",
+    "X-Requested-With",
   ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 };
 
-// Security middlewares
-app.use(helmet());
-// Basic rate limiter to protect auth endpoints and reduce brute-force risk
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(apiLimiter);
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+
+  keyGenerator: (req, res) => {
+    return req.ip;
+  },
+});
+app.use(apiLimiter);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(mongoSanitize());
 app.use(xss());
 
-// Health endpoint
 app.get("/healthz", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
 const startServer = () => {
   const port = process.env.PORT || 4000;
-  // app.use(Router);
   Router(app);
 
   app.use("/api/*", (req, res) => {
@@ -89,6 +95,13 @@ const startServer = () => {
 
   app.use((error, req, res, next) => {
     console.error("Server error:", error);
+    if (error.message === "Not allowed by CORS") {
+      return res.status(403).json({
+        success: false,
+        message: "CORS Error: Origin not allowed",
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -100,27 +113,26 @@ const startServer = () => {
   });
 
   app.listen(port, () => {
-    console.log(`✅ Server running on port ${port}`);
+    console.log(`Server running on port ${port}`);
   });
 };
 
-  // handle unhandled errors globally
-  process.on("unhandledRejection", (reason, promise) => {
-    console.error("Unhandled Rejection at:", promise, "reason:", reason);
-  });
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
 
-  process.on("uncaughtException", (err) => {
-    console.error("Uncaught Exception:", err);
-    process.exit(1);
-  });
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+  process.exit(1);
+});
 
 configs
   .connect()
   .then(() => {
-    console.log("✅ MongoDB connected successfully");
+    console.log("MongoDB connected successfully");
     startServer();
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection failed:", err.message);
+    console.error(" MongoDB connection failed:", err.message);
     process.exit(1);
   });
