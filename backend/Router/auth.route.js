@@ -9,10 +9,8 @@ const {
 
 router.post("/login", async (req, res) => {
   try {
-    console.log("Login request body:", req.body);
     const result = await Login(req.body);
-    console.log("Login result:", result);
-    
+
     if (result.success) {
       res.status(200).json(result);
     } else {
@@ -22,7 +20,7 @@ router.post("/login", async (req, res) => {
     console.error("Login error:", error);
     res.status(500).json({
       success: false,
-      message: error.message || "Đăng nhập thất bại, vui lòng thử lại."
+      message: error.message || "Đăng nhập thất bại, vui lòng thử lại.",
     });
   }
 });
