@@ -23,6 +23,7 @@ const allowedOrigins = [
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
+    // Kiểm tra xem origin có phải là một trong các allowedOrigins hoặc bắt đầu bằng một trong số đó không
     if (allowedOrigins.some((o) => origin === o || origin.startsWith(o))) {
       callback(null, true);
     } else {
@@ -52,14 +53,29 @@ app.use(
   })
 );
 
+// Cấu hình Rate Limiter: Sử dụng giới hạn cao (10000) cho môi trường Development
+// và giới hạn nghiêm ngặt (100) cho môi trường Production
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 15 * 60 * 1000, // 15 phút
+  max: process.env.NODE_ENV === "production" ? 100 : 10000, // Thay đổi ở đây
   standardHeaders: true,
   legacyHeaders: false,
 
   keyGenerator: (req, res) => {
     return req.ip;
+  },
+  // Thêm handler cho trường hợp bị giới hạn tốc độ
+  handler: (req, res, next) => {
+    console.warn(
+      "Rate Limit exceeded for IP:",
+      req.ip,
+      "Path:",
+      req.originalUrl
+    );
+    res.status(429).json({
+      success: false,
+      message: "Too Many Requests. Please try again after a while.",
+    });
   },
 });
 app.use(apiLimiter);
@@ -102,6 +118,8 @@ const startServer = () => {
       });
     }
 
+    // Nếu lỗi là do Rate Limiter, handler phía trên sẽ xử lý.
+    // Nếu không, trả về lỗi 500
     res.status(500).json({
       success: false,
       message: "Internal server error",
